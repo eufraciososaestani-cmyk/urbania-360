@@ -22,6 +22,7 @@ const PORT = process.env.PORT || 3000;
 (async () => {
   try {
     // Crea las tablas si todavía no existen
+    await pool.query(`CREATE SCHEMA IF NOT EXISTS ${pool.SCHEMA}`);
     await pool.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
     const { SEED_ADMIN_NOMBRE, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } = process.env;
     if (SEED_ADMIN_NOMBRE && SEED_ADMIN_EMAIL && SEED_ADMIN_PASSWORD) {

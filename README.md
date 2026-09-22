@@ -28,21 +28,26 @@ backend (Node/Express + PostgreSQL) + página web, con su propio login.
 
 ## Deploy en Render (un clic)
 
-El repo trae `render.yaml`, que crea la base de datos y el servicio web
-con todo conectado.
+El repo trae `render.yaml`, que crea el servicio web. No crea una base
+nueva (el plan gratis de Render permite una sola por cuenta): usa una base
+PostgreSQL que ya tengas. Las tablas de la app se crean en su propio
+schema `urbania` (configurable con `DB_SCHEMA`), así que no lee ni toca
+ninguna otra tabla de esa base.
 
-1. Abrí https://render.com/deploy?repo=https://github.com/eufraciososaestani-cmyk/urbania-360
+1. En Render, abrí tu base PostgreSQL → **Connect** → copiá la
+   **Internal Database URL**.
+2. Abrí https://render.com/deploy?repo=https://github.com/eufraciososaestani-cmyk/urbania-360
    (o en Render: **New → Blueprint** y elegí este repositorio).
-2. Render te pide tres datos: `SEED_ADMIN_NOMBRE`, `SEED_ADMIN_EMAIL` y
-   `SEED_ADMIN_PASSWORD`. Son tu nombre, email y contraseña para entrar.
-3. **Apply**. En unos minutos la app queda en `https://urbania-360.onrender.com`
-   (o la dirección que muestre Render).
+3. Completá lo que pide:
+   - `DATABASE_URL`: la URL que copiaste en el paso 1.
+   - `SEED_ADMIN_NOMBRE`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`: tu
+     nombre, email y contraseña para entrar.
+4. **Apply**. En unos minutos la app queda en la dirección que muestre Render.
 
-`DATABASE_URL` y `JWT_SECRET` se completan solos.
+`JWT_SECRET` se genera solo.
 
 Nota: el plan gratis de Render duerme el servicio tras 15 min sin uso
 (la primera carga tarda ~1 min) y la base gratis vence a los 30 días.
-Para uso real conviene pasar la base a un plan pago desde el panel de Render.
 
 ## API
 

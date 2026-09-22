@@ -1,6 +1,7 @@
 -- =====================================================
 -- Urbania 360 - Schema PostgreSQL
 -- Libro de pedidos de mantenimiento / obra, con fotos.
+-- Se crea dentro del schema propio de la app (ver db.js).
 -- =====================================================
 
 -- Usuarios que pueden entrar a la app

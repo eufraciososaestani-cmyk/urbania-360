@@ -11,6 +11,7 @@ const { guardarUsuario } = require('./auth');
     console.log('Uso: node crear-usuario.js "Nombre" email@ejemplo.com contraseña');
     process.exit(1);
   }
+  await pool.query(`CREATE SCHEMA IF NOT EXISTS ${pool.SCHEMA}`);
   await pool.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
   await guardarUsuario(nombre, email, password);
   console.log(`Usuario listo: ${email}`);
