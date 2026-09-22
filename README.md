@@ -26,10 +26,23 @@ backend (Node/Express + PostgreSQL) + página web, con su propio login.
      `SEED_ADMIN_PASSWORD` en el entorno (sirve en Render, sin Shell).
 5. `npm start` y abrir `http://localhost:3000`.
 
-## Deploy en Render
+## Deploy en Render (un clic)
 
-- Web Service con build `npm install` y start `npm start`.
-- Variables: `DATABASE_URL`, `JWT_SECRET` y (la primera vez) las `SEED_ADMIN_*`.
+El repo trae `render.yaml`, que crea la base de datos y el servicio web
+con todo conectado.
+
+1. Abrí https://render.com/deploy?repo=https://github.com/eufraciososaestani-cmyk/urbania-360
+   (o en Render: **New → Blueprint** y elegí este repositorio).
+2. Render te pide tres datos: `SEED_ADMIN_NOMBRE`, `SEED_ADMIN_EMAIL` y
+   `SEED_ADMIN_PASSWORD`. Son tu nombre, email y contraseña para entrar.
+3. **Apply**. En unos minutos la app queda en `https://urbania-360.onrender.com`
+   (o la dirección que muestre Render).
+
+`DATABASE_URL` y `JWT_SECRET` se completan solos.
+
+Nota: el plan gratis de Render duerme el servicio tras 15 min sin uso
+(la primera carga tarda ~1 min) y la base gratis vence a los 30 días.
+Para uso real conviene pasar la base a un plan pago desde el panel de Render.
 
 ## API
 
