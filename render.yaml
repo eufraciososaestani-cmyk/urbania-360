@@ -1,7 +1,11 @@
-# Configuración para Render (Blueprint): crea el servicio web de Urbania 360.
-# No crea una base nueva (el plan gratis permite una sola por cuenta): usa una
-# base PostgreSQL existente. Las tablas de la app quedan en su propio schema
-# "urbania", separadas de todo lo demás que haya en esa base.
+# Configuración para Render (Blueprint): crea la base de datos propia de
+# Urbania 360 y el servicio web, con las variables ya conectadas.
+databases:
+  - name: urbania-360-db
+    plan: basic-256mb   # plan pago (el gratis permite una sola base por cuenta)
+    databaseName: urbania360
+    user: urbania
+
 services:
   - type: web
     name: urbania-360
@@ -11,10 +15,10 @@ services:
     startCommand: npm start
     healthCheckPath: /health
     envVars:
-      # Render lo pide al crear el Blueprint: pegá la "Internal Database URL"
-      # de tu base PostgreSQL de Render
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: urbania-360-db
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       # Render las pide al crear el Blueprint: con esto se crea tu usuario
