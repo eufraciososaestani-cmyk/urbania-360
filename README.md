@@ -31,6 +31,17 @@ vuelta) sin mezclar la información:
 - **Presupuesto para el cliente**: documento imprimible (o PDF) con solo
   los datos para el cliente
 
+**3 · Análisis**
+- Período por fecha de ingreso (desde / hasta, o últimos 30 días, 90 días,
+  este año, todo)
+- Indicadores: solicitudes, presupuestos enviados, tasa de aceptación,
+  monto aceptado, ticket promedio, días promedio hasta presupuestar y
+  trabajos finalizados
+- Gráficos: solicitudes por mes, embudo del pedido al trabajo terminado,
+  por origen, por tipo de trabajo y por responsable
+- Referidos (solo usuarios autorizados): solicitudes, aceptados, tasa y
+  monto aceptado por cada referido
+
 Además: resumen por estado, búsqueda y filtros, exportar a planilla (CSV)
 y administración de usuarios.
 
