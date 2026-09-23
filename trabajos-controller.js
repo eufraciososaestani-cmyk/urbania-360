@@ -24,8 +24,9 @@ const COLUMNAS_SOLICITUD = [
 ];
 const COLUMNAS_GESTION = [
   numCol('presupuesto_total'), numCol('mano_obra'), numCol('materiales'), numCol('otros_costos'),
-  't.forma_pago', fechaCol('presupuesto_enviado'), 't.presupuesto_estado',
-  't.estado', 't.responsable', fechaCol('inicio_previsto'), fechaCol('finalizado_en'),
+  't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
+  't.presupuesto_estado', 't.estado', 't.responsable',
+  fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
   't.observaciones_internas', 't.creado_en', 't.actualizado_en',
 ];
 const COLUMNA_FOTOS = `COALESCE(
@@ -70,6 +71,11 @@ function validarSolicitud(body) {
   return { datos: d };
 }
 
+// Fecha de hoy en Argentina (el servidor puede estar en UTC)
+function hoyISO() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: process.env.TZ_APP || 'America/Argentina/Cordoba' }).format(new Date());
+}
+
 function validarGestion(body) {
   const d = {
     mano_obra: numero(body.mano_obra),
@@ -77,11 +83,14 @@ function validarGestion(body) {
     otros_costos: numero(body.otros_costos),
     presupuesto_total: numero(body.presupuesto_total),
     forma_pago: texto(body.forma_pago),
+    presupuesto_ingreso: fecha(body.presupuesto_ingreso),
     presupuesto_enviado: fecha(body.presupuesto_enviado),
+    presupuesto_aceptado_en: fecha(body.presupuesto_aceptado_en),
     presupuesto_estado: body.presupuesto_estado || 'pendiente',
     estado: body.estado || 'pendiente',
     responsable: texto(body.responsable),
     inicio_previsto: fecha(body.inicio_previsto),
+    fin_previsto: fecha(body.fin_previsto),
     finalizado_en: fecha(body.finalizado_en),
     observaciones_internas: texto(body.observaciones_internas),
   };
@@ -96,6 +105,17 @@ function validarGestion(body) {
   if (d.presupuesto_estado !== 'aceptado' && !TAREA_SIN_ACEPTAR.includes(d.estado)) {
     return { error: 'La tarea solo se puede asignar o ejecutar con el presupuesto aceptado' };
   }
+  if (d.inicio_previsto && d.fin_previsto && d.fin_previsto < d.inicio_previsto) {
+    return { error: 'La fecha prevista de finalización no puede ser anterior a la de ejecución' };
+  }
+  if (d.inicio_previsto && d.finalizado_en && d.finalizado_en < d.inicio_previsto) {
+    return { error: 'La fecha real de final de obra no puede ser anterior a la de ejecución' };
+  }
+  // Fechas de la cronología que se registran solas si no se cargaron a mano
+  const hoy = hoyISO();
+  if (!d.presupuesto_ingreso && (partes.length || d.presupuesto_total !== null)) d.presupuesto_ingreso = hoy;
+  if (d.presupuesto_estado === 'aceptado' && !d.presupuesto_aceptado_en) d.presupuesto_aceptado_en = hoy;
+  if (d.estado === 'finalizada' && !d.finalizado_en) d.finalizado_en = hoy;
   return { datos: d };
 }
 

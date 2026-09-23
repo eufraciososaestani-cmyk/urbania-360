@@ -101,8 +101,8 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 
 /* List */
 .list{background:var(--surface);border:1px solid var(--line)}
-.list.m1{--cols:92px minmax(150px,1.2fr) minmax(170px,1.5fr) 130px 120px}
-.list.m1.ref{--cols:92px minmax(150px,1.2fr) minmax(170px,1.5fr) 130px 120px minmax(120px,.9fr)}
+.list.m1{--cols:56px 92px minmax(150px,1.2fr) minmax(170px,1.5fr) 130px 120px}
+.list.m1.ref{--cols:56px 92px minmax(150px,1.2fr) minmax(170px,1.5fr) 130px 120px minmax(120px,.9fr)}
 .list.m2{--cols:minmax(170px,1.4fr) 130px 130px 100px minmax(110px,.9fr) 120px}
 .c-ref{font-size:13.5px;color:var(--int);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .c-num{font:500 12px var(--f-mono);color:var(--ink-3)}
@@ -177,9 +177,93 @@ dialog::backdrop{background:rgba(16,24,27,.5)}
 .modulo:hover{border-color:var(--ink-3)}
 body[data-mod="1"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a1)}
 body[data-mod="2"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a2)}
-.modulo.m3 .num{color:var(--a3)}
-.modulo.m3[aria-current="page"]{border-color:var(--a3);box-shadow:inset 0 -4px 0 var(--a3);background:var(--a3-soft)}
-body[data-mod="3"] #summary, body[data-mod="3"] .filters, body[data-mod="3"] #list{display:none}
+/* Navegación: áreas de trabajo + vistas de seguimiento */
+.nav{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin-top:20px}
+.nav-grupo{display:flex;flex-direction:column;gap:6px;min-width:0}
+.nav-lbl{font:500 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.nav .modulos{margin-top:0;grid-template-columns:1fr 1fr;height:100%}
+.vistas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vista{display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--ink-2);min-width:0}
+.vista svg{width:20px;height:20px;flex:none;color:var(--a3)}
+.vista span{display:flex;flex-direction:column;min-width:0}
+.vista b{font:700 15px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
+.vista small{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vista:hover{border-color:var(--ink-3)}
+.vista[aria-current="page"]{border-color:var(--a3);background:var(--a3-soft);box-shadow:inset 0 -3px 0 var(--a3)}
+.sec-head{margin:22px 0 4px}
+.sec-head h2{margin:0;font:700 26px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.sec-head p{margin:4px 0 0;color:var(--ink-2);font-size:14px}
+
+/* Cronología */
+.crono-list{display:flex;flex-direction:column;gap:10px}
+.crono-item{display:flex;flex-direction:column;gap:12px;text-align:left;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;width:100%}
+.crono-item:hover{border-color:var(--ink-3)}
+.ci-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start}
+.ci-head b{font-weight:600}
+.ci-pills{display:flex;gap:6px;flex-wrap:wrap}
+.crono{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}
+.paso{position:relative;display:flex;flex-direction:column;gap:2px;padding:0 8px 0 0;min-width:0}
+.paso .pt{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);position:relative;z-index:1;margin-bottom:6px}
+.paso .lnk{position:absolute;top:6px;left:calc(-100% + 16px);width:calc(100% - 18px);height:2px;background:var(--line-strong);display:flex;justify-content:center}
+.paso .lnk b{position:relative;top:-8px;height:14px;line-height:14px;padding:0 5px;background:var(--surface);font:500 10.5px var(--f-mono);color:var(--ink-3)}
+.paso .pk{font:500 11px/1.2 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.paso .pf{font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.paso small{font-size:12px;color:var(--ink-2)}
+.paso.ok .pt{background:var(--done);border-color:var(--done)}
+.paso.ok .lnk,.paso.prog .lnk{background:var(--done)}
+.paso.prog .pt{border-color:var(--exec);border-style:dashed}
+.paso.prog .pf{color:var(--exec)}
+.paso.pend .pf,.paso.off .pf{color:var(--ink-3);font-weight:500}
+.paso.off{opacity:.45}
+.paso.no .pt{background:var(--no);border-color:var(--no)}
+.paso.no .pf{color:var(--no)}
+.dv{display:inline-block;font:600 11.5px/1 var(--f-mono);padding:3px 6px;border-radius:4px;margin-top:3px;width:fit-content}
+.dv-atrasado,.dv-tarde{color:var(--no);background:var(--no-bg)}
+.dv-antes,.dv-a_tiempo{color:var(--done);background:var(--done-bg)}
+.presCrono{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.desvio{grid-column:1/-1;margin:0;font-size:13.5px}
+
+/* Gantt */
+.gantt-legend{margin:0 0 10px}
+.lg-plan{background:var(--surface)!important;border:1.5px dashed var(--ink-3)}
+.lg-late{background:repeating-linear-gradient(-45deg,var(--no) 0 3px,var(--no-bg) 3px 6px)!important}
+.lg-hoy{width:2px!important;background:var(--no)!important}
+.gantt-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.gantt{min-width:820px}
+.g-row{display:grid;grid-template-columns:270px minmax(0,1fr);align-items:stretch;width:100%;border:0;border-top:1px solid var(--line);background:transparent;padding:0;text-align:left;cursor:pointer}
+.g-row:hover{background:var(--surface-2)}
+.g-row.g-axis{cursor:default;border-top:0;background:var(--surface-2)}
+.g-info{padding:9px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;border-right:1px solid var(--line)}
+.g-info b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)}
+.g-meta .pill{font-size:11.5px;padding:1px 7px}
+.g-axis .g-info{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);justify-content:center}
+.g-track{position:relative;min-height:52px}
+.g-axis .g-track{min-height:32px}
+.g-tick{position:absolute;top:10px;transform:translateX(-50%);font:500 11px var(--f-mono);color:var(--ink-3);white-space:nowrap}
+.g-tick::after{content:"";position:absolute;left:50%;top:18px;height:6px;border-left:1px solid var(--line-strong)}
+.g-hoy-lbl{position:absolute;bottom:2px;transform:translateX(-50%);font:600 10.5px var(--f-mono);color:var(--no);text-transform:uppercase}
+.g-plan{position:absolute;top:12px;height:28px;border:1.5px dashed var(--ink-3);border-radius:5px;background:var(--surface-2)}
+.g-real{position:absolute;top:19px;height:14px;border-radius:0 4px 4px 0}
+.g-late{position:absolute;top:19px;height:14px;border-radius:0 4px 4px 0;background:repeating-linear-gradient(-45deg,var(--no) 0 3px,var(--no-bg) 3px 6px)}
+.g-prev{position:absolute;top:8px;bottom:8px;border-left:2px solid var(--ink)}
+.g-hoy{position:absolute;top:0;bottom:0;border-left:2px solid var(--no);opacity:.75;pointer-events:none}
+#ganttSinFecha{margin-top:10px}
+
+/* Exportar */
+.exp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:12px;margin-top:14px}
+.exp-filtros{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.exp-filtros .f input,.exp-filtros .f select{padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface-2);width:100%}
+.exp-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.exp-grupo{border:1px solid var(--line);border-radius:8px;padding:8px 10px 10px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.exp-grupo legend{font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.03em;padding:0 4px}
+.exp-grupo legend .link-mod{font:500 12px var(--f-body);text-transform:none;letter-spacing:0}
+.exp-preview{margin-top:12px}
+.exp-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px}
+.exp-top .sub{margin:4px 0 0}
+#ePrev td{white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:900px){ .nav{grid-template-columns:1fr} .exp-grid{grid-template-columns:1fr} .exp-cols{grid-template-columns:1fr 1fr} }
+@media (max-width:620px){ .crono{grid-template-columns:1fr 1fr;row-gap:12px} .paso .lnk{display:none} .exp-cols,.exp-filtros{grid-template-columns:1fr} }
 
 /* Área 3 · Análisis */
 .an-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-block:20px 14px}
@@ -325,10 +409,6 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="actions" id="actions" hidden>
       <span class="who" id="who"></span>
       <button class="btn ghost" id="btnUsers" type="button" hidden>Usuarios</button>
-      <button class="btn ghost" id="btnCsv" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
-        Exportar planilla
-      </button>
       <button class="btn primary" id="btnNew" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Nueva solicitud
@@ -346,21 +426,33 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </form>
 
   <div id="app" hidden>
-    <!-- Las dos áreas de la app: cada una tiene su propia pantalla, lista y ficha -->
-    <nav class="modulos" aria-label="Áreas">
-      <button class="modulo m1" type="button" id="navM1" aria-current="page">
-        <span class="num">1</span>
-        <span class="t"><b>Solicitudes de pedido</b><span id="navM1s">Consultas, clientes y origen</span></span>
-      </button>
-      <button class="modulo m2" type="button" id="navM2">
-        <span class="num">2</span>
-        <span class="t"><b>Presupuestos y trabajos</b><span id="navM2s">Presupuesto, aceptación, ejecución y fotos</span></span>
-      </button>
-      <button class="modulo m3" type="button" id="navM3">
-        <span class="num">3</span>
-        <span class="t"><b>Análisis</b><span id="navM3s">Indicadores y gráficos por período</span></span>
-      </button>
+    <!-- Navegación: las dos áreas de trabajo y las vistas de seguimiento -->
+    <nav class="nav" aria-label="Secciones">
+      <div class="nav-grupo">
+        <span class="nav-lbl">Áreas de trabajo</span>
+        <div class="modulos">
+          <button class="modulo m1" type="button" id="navM1" aria-current="page">
+            <span class="num">1</span>
+            <span class="t"><b>Solicitud de pedido</b><span id="navM1s">Consultas, clientes y origen</span></span>
+          </button>
+          <button class="modulo m2" type="button" id="navM2">
+            <span class="num">2</span>
+            <span class="t"><b>Presupuesto y trabajo</b><span id="navM2s">Presupuesto, ejecución y fotos</span></span>
+          </button>
+        </div>
+      </div>
+      <div class="nav-grupo">
+        <span class="nav-lbl">Seguimiento y reportes</span>
+        <div class="vistas">
+          <button class="vista" type="button" id="navM3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><span><b>Cronología</b><small id="navM3s">Fechas de cada trabajo</small></span></button>
+          <button class="vista" type="button" id="navM4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h8M8 12h10M6 18h7"/></svg><span><b>Diagrama de Gantt</b><small id="navM4s">Planificación</small></span></button>
+          <button class="vista" type="button" id="navM5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg><span><b>Exportar a Excel</b><small id="navM5s">Descargar .xlsx</small></span></button>
+          <button class="vista" type="button" id="navM6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span><b>Análisis</b><small id="navM6s">Indicadores</small></span></button>
+        </div>
+      </div>
     </nav>
+
+    <div id="listaUI">
 
     <section class="summary" id="summary" aria-label="Resumen"></section>
 
@@ -381,8 +473,97 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     </div>
 
     <div class="list" id="list" role="list"></div>
+    </div>
 
-    <!-- ÁREA 3 · ANÁLISIS -->
+    <!-- 3 · CRONOLOGÍA -->
+    <section id="cronologia" aria-label="Cronología" hidden>
+      <div class="sec-head">
+        <h2>Cronología de los trabajos</h2>
+        <p>Ingreso de solicitud → Ingreso del presupuesto → Aceptación → Ejecución → Final de obra. Tocá un trabajo para ver el detalle.</p>
+      </div>
+      <div class="filters">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="cQ" type="search" placeholder="Buscar por cliente, dirección, tipo o responsable…" aria-label="Buscar en la cronología">
+        </div>
+        <select id="cFiltro" aria-label="Mostrar">
+          <option value="">Todas las solicitudes</option>
+          <option value="curso">Trabajos en curso</option>
+          <option value="finalizados">Finalizados</option>
+          <option value="atrasados">Atrasados o terminados tarde</option>
+          <option value="sin_pres">Sin presupuesto aceptado</option>
+        </select>
+        <span class="count" id="cCount"></span>
+      </div>
+      <div class="crono-list" id="cronoList"></div>
+    </section>
+
+    <!-- 4 · DIAGRAMA DE GANTT -->
+    <section id="gantt" aria-label="Diagrama de Gantt" hidden>
+      <div class="sec-head">
+        <h2>Diagrama de Gantt</h2>
+        <p>Cada fila es un trabajo: desde la fecha de ejecución hasta la finalización prevista y la real. Tocá una fila para abrir el trabajo.</p>
+      </div>
+      <div class="filters">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="gQ" type="search" placeholder="Cliente…" aria-label="Filtrar por cliente">
+        </div>
+        <select id="gResp" aria-label="Responsable"></select>
+        <select id="gEstado" aria-label="Estado"></select>
+        <select id="gTipo" aria-label="Tipo de trabajo"></select>
+        <input id="gDesde" type="date" aria-label="Desde">
+        <input id="gHasta" type="date" aria-label="Hasta">
+      </div>
+      <div class="legend gantt-legend">
+        <span><i class="lg-plan"></i>Planificado (ejecución → fin previsto)</span>
+        <span><i style="background:var(--exec)"></i>En proceso / asignada</span>
+        <span><i style="background:var(--done)"></i>Finalizada</span>
+        <span><i style="background:var(--pend)"></i>Pendiente</span>
+        <span><i class="lg-late"></i>Atraso sobre lo previsto</span>
+        <span><i class="lg-hoy"></i>Hoy</span>
+      </div>
+      <div class="gantt-wrap"><div class="gantt" id="ganttChart"></div></div>
+      <p class="an-empty" id="ganttSinFecha"></p>
+    </section>
+
+    <!-- 5 · EXPORTAR A EXCEL -->
+    <section id="exportar" aria-label="Exportar a Excel" hidden>
+      <div class="sec-head">
+        <h2>Exportar / Descargar</h2>
+        <p>Elegí los filtros y las columnas, y descargá la información en Excel (.xlsx).</p>
+      </div>
+      <div class="exp-grid">
+        <div class="card">
+          <h3>Filtros</h3>
+          <div class="exp-filtros">
+            <div class="f"><label for="eDesde">Ingreso desde</label><input id="eDesde" type="date"></div>
+            <div class="f"><label for="eHasta">Ingreso hasta</label><input id="eHasta" type="date"></div>
+            <div class="f"><label for="eCliente">Cliente</label><input id="eCliente" type="text" list="dlCliente" autocomplete="off" placeholder="Todos"></div>
+            <div class="f"><label for="eResp">Responsable</label><select id="eResp"></select></div>
+            <div class="f"><label for="ePres">Estado del presupuesto</label><select id="ePres"></select></div>
+            <div class="f"><label for="eTarea">Estado de la tarea</label><select id="eTarea"></select></div>
+            <div class="f"><label for="eFin">Trabajo finalizado</label><select id="eFin"><option value="">Todos</option><option value="si">Solo finalizados</option><option value="no">Solo no finalizados</option></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Columnas a incluir</h3>
+          <div id="eCols" class="exp-cols"></div>
+        </div>
+      </div>
+      <div class="card exp-preview">
+        <div class="exp-top">
+          <div><h3>Vista previa</h3><p class="sub" id="eResumen"></p></div>
+          <button class="btn primary" type="button" id="btnXlsx">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+            Descargar Excel (.xlsx)
+          </button>
+        </div>
+        <div class="tabla-wrap"><table class="an-table" id="ePrev"></table></div>
+      </div>
+    </section>
+
+    <!-- 6 · ANÁLISIS -->
     <section id="analisis" aria-label="Análisis" hidden>
       <div class="an-bar">
         <div class="f"><label for="aDesde">Desde (ingreso)</label><input id="aDesde" type="date"></div>
@@ -464,6 +645,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </div>
   <form class="area" id="area2" novalidate>
     <div class="banner" id="presBanner"></div>
+    <div class="presCrono" id="presCrono" aria-label="Cronología del trabajo"></div>
 
     <div class="sec">Presupuesto</div>
     <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
@@ -471,16 +653,20 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="f"><label for="gMat">Materiales</label><div class="money"><span>$</span><input id="gMat" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gOtros">Otros costos</label><div class="money"><span>$</span><input id="gOtros" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gTotal">Presupuesto total</label><div class="money total"><span>$</span><input id="gTotal" type="text" inputmode="decimal" placeholder="Se calcula solo"></div></div>
+    <div class="f"><label for="gIngreso">Fecha de ingreso del presupuesto</label><input id="gIngreso" type="date"></div>
+    <div class="f"><label for="gAceptado">Fecha de aceptación</label><input id="gAceptado" type="date"></div>
     <div class="f"><label for="gPago">Forma de pago</label><input id="gPago" type="text" list="dlPago" autocomplete="off"></div>
-    <div class="f"><label for="gEnviado">Fecha de envío del presupuesto</label><input id="gEnviado" type="date"></div>
+    <div class="f"><label for="gEnviado">Fecha de envío al cliente</label><input id="gEnviado" type="date"></div>
     <div class="f full"><button class="btn small" type="button" id="btnPresCliente" style="align-self:flex-start">Ver presupuesto para el cliente</button></div>
 
     <div class="sec">Gestión de la tarea</div>
     <p class="aviso" id="avisoTarea" hidden>La tarea se puede asignar y ejecutar una vez que el presupuesto está <strong>aceptado</strong>.</p>
     <div class="f full"><span class="lbl" id="lblTarea">Estado de la tarea</span><div class="seg" role="radiogroup" aria-labelledby="lblTarea" id="segTarea"></div></div>
     <div class="f full"><label for="gResp">Quién realizará el trabajo</label><input id="gResp" type="text" list="dlResp" autocomplete="off"></div>
-    <div class="f"><label for="gInicio">Fecha prevista de inicio</label><input id="gInicio" type="date"></div>
-    <div class="f"><label for="gFin">Fecha de finalización</label><input id="gFin" type="date"></div>
+    <div class="f"><label for="gInicio">Fecha de ejecución de la tarea</label><input id="gInicio" type="date"></div>
+    <div class="f"><label for="gFinPrev">Fecha prevista de finalización</label><input id="gFinPrev" type="date"></div>
+    <div class="f"><label for="gFin">Fecha real de final de obra</label><input id="gFin" type="date"></div>
+    <div class="f"><span class="lbl">Previsto vs. real</span><p class="desvio" id="gDesvio">—</p></div>
     <div class="interno">
       <div class="interno-head">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -667,9 +853,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     document.body.dataset.mod=m;
     $("navM1").setAttribute("aria-current", m===1?"page":"false");
     $("navM2").setAttribute("aria-current", m===2?"page":"false");
-    $("navM3").setAttribute("aria-current", m===3?"page":"false");
-    $("analisis").hidden = m!==3;
-    $("btnCsv").hidden = m===3;
+    [3,4,5,6].forEach(n=>$("navM"+n).setAttribute("aria-current", m===n?"page":"false"));
+    $("listaUI").hidden = m>2;
+    $("cronologia").hidden = m!==3; $("gantt").hidden = m!==4; $("exportar").hidden = m!==5; $("analisis").hidden = m!==6;
     $("fOrigen").hidden = m!==1;
     $("fPres").hidden = $("fTarea").hidden = m!==2;
     $("fOrden").options[2].hidden = m!==2;
@@ -680,7 +866,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }
   $("navM1").onclick=()=>setMod(1);
   $("navM2").onclick=()=>setMod(2);
-  $("navM3").onclick=()=>setMod(3);
+  [3,4,5,6].forEach(n=>$("navM"+n).onclick=()=>setMod(n));
 
   function filtered(){
     const m=state.mod, q=$("q").value.trim().toLowerCase(), ord=$("fOrden").value, tile=TILES[m][state.quick[m]];
@@ -708,7 +894,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const r=state.rows;
     $("navM1s").textContent = `${r.length} solicitudes · ${r.filter(x=>diasDesde(x.fecha)<=7).length} en los últimos 7 días`;
     $("navM2s").textContent = `${r.filter(x=>x.presupuesto_estado==="aceptado").length} aceptados · ${r.filter(x=>["asignada","en_proceso"].includes(x.estado)).length} en ejecución`;
-    $("navM3s").textContent = `Tasa de aceptación: ${(()=>{ const a=r.filter(x=>x.presupuesto_estado==="aceptado").length, re=r.filter(x=>x.presupuesto_estado==="rechazado").length; return a+re?Math.round(a*100/(a+re))+"%":"—"; })()}`;
+    $("navM3s").textContent = `${r.filter(esAtrasado).length} con atraso`;
+    $("navM4s").textContent = `${r.filter(x=>x.inicio_previsto && ["asignada","en_proceso"].includes(x.estado)).length} trabajos en curso`;
+    $("navM6s").textContent = `Aceptación: ${(()=>{ const a=r.filter(x=>x.presupuesto_estado==="aceptado").length, re=r.filter(x=>x.presupuesto_estado==="rechazado").length; return a+re?Math.round(a*100/(a+re))+"%":"—"; })()}`;
   }
 
   function renderSummary(){
@@ -729,8 +917,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       return;
     }
     if(m===1){
-      $("list").innerHTML = `<div class="row head" role="presentation"><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Tipo</span><span>Origen</span>${ref?"<span>Referido por</span>":""}</div>`
+      $("list").innerHTML = `<div class="row head" role="presentation"><span>N°</span><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Tipo</span><span>Origen</span>${ref?"<span>Referido por</span>":""}</div>`
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
+          <span class="c-num">${esc(x.id)}</span>
           <span class="c-date">${fmtDate(x.fecha)}</span>
           <span class="c-who">${esc(x.solicitante)}${x.cliente_telefono?`<span class="c-sub">${esc(x.cliente_telefono)}</span>`:""}</span>
           <span class="c-where">${esc(x.lugar)}${x.detalle?`<span class="c-sub">${esc(x.detalle)}</span>`:""}</span>
@@ -760,7 +949,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     fill("dlReferido", state.yo && state.yo.ve_referido ? uniq("referido_por") : []);
   }
 
-  function render(){ renderNav(); if(state.mod===3){ renderAnalisis(); return; } renderSummary(); renderList(); }
+  function render(){ renderNav(); const m=state.mod; if(m===3) return renderCrono(); if(m===4) return renderGantt(); if(m===5) return renderExportCols(); if(m===6) return renderAnalisis(); renderSummary(); renderList(); }
 
   // ---- ÁREA 1 · Ficha de la solicitud ----
   const dlgSol=$("dlgSol"), dlgPres=$("dlgPres");
@@ -850,6 +1039,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     state.totalManual = rec.presupuesto_total!=null && (suma===null || Math.abs(suma-rec.presupuesto_total)>0.005);
     $("gPago").value = rec.forma_pago || "";
     $("gEnviado").value = rec.presupuesto_enviado || "";
+    $("gIngreso").value = rec.presupuesto_ingreso || "";
+    $("gAceptado").value = rec.presupuesto_aceptado_en || "";
+    $("gFinPrev").value = rec.fin_previsto || "";
     $("gResp").value = rec.responsable || "";
     $("gInicio").value = rec.inicio_previsto || "";
     $("gFin").value = rec.finalizado_en || "";
@@ -880,6 +1072,11 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }));
   $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; syncArea2(); });
   $("gEnviado").addEventListener("input",syncArea2);
+  ["gIngreso","gAceptado","gInicio","gFinPrev","gFin"].forEach(id=>$(id).addEventListener("input",syncArea2));
+  // Fechas que se completan solas (se pueden corregir a mano)
+  ["gMano","gMat","gOtros","gTotal"].forEach(id=>$(id).addEventListener("input",()=>{ if(!$("gIngreso").value && $(id).value.trim()){ $("gIngreso").value=today(); syncArea2(); } }));
+  $("segPres").addEventListener("change",()=>{ if(getRadio("pres")==="aceptado" && !$("gAceptado").value){ $("gAceptado").value=today(); syncArea2(); } });
+  $("segTarea").addEventListener("change",()=>{ if(getRadio("tarea")==="finalizada" && !$("gFin").value){ $("gFin").value=today(); syncArea2(); } });
   $("segPres").addEventListener("change",syncArea2);
   $("segTarea").addEventListener("change",syncArea2);
 
@@ -896,6 +1093,14 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     document.querySelectorAll('input[name="tarea"]').forEach(i=>{ i.disabled = !aceptado && !TAREA_SIN_ACEPTAR.includes(i.value); });
     if(!aceptado && !TAREA_SIN_ACEPTAR.includes(getRadio("tarea"))) setRadio("tarea","pendiente");
     $("avisoTarea").hidden = aceptado;
+    // Cronología y desvío con lo que está cargado en el formulario
+    if(state.pres){
+      const v={...state.pres, presupuesto_estado:p, estado:getRadio("tarea")||"pendiente", presupuesto_ingreso:$("gIngreso").value||null,
+        presupuesto_aceptado_en:$("gAceptado").value||null, inicio_previsto:$("gInicio").value||null, fin_previsto:$("gFinPrev").value||null, finalizado_en:$("gFin").value||null};
+      $("presCrono").innerHTML = cronoHTML(v);
+      const dv=desvio(v);
+      $("gDesvio").innerHTML = dv ? `<span class="dv dv-${dv.tipo}">${esc(dv.txt)}</span>` : (v.fin_previsto ? "Sin final de obra todavía" : "Cargá la fecha prevista para comparar");
+    }
   }
 
   function mostrarErr(id, e){ $(id).textContent=(e&&e.message)||"No se pudo guardar. Revisá la conexión y probá de nuevo."; $(id).hidden=false; }
@@ -905,6 +1110,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const nums={mano_obra:parseMonto($("gMano").value), materiales:parseMonto($("gMat").value), otros_costos:parseMonto($("gOtros").value), presupuesto_total:parseMonto($("gTotal").value)};
     if(Object.values(nums).some(Number.isNaN)){ mostrarErr("err2",{message:"Los importes tienen que ser números, por ejemplo 150000 o 150.000."}); return; }
     const body={...nums, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value,
+      presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim()};
     $("btnSave2").disabled=true;
@@ -1185,36 +1391,236 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
   // Tooltip de los gráficos
   document.addEventListener("pointermove",e=>{
     const t=e.target.closest && e.target.closest("[data-tip]"), tip=$("tip");
-    if(!t || $("analisis").hidden){ tip.hidden=true; return; }
+    if(!t){ tip.hidden=true; return; }
     tip.textContent=t.dataset.tip; tip.hidden=false;
     const x=Math.min(e.clientX+14, innerWidth-tip.offsetWidth-8), y=e.clientY+16+tip.offsetHeight>innerHeight ? e.clientY-tip.offsetHeight-10 : e.clientY+16;
     tip.style.left=x+"px"; tip.style.top=y+"px";
   });
 
+  // ---- Seguimiento: fechas, cronología y desvío previsto/real ----
+  const DIA = 864e5;
+  const diasEntre = (a,b) => Math.round((Date.parse(b)-Date.parse(a))/DIA);
+  const sumarDias = (iso,n) => { const d=new Date(Date.parse(iso)+n*DIA); return d.toISOString().slice(0,10); };
+  const fmtCorta = iso => iso ? iso.slice(8,10)+"/"+iso.slice(5,7) : "";
+
+  // Desvío entre la finalización prevista y la real (o atraso actual si todavía no terminó)
+  function desvio(x){
+    if(x.fin_previsto && x.finalizado_en){
+      const d=diasEntre(x.fin_previsto, x.finalizado_en);
+      return d>0 ? {tipo:"tarde", dias:d, txt:`Terminó ${d} ${d===1?"día":"días"} después de lo previsto`}
+           : d<0 ? {tipo:"antes", dias:-d, txt:`Terminó ${-d} ${d===-1?"día":"días"} antes de lo previsto`}
+           : {tipo:"a_tiempo", dias:0, txt:"Terminó en la fecha prevista"};
+    }
+    if(x.fin_previsto && !x.finalizado_en && !["finalizada","cancelada"].includes(x.estado) && x.fin_previsto<today()){
+      const d=diasEntre(x.fin_previsto, today());
+      return {tipo:"atrasado", dias:d, txt:`Atrasado ${d} ${d===1?"día":"días"}: debía terminar el ${fmtDate(x.fin_previsto)}`};
+    }
+    return null;
+  }
+  const esAtrasado = x => { const d=desvio(x); return !!d && (d.tipo==="atrasado" || d.tipo==="tarde"); };
+  const duracion = x => x.inicio_previsto ? diasEntre(x.inicio_previsto, x.finalizado_en || x.fin_previsto || x.inicio_previsto)+1 : null;
+
+  function cronoPasos(x){
+    const rech = x.presupuesto_estado==="rechazado";
+    return [
+      {k:"Ingreso de solicitud", f:x.fecha},
+      {k:"Ingreso del presupuesto", f:x.presupuesto_ingreso},
+      {k: rech ? "Presupuesto rechazado" : "Aceptación", f: rech ? null : x.presupuesto_aceptado_en, rech},
+      {k:"Ejecución de la tarea", f:x.inicio_previsto, cancel: x.estado==="cancelada"},
+      {k:"Final de obra", f:x.finalizado_en, prev:x.fin_previsto},
+    ];
+  }
+  function cronoHTML(x){
+    const pasos=cronoPasos(x), hoy=today();
+    let corte=false;
+    return `<ol class="crono">${pasos.map((p,i)=>{
+      if(p.rech) corte=true;
+      const fut = p.f && p.f>hoy;
+      const cls = p.rech ? "no" : (corte && i>2) ? "off" : p.f ? (fut?"prog":"ok") : "pend";
+      const ant = i>0 && pasos[i-1].f && p.f ? diasEntre(pasos[i-1].f, p.f) : null;
+      let extra = "";
+      if(i===4){
+        if(p.prev) extra += `<small>Previsto: ${fmtDate(p.prev)}</small>`;
+        const dv=desvio(x);
+        if(dv) extra += `<span class="dv dv-${dv.tipo}">${dv.tipo==="a_tiempo"?"A tiempo":dv.tipo==="antes"?`−${dv.dias} d`:`+${dv.dias} d`}</span>`;
+      }
+      return `<li class="paso ${cls}">
+        ${i>0?`<span class="lnk">${ant!==null&&ant>=0?`<b>${ant} d</b>`:""}</span>`:""}
+        <span class="pt"></span>
+        <span class="pk">${esc(p.k)}</span>
+        <span class="pf">${p.rech?"Rechazado":p.f?fmtDate(p.f)+(fut?" (programada)":""):"—"}</span>${extra}
+      </li>`;
+    }).join("")}</ol>`;
+  }
+
+  // ---- 3 · CRONOLOGÍA ----
+  function renderCrono(){
+    const q=$("cQ").value.trim().toLowerCase(), f=$("cFiltro").value;
+    const r=state.rows.filter(x=>{
+      if(q && ![x.solicitante,x.lugar,x.tipo,x.responsable].join(" ").toLowerCase().includes(q)) return false;
+      if(f==="curso") return ["asignada","en_proceso"].includes(x.estado);
+      if(f==="finalizados") return x.estado==="finalizada";
+      if(f==="atrasados") return esAtrasado(x);
+      if(f==="sin_pres") return x.presupuesto_estado!=="aceptado";
+      return true;
+    }).sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+    $("cCount").textContent=`${r.length} de ${state.rows.length}`;
+    $("cronoList").innerHTML = r.length ? r.map(x=>`<button class="crono-item" type="button" data-id="${esc(x.id)}">
+        <span class="ci-head"><span><span class="c-num">N° ${esc(x.id)}</span> <b>${esc(x.solicitante)}</b><span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${x.responsable?` · ${esc(x.responsable)}`:""}</span></span>
+        <span class="ci-pills"><span class="pill pr-${esc(x.presupuesto_estado)}">Presupuesto: ${PRES[x.presupuesto_estado]}</span><span class="pill ta-${esc(x.estado)}">Tarea: ${TAREA[x.estado]}</span></span></span>
+        ${cronoHTML(x)}
+      </button>`).join("") : `<div class="empty"><strong>Sin resultados</strong>Probá con otra búsqueda o filtro.</div>`;
+    $("cronoList").querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>openPres(porId(b.dataset.id)));
+  }
+  ["cQ","cFiltro"].forEach(id=>$(id).addEventListener("input",renderCrono));
+
+  // ---- 4 · DIAGRAMA DE GANTT ----
+  const ESTADO_COLOR = {pendiente:"var(--pend)", asignada:"var(--exec)", en_proceso:"var(--exec)", finalizada:"var(--done)", cancelada:"var(--wait)"};
+  function llenarSelect(sel, vals, todos){ const v=sel.value; sel.innerHTML=`<option value="">${todos}</option>`+vals.map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join(""); sel.value=v; }
+  function renderGantt(){
+    const uniq=k=>[...new Set(state.rows.map(x=>x[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
+    llenarSelect($("gResp"), uniq("responsable").map(v=>[v,v]), "Todo responsable");
+    llenarSelect($("gTipo"), uniq("tipo").map(v=>[v,v]), "Todo tipo");
+    if(!$("gEstado").options.length) llenarSelect($("gEstado"), [...Object.entries(TAREA), ["atrasados","Atrasados"]], "Todo estado");
+    const q=$("gQ").value.trim().toLowerCase(), fr=$("gResp").value, fe=$("gEstado").value, ft=$("gTipo").value, d0=$("gDesde").value, d1=$("gHasta").value;
+    const hoy=today();
+    const finDe = x => x.finalizado_en || ((["asignada","en_proceso"].includes(x.estado) && x.inicio_previsto<=hoy) ? (x.fin_previsto && x.fin_previsto>hoy ? x.fin_previsto : hoy) : (x.fin_previsto||x.inicio_previsto));
+    const conFecha = state.rows.filter(x=>x.inicio_previsto);
+    const r = conFecha.filter(x=>{
+      if(q && !String(x.solicitante).toLowerCase().includes(q)) return false;
+      if(fr && x.responsable!==fr) return false;
+      if(ft && x.tipo!==ft) return false;
+      if(fe==="atrasados" ? !esAtrasado(x) : (fe && x.estado!==fe)) return false;
+      const ini=x.inicio_previsto, fin=[finDe(x), x.fin_previsto].filter(Boolean).sort().pop();
+      if(d0 && fin<d0) return false;
+      if(d1 && ini>d1) return false;
+      return true;
+    }).sort((a,b)=>a.inicio_previsto.localeCompare(b.inicio_previsto));
+    const sinFecha = state.rows.filter(x=>!x.inicio_previsto && x.presupuesto_estado==="aceptado" && x.estado!=="cancelada");
+    $("ganttSinFecha").innerHTML = sinFecha.length ? `Aceptados sin fecha de ejecución (no aparecen en el Gantt): ${sinFecha.map(x=>`<button class="link-mod m2" type="button" data-id="${esc(x.id)}">N° ${esc(x.id)} ${esc(x.solicitante)}</button>`).join(", ")}` : "";
+    $("ganttSinFecha").querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>openPres(porId(b.dataset.id)));
+    if(!r.length){ $("ganttChart").innerHTML=`<div class="empty"><strong>Sin trabajos para mostrar</strong>Cargá la fecha de ejecución en el área 2 o cambiá los filtros.</div>`; return; }
+
+    // Rango del eje
+    const fechas=r.flatMap(x=>[x.inicio_previsto, x.fin_previsto, finDe(x)]).filter(Boolean).concat(hoy).sort();
+    const ini = d0 || sumarDias(fechas[0],-2), fin = d1 || sumarDias(fechas[fechas.length-1],3);
+    const total = Math.max(diasEntre(ini,fin),1);
+    const pos = iso => Math.min(100, Math.max(0, diasEntre(ini,iso)/total*100));
+    const paso = total>150 ? 30 : total>60 ? 14 : 7;
+    const ticks=[]; for(let i=Math.ceil(paso/2);i<=total-2;i+=paso) ticks.push(sumarDias(ini,i));
+    const hoyPos = hoy>=ini && hoy<=fin ? pos(hoy) : null;
+    const lineaHoy = hoyPos===null ? "" : `<span class="g-hoy" style="left:${hoyPos}%"></span>`;
+
+    $("ganttChart").innerHTML = `<div class="g-row g-axis"><span class="g-info">Trabajo · responsable · duración</span><span class="g-track">${ticks.map(t=>`<span class="g-tick" style="left:${pos(t)}%">${fmtCorta(t)}</span>`).join("")}${hoyPos===null?"":`<span class="g-hoy-lbl" style="left:${hoyPos}%">Hoy</span>`}</span></div>`
+      + r.map(x=>{
+        const a=pos(x.inicio_previsto), pf=x.fin_previsto?pos(sumarDias(x.fin_previsto,1)):null, real=finDe(x), rf=pos(sumarDias(real,1));
+        const dv=desvio(x), dur=duracion(x);
+        const lateIni = x.fin_previsto && real>x.fin_previsto ? pos(sumarDias(x.fin_previsto,1)) : null;
+        const tip = `N° ${x.id} · ${x.solicitante} — ${TAREA[x.estado]}. Ejecución ${fmtDate(x.inicio_previsto)}; fin previsto ${fmtDate(x.fin_previsto)}; fin real ${fmtDate(x.finalizado_en)}${dv?". "+dv.txt:""}`;
+        return `<button class="g-row" type="button" data-id="${esc(x.id)}">
+          <span class="g-info"><b><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}</b>
+            <span class="g-meta"><span class="pill ta-${esc(x.estado)}">${TAREA[x.estado]}</span>${esc(x.responsable||"Sin responsable")}${dur?` · ${dur} d`:""}${dv&&dv.tipo!=="a_tiempo"?` · <span class="dv dv-${dv.tipo}">${dv.tipo==="antes"?"−":"+"}${dv.dias} d</span>`:""}</span></span>
+          <span class="g-track" data-tip="${esc(tip)}">
+            ${pf!==null?`<span class="g-plan" style="left:${a}%;width:${Math.max(pf-a,.6)}%"></span>`:""}
+            <span class="g-real" style="left:${a}%;width:${Math.max((lateIni??rf)-a,.6)}%;background:${ESTADO_COLOR[x.estado]}"></span>
+            ${lateIni!==null?`<span class="g-late" style="left:${lateIni}%;width:${Math.max(rf-lateIni,.6)}%"></span>`:""}
+            ${pf!==null?`<span class="g-prev" style="left:${pf}%" title="Fin previsto"></span>`:""}
+            ${lineaHoy}
+          </span>
+        </button>`;
+      }).join("");
+    $("ganttChart").querySelectorAll(".g-row[data-id]").forEach(b=>b.onclick=()=>openPres(porId(b.dataset.id)));
+  }
+  ["gQ","gResp","gEstado","gTipo","gDesde","gHasta"].forEach(id=>$(id).addEventListener("input",renderGantt));
+
+  // ---- 5 · EXPORTAR A EXCEL ----
+  // Columnas disponibles. "Referido por" solo existe para usuarios con permiso (y el servidor no lo envía a los demás).
+  function columnasExport(){
+    const d = v => v ? {fecha:v} : null, n = v => v==null ? null : {num:v};
+    const grupos = [
+      ["Solicitud", [
+        ["id","ID de solicitud",x=>Number(x.id)],["fecha","Fecha de ingreso de solicitud",x=>d(x.fecha)],["cliente","Cliente",x=>x.solicitante],
+        ["tel","Teléfono",x=>x.cliente_telefono],["email","Email",x=>x.cliente_email],["lugar","Dirección",x=>x.lugar],
+        ["tipo","Tipo de trabajo",x=>x.tipo],["detalle","Detalle de la solicitud",x=>x.detalle],["origen","Origen de la consulta",x=>ORIGEN[x.origen]||""],
+      ].concat(state.yo && state.yo.ve_referido ? [["referido","Referido por (interno)",x=>x.referido_por]] : [])],
+      ["Presupuesto", [
+        ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
+        ["total","Presupuesto total",x=>n(x.presupuesto_total)],["mano","Mano de obra",x=>n(x.mano_obra)],["mat","Materiales",x=>n(x.materiales)],["otros","Otros costos",x=>n(x.otros_costos)],
+        ["pago","Forma de pago",x=>x.forma_pago],["p_est","Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],
+      ]],
+      ["Trabajo", [
+        ["ejec","Fecha de ejecución",x=>d(x.inicio_previsto)],["resp","Responsable del trabajo",x=>x.responsable],["t_est","Estado de la tarea",x=>TAREA[x.estado]||""],
+        ["fprev","Fecha prevista de finalización",x=>d(x.fin_previsto)],["freal","Fecha real de final de obra",x=>d(x.finalizado_en)],
+        ["desvio","Desvío (días)",x=>{ const v=desvio(x); return v ? {num: v.tipo==="antes"?-v.dias:v.dias} : null; }],
+        ["dur","Duración (días)",x=>n(duracion(x))],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>x.fotos.length],
+      ]],
+    ];
+    return grupos;
+  }
+  const colsElegidas = new Set(["id","fecha","cliente","tel","email","origen","referido","p_ing","total","mano","mat","pago","p_est","ejec","resp","t_est","fprev","freal","obs"]);
+  function renderExportCols(){
+    $("eCols").innerHTML = columnasExport().map(([g,cols])=>`<fieldset class="exp-grupo"><legend>${g} <button type="button" class="link-mod m1" data-todas="${g}">todas</button> · <button type="button" class="link-mod m1" data-ninguna="${g}">ninguna</button></legend>
+      ${cols.map(([k,l])=>`<label class="chk"><input type="checkbox" data-col="${k}"${colsElegidas.has(k)?" checked":""}> ${esc(l)}</label>`).join("")}</fieldset>`).join("");
+    $("eCols").querySelectorAll("[data-col]").forEach(c=>c.onchange=()=>{ c.checked?colsElegidas.add(c.dataset.col):colsElegidas.delete(c.dataset.col); renderExportPrev(); });
+    $("eCols").querySelectorAll("[data-todas],[data-ninguna]").forEach(b=>b.onclick=()=>{
+      const g=b.dataset.todas||b.dataset.ninguna, on=!!b.dataset.todas;
+      columnasExport().find(x=>x[0]===g)[1].forEach(([k])=>on?colsElegidas.add(k):colsElegidas.delete(k));
+      renderExportCols();
+    });
+    renderExportPrev();
+  }
+  function filasExport(){
+    const d0=$("eDesde").value, d1=$("eHasta").value, cl=$("eCliente").value.trim().toLowerCase(), rs=$("eResp").value, ps=$("ePres").value, ts=$("eTarea").value, fi=$("eFin").value;
+    return state.rows.filter(x=>(!d0||x.fecha>=d0)&&(!d1||x.fecha<=d1)&&(!cl||String(x.solicitante).toLowerCase().includes(cl))&&(!rs||x.responsable===rs)
+      &&(!ps||x.presupuesto_estado===ps)&&(!ts||x.estado===ts)&&(!fi||(fi==="si")===(x.estado==="finalizada")))
+      .sort((a,b)=>Number(a.id)-Number(b.id));
+  }
+  function colsExport(){ return columnasExport().flatMap(g=>g[1]).filter(([k])=>colsElegidas.has(k)); }
+  const celdaTexto = v => v==null ? "" : v.fecha ? fmtDate(v.fecha) : v.num!=null ? numFmt.format(v.num) : String(v);
+  function renderExportPrev(){
+    const uniq=k=>[...new Set(state.rows.map(x=>x[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
+    llenarSelect($("eResp"), uniq("responsable").map(v=>[v,v]), "Todos");
+    if(!$("ePres").options.length){ llenarSelect($("ePres"), Object.entries(PRES), "Todos"); llenarSelect($("eTarea"), Object.entries(TAREA), "Todos"); }
+    const filas=filasExport(), cols=colsExport();
+    $("eResumen").textContent = `${filas.length} ${filas.length===1?"fila":"filas"} · ${cols.length} columnas${state.yo&&!state.yo.ve_referido?" · “Referido por” no se incluye (dato interno)":""}`;
+    $("btnXlsx").disabled = !filas.length || !cols.length;
+    $("ePrev").innerHTML = cols.length ? `<thead><tr>${cols.map(c=>`<th>${esc(c[1])}</th>`).join("")}</tr></thead><tbody>${
+      filas.slice(0,6).map(x=>`<tr>${cols.map(c=>`<td>${esc(celdaTexto(c[2](x)))}</td>`).join("")}</tr>`).join("")}</tbody>`
+      + (filas.length>6?`<tfoot><tr><td colspan="${cols.length}" class="an-empty">… y ${filas.length-6} filas más en el archivo</td></tr></tfoot>`:"") : "";
+  }
+  ["eDesde","eHasta","eCliente","eResp","ePres","eTarea","eFin"].forEach(id=>$(id).addEventListener("input",renderExportPrev));
+
+  // SheetJS se carga solo cuando se descarga el primer Excel
+  function cargarXLSX(){
+    if(window.XLSX) return Promise.resolve(window.XLSX);
+    return new Promise((ok,mal)=>{ const s=document.createElement("script"); s.src="/vendor/xlsx.full.min.js";
+      s.onload=()=>ok(window.XLSX); s.onerror=()=>mal(new Error("No se pudo cargar el generador de Excel")); document.head.appendChild(s); });
+  }
+  function descargarLibro(XLSX, wb, nombre){ XLSX.writeFile(wb, nombre); }
+  $("btnXlsx").onclick=async()=>{
+    const filas=filasExport(), cols=colsExport();
+    $("btnXlsx").disabled=true;
+    try{
+      const XLSX=await cargarXLSX();
+      const aoa=[cols.map(c=>c[1])], fmts=[];
+      filas.forEach(x=>aoa.push(cols.map((c,j)=>{ const v=c[2](x); if(v==null) return null;
+        if(v.fecha){ const [y,m,d]=v.fecha.split("-").map(Number); fmts[j]="dd/mm/yyyy"; return new Date(y,m-1,d); }
+        if(v.num!=null){ fmts[j]=fmts[j]||"#,##0"; return v.num; } return v; })));
+      const ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true});
+      for(let i=1;i<aoa.length;i++) cols.forEach((c,j)=>{ const cell=ws[XLSX.utils.encode_cell({r:i,c:j})]; if(cell && fmts[j]) cell.z=fmts[j]; });
+      ws["!cols"]=cols.map((c,j)=>({wch:Math.min(45,Math.max(c[1].length, ...aoa.slice(1).map(r=>String(r[j]??"").length))+2)}));
+      ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:aoa.length-1,c:cols.length-1}})};
+      const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Solicitudes y trabajos");
+      descargarLibro(XLSX, wb, `urbania-360-${today()}.xlsx`);
+      toast(`Excel descargado: ${filas.length} filas`);
+    }catch(e){ toast(e.message||"No se pudo generar el Excel"); }
+    finally{ $("btnXlsx").disabled=false; }
+  };
+
   // ---- Filtros ----
   ["q","fOrigen","fPres","fTarea","fOrden"].forEach(id=>$(id).addEventListener("input",render));
   $("btnNew").onclick=()=>openSol(null);
 
-  // ---- Exportar planilla (CSV que abre en Excel) del área que se está viendo ----
-  $("btnCsv").onclick=()=>{
-    const r=filtered(), m=state.mod;
-    const cols = m===1
-      ? [["N°",x=>x.id],["Fecha de ingreso",x=>fmtDate(x.fecha)],["Origen",x=>ORIGEN[x.origen]||""],["Cliente",x=>x.solicitante],
-         ["Teléfono",x=>x.cliente_telefono],["Email",x=>x.cliente_email],["Dirección",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],["Solicitud",x=>x.detalle]]
-         .concat(state.yo.ve_referido ? [["Referido por (interno)",x=>x.referido_por]] : [])
-      : [["N°",x=>x.id],["Cliente",x=>x.solicitante],["Dirección",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],
-         ["Mano de obra",x=>x.mano_obra??""],["Materiales",x=>x.materiales??""],["Otros costos",x=>x.otros_costos??""],["Presupuesto total",x=>x.presupuesto_total??""],
-         ["Forma de pago",x=>x.forma_pago],["Envío del presupuesto",x=>x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):""],["Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],
-         ["Estado de la tarea",x=>TAREA[x.estado]||""],["Responsable",x=>x.responsable],["Inicio previsto",x=>x.inicio_previsto?fmtDate(x.inicio_previsto):""],
-         ["Finalización",x=>x.finalizado_en?fmtDate(x.finalizado_en):""],["Fotos",x=>x.fotos.length]];
-    const q=v=>{ v=String(v??""); return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-    const csv="﻿"+[cols.map(c=>q(c[0])).join(";"), ...r.map(x=>cols.map(c=>q(c[1](x))).join(";"))].join("\r\n");
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
-    a.download=`urbania-360-${m===1?"solicitudes":"presupuestos"}-${today()}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  };
 
   if(state.token) iniciar(); else $("login").hidden=false;
 })();

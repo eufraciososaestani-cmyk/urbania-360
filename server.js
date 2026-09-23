@@ -14,6 +14,8 @@ app.use(express.json());
 app.use('/api/auth', auth.router);
 app.use('/api', apiRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
+// Generador de Excel para la sección "Exportar" (se sirve desde el propio servidor)
+app.get('/vendor/xlsx.full.min.js', (req, res) => res.sendFile(require.resolve('xlsx/dist/xlsx.full.min.js')));
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 

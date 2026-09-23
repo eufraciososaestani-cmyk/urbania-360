@@ -73,6 +73,11 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS responsable         VARCHAR(200); 
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS inicio_previsto     DATE;
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS finalizado_en       DATE;
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS observaciones_internas TEXT;
+-- Cronología: fechas de seguimiento
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_ingreso    DATE;   -- ingreso del presupuesto
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_aceptado_en DATE;  -- aceptación del presupuesto
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS fin_previsto           DATE;   -- fecha prevista de finalización
+-- inicio_previsto = fecha de ejecución de la tarea · finalizado_en = fecha real de final de obra
 
 -- Fotos de cada trabajo (antes / durante / después), guardadas en la base
 CREATE TABLE IF NOT EXISTS fotos (

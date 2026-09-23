@@ -5,45 +5,55 @@ backend (Node/Express + PostgreSQL) + página web, con su propio login.
 
 ## Qué hace
 
-La app tiene dos áreas separadas, cada una con su propia pantalla, lista,
-indicadores y ficha. Desde una solicitud se pasa a su presupuesto (y
-vuelta) sin mezclar la información:
+Dos áreas de trabajo separadas (cada una con su pantalla, lista, indicadores
+y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
 
 **1 · Solicitud de pedido**
-- Fecha de ingreso, de dónde entra la consulta (WhatsApp, teléfono, web,
-  redes sociales, recomendación, otro) y tipo de trabajo
-- Detalle de lo que solicita el cliente
-- Datos del cliente / contacto (nombre, teléfono, email, dirección)
+- N° de solicitud, fecha de ingreso, datos del cliente / contacto, tipo y
+  detalle del trabajo solicitado
+- Origen de la consulta: WhatsApp, teléfono, página web, redes sociales,
+  recomendación, otro
 - **Referido por**: dato interno. Solo lo ven y modifican los usuarios con
   permiso; a los demás el servidor ni siquiera se lo envía. Nunca aparece
-  en el presupuesto para el cliente.
+  en el presupuesto para el cliente ni en exportaciones de usuarios sin
+  permiso.
 
-**2 · Presupuestos y trabajos** (el presupuesto se carga una vez creada la solicitud)
-- Mano de obra, materiales, otros costos y total (se calcula solo)
-- Forma de pago y fecha de envío del presupuesto
+**2 · Presupuesto y trabajo** (vinculada a la solicitud original)
+- Fecha de ingreso del presupuesto, fecha de envío y fecha de aceptación
+- Mano de obra, materiales, otros costos y total (se calcula solo), forma
+  de pago
 - Estado del presupuesto: pendiente, en preparación, enviado, aceptado,
   rechazado (aceptado/rechazado se destacan con color e ícono)
-- Gestión de la tarea: pendiente, asignada, en proceso, finalizada,
-  cancelada. Asignar o ejecutar requiere el presupuesto aceptado.
-- Quién realiza el trabajo, fecha prevista de inicio y de finalización
-- Observaciones internas
-- Fotos: antes, durante y después / finalizado
+- Ejecución (solo con presupuesto aceptado): fecha de ejecución, quién la
+  realiza, estado (pendiente, asignada, en proceso, finalizada, cancelada),
+  fecha prevista de finalización, fecha real de final de obra y
+  observaciones internas. Muestra el desvío entre la fecha prevista y la real.
+- Fechas automáticas (editables): ingreso del presupuesto al cargar
+  importes, aceptación al marcarlo aceptado y final de obra al finalizar
+- Fotos: antes, durante y después / trabajo finalizado
 - **Presupuesto para el cliente**: documento imprimible (o PDF) con solo
   los datos para el cliente
 
-**3 · Análisis**
-- Período por fecha de ingreso (desde / hasta, o últimos 30 días, 90 días,
-  este año, todo)
-- Indicadores: solicitudes, presupuestos enviados, tasa de aceptación,
-  monto aceptado, ticket promedio, días promedio hasta presupuestar y
-  trabajos finalizados
-- Gráficos: solicitudes por mes, embudo del pedido al trabajo terminado,
-  por origen, por tipo de trabajo y por responsable
-- Referidos (solo usuarios autorizados): solicitudes, aceptados, tasa y
-  monto aceptado por cada referido
+**3 · Cronología**: para cada solicitud, ingreso → presupuesto →
+aceptación → ejecución → final de obra, con los días entre etapas y el
+desvío previsto/real. Filtros: en curso, finalizados, atrasados, sin
+presupuesto aceptado.
 
-Además: resumen por estado, búsqueda y filtros, exportar a planilla (CSV)
-y administración de usuarios.
+**4 · Diagrama de Gantt**: cada trabajo como una barra desde la fecha de
+ejecución; planificado (hasta el fin previsto) vs. real, atraso marcado,
+línea de hoy, responsable, estado y duración. Filtros por cliente,
+responsable, estado (incluye "atrasados"), tipo y fechas. Tocando una fila
+se abre el trabajo.
+
+**5 · Exportar a Excel (.xlsx)**: filtros (fecha de ingreso, cliente,
+responsable, estado del presupuesto, estado de la tarea, trabajo
+finalizado), selección de columnas y vista previa. Las fechas salen como
+fechas de Excel y los importes como números. "Referido por" solo aparece
+para usuarios autorizados. El generador (SheetJS) lo sirve el propio
+servidor en `/vendor/xlsx.full.min.js`.
+
+**6 · Análisis**: indicadores y gráficos por período (solicitudes por mes,
+embudo, origen, tipo de trabajo, responsable y, solo con permiso, referidos).
 
 ## Usuarios y permisos
 
