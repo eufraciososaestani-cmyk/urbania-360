@@ -1,18 +1,46 @@
 # Urbania 360
 
-Libro de pedidos de mantenimiento y obra. Aplicación independiente:
+Gestión de solicitudes y trabajos de mantenimiento y obra. Aplicación independiente:
 backend (Node/Express + PostgreSQL) + página web, con su propio login.
 
 ## Qué hace
 
-- Carga de pedidos: fecha, quién lo pide, para dónde, tipo de trabajo,
-  observaciones y presupuesto
-- Presupuesto: aceptado / no aceptado / a confirmar
-- Estado de la tarea: pendiente / en ejecución / finalizada
-- Fotos de cada trabajo en tres etapas: antes, durante y después
-  (se achican a 2000 px antes de subirse y se guardan en la base)
-- Resumen con totales, búsqueda, filtros y orden
-- Exportar la planilla filtrada a CSV (abre en Excel)
+Cada solicitud tiene dos áreas separadas, cada una con su propio guardado:
+
+**1 · Solicitud de pedido**
+- Fecha de ingreso, de dónde entra la consulta (WhatsApp, teléfono, web,
+  redes sociales, recomendación, otro) y tipo de trabajo
+- Detalle de lo que solicita el cliente
+- Datos del cliente / contacto (nombre, teléfono, email, dirección)
+- **Referido por**: dato interno. Solo lo ven y modifican los usuarios con
+  permiso; a los demás el servidor ni siquiera se lo envía. Nunca aparece
+  en el presupuesto para el cliente.
+
+**2 · Presupuesto y trabajo** (se habilita una vez creada la solicitud)
+- Mano de obra, materiales, otros costos y total (se calcula solo)
+- Forma de pago y fecha de envío del presupuesto
+- Estado del presupuesto: pendiente, en preparación, enviado, aceptado,
+  rechazado (aceptado/rechazado se destacan con color e ícono)
+- Gestión de la tarea: pendiente, asignada, en proceso, finalizada,
+  cancelada. Asignar o ejecutar requiere el presupuesto aceptado.
+- Quién realiza el trabajo, fecha prevista de inicio y de finalización
+- Observaciones internas
+- Fotos: antes, durante y después / finalizado
+- **Presupuesto para el cliente**: documento imprimible (o PDF) con solo
+  los datos para el cliente
+
+Además: resumen por estado, búsqueda y filtros, exportar a planilla (CSV)
+y administración de usuarios.
+
+## Usuarios y permisos
+
+- **Administrador**: ve “Referido por” y gestiona usuarios (botón *Usuarios*).
+- **Empleado**: por defecto no ve “Referido por”. Un administrador puede
+  darle ese permiso con la casilla *Ve “Referido por”*.
+
+Los permisos se verifican en el servidor en cada pedido, así que un cambio
+se aplica al instante. El usuario creado con `SEED_ADMIN_*` o con
+`crear-usuario.js` es administrador.
 
 ## Puesta en marcha
 
@@ -50,10 +78,15 @@ Todas requieren `Authorization: Bearer <token>` (salvo el login).
 | Método | Ruta | Qué hace |
 | --- | --- | --- |
 | POST | `/api/auth/login` | Devuelve el token |
-| GET | `/api/trabajos` | Lista pedidos con sus fotos |
-| POST | `/api/trabajos` | Crea un pedido (`foto_ids` asocia fotos ya subidas) |
-| PUT | `/api/trabajos/:id` | Actualiza un pedido |
-| DELETE | `/api/trabajos/:id` | Elimina el pedido y sus fotos |
+| GET | `/api/auth/yo` | Datos y permisos del usuario logueado |
+| GET/POST | `/api/auth/usuarios` | Lista / crea usuarios (admin) |
+| PUT/DELETE | `/api/auth/usuarios/:id` | Cambia permisos o contraseña / elimina (admin) |
+| GET | `/api/trabajos` | Lista solicitudes con sus fotos (`referido_por` solo con permiso) |
+| POST | `/api/trabajos` | Crea una solicitud (área 1) |
+| PUT | `/api/trabajos/:id/solicitud` | Guarda el área 1 |
+| PUT | `/api/trabajos/:id/gestion` | Guarda el área 2 |
+| GET | `/api/trabajos/:id/presupuesto-cliente` | Datos del presupuesto para el cliente (sin datos internos) |
+| DELETE | `/api/trabajos/:id` | Elimina la solicitud y sus fotos |
 | POST | `/api/fotos?etapa=antes&trabajo_id=1` | Sube una foto (cuerpo binario de la imagen) |
 | GET | `/api/fotos/:id` | Devuelve la imagen (acepta también `?t=<token>`) |
 | DELETE | `/api/fotos/:id` | Quita una foto |

@@ -1,10 +1,14 @@
 -- =====================================================
 -- Urbania 360 - Schema PostgreSQL
--- Libro de pedidos de mantenimiento / obra, con fotos.
+-- Gestión de solicitudes y trabajos, con fotos.
 -- Se crea dentro del schema propio de la app (ver db.js).
+-- Es idempotente: se corre en cada arranque y también actualiza
+-- bases creadas con versiones anteriores.
 -- =====================================================
 
 -- Usuarios que pueden entrar a la app
+--   rol:         admin (gestiona usuarios) | empleado
+--   ve_referido: puede ver y modificar el dato interno "Referido por"
 CREATE TABLE IF NOT EXISTS usuarios (
     id              SERIAL PRIMARY KEY,
     nombre          VARCHAR(150) NOT NULL,
@@ -12,21 +16,63 @@ CREATE TABLE IF NOT EXISTS usuarios (
     password_hash   VARCHAR(255) NOT NULL,
     creado_en       TIMESTAMP NOT NULL DEFAULT NOW()
 );
+-- Los usuarios que ya existían antes de los permisos quedan como admin
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rol VARCHAR(20) NOT NULL DEFAULT 'admin';
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ve_referido BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE usuarios ALTER COLUMN rol SET DEFAULT 'empleado';
+ALTER TABLE usuarios ALTER COLUMN ve_referido SET DEFAULT FALSE;
 
--- Pedidos de trabajo
+-- Solicitudes / trabajos. Las columnas se agrupan en las dos áreas de la app.
 CREATE TABLE IF NOT EXISTS trabajos (
     id              SERIAL PRIMARY KEY,
-    fecha           DATE NOT NULL,
-    solicitante     VARCHAR(200) NOT NULL,           -- quién lo pide
-    lugar           VARCHAR(250) NOT NULL,           -- para dónde
+    fecha           DATE NOT NULL,                   -- fecha de ingreso
+    solicitante     VARCHAR(200) NOT NULL,           -- cliente / contacto
+    lugar           VARCHAR(250) NOT NULL,           -- dirección del trabajo
     tipo            VARCHAR(120) NOT NULL,           -- tipo de trabajo
-    observaciones   TEXT,
-    monto           NUMERIC(14,2),
-    presupuesto     VARCHAR(20) NOT NULL DEFAULT 'a_confirmar', -- aceptado, no_aceptado, a_confirmar
-    estado          VARCHAR(20) NOT NULL DEFAULT 'pendiente',   -- pendiente, en_ejecucion, finalizada
     creado_en       TIMESTAMP NOT NULL DEFAULT NOW(),
     actualizado_en  TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+-- Migración desde la primera versión (observaciones / presupuesto / monto)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = current_schema() AND table_name = 'trabajos' AND column_name = 'observaciones') THEN
+    ALTER TABLE trabajos RENAME COLUMN observaciones TO detalle;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = current_schema() AND table_name = 'trabajos' AND column_name = 'presupuesto') THEN
+    ALTER TABLE trabajos RENAME COLUMN presupuesto TO presupuesto_estado;
+    UPDATE trabajos SET presupuesto_estado = CASE presupuesto_estado
+      WHEN 'no_aceptado' THEN 'rechazado' WHEN 'a_confirmar' THEN 'pendiente' ELSE presupuesto_estado END;
+    UPDATE trabajos SET estado = 'en_proceso' WHERE estado = 'en_ejecucion';
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = current_schema() AND table_name = 'trabajos' AND column_name = 'monto') THEN
+    ALTER TABLE trabajos RENAME COLUMN monto TO presupuesto_total;
+  END IF;
+END $$;
+
+-- ÁREA 1 · SOLICITUD DE PEDIDO
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS detalle            TEXT;          -- qué solicita el cliente
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS origen             VARCHAR(30);   -- whatsapp, telefono, web, redes, recomendacion, otro
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS cliente_telefono   VARCHAR(60);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS cliente_email      VARCHAR(150);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS referido_por       VARCHAR(200);  -- INTERNO: solo usuarios con ve_referido
+
+-- ÁREA 2 · PRESUPUESTO Y TRABAJO
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_total   NUMERIC(14,2);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS mano_obra           NUMERIC(14,2);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS materiales          NUMERIC(14,2);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS otros_costos        NUMERIC(14,2);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS forma_pago          VARCHAR(250);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_enviado DATE;
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_estado  VARCHAR(20) NOT NULL DEFAULT 'pendiente'; -- pendiente, en_preparacion, enviado, aceptado, rechazado
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS estado              VARCHAR(20) NOT NULL DEFAULT 'pendiente'; -- pendiente, asignada, en_proceso, finalizada, cancelada
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS responsable         VARCHAR(200);  -- quién realiza el trabajo
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS inicio_previsto     DATE;
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS finalizado_en       DATE;
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS observaciones_internas TEXT;
 
 -- Fotos de cada trabajo (antes / durante / después), guardadas en la base
 CREATE TABLE IF NOT EXISTS fotos (

@@ -13,11 +13,12 @@
   --ink:#1B2529; --ink-2:#4D5A5E; --ink-3:#7A8589;
   --accent:#1E5A73; --accent-ink:#FFFFFF; --accent-soft:#DCE9EE;
   --pend:#9A6412; --pend-bg:#FBEFD9;
+  --prep:#6B4FA0; --prep-bg:#ECE6F6;
   --exec:#1F5FA8; --exec-bg:#DFEAF8;
   --done:#2A7249; --done-bg:#DCEFE3;
-  --ok:#2A7249; --ok-bg:#DCEFE3;
   --no:#A63B2E; --no-bg:#F7E0DC;
   --wait:#5E6A6E; --wait-bg:#E6E9E6;
+  --int:#8A5A00; --int-bg:#FFF6DD; --int-line:#E2C46E;
   --stripe:#F5C542;
   --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -31,11 +32,12 @@
     --ink:#E6ECEA; --ink-2:#AAB6B5; --ink-3:#7F8C8C;
     --accent:#6FB3CF; --accent-ink:#0E1A1F; --accent-soft:#1F3842;
     --pend:#E9B45C; --pend-bg:#3A2D17;
+    --prep:#B9A3E6; --prep-bg:#2C2540;
     --exec:#83B4EC; --exec-bg:#1C2E45;
     --done:#7CCB9A; --done-bg:#1A3325;
-    --ok:#7CCB9A; --ok-bg:#1A3325;
     --no:#EE9486; --no-bg:#402320;
     --wait:#A9B4B3; --wait-bg:#2A3436;
+    --int:#F0C868; --int-bg:#2E2712; --int-line:#6B5A26;
   }
 }
 *{box-sizing:border-box}
@@ -50,14 +52,18 @@ button,input,select,textarea{font:inherit;color:inherit}
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-block:28px 20px;border-bottom:2px solid var(--ink)}
 .brand{display:flex;flex-direction:column;gap:2px}
 .eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
-h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:6px 0 0;text-transform:uppercase;text-wrap:balance}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
+h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:6px 0 0;text-transform:uppercase}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.who{font-size:13px;color:var(--ink-2)}
+.who button{border:0;background:none;color:var(--accent);cursor:pointer;font-weight:600;padding:0 0 0 6px}
 .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);background:var(--surface);padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600;text-decoration:none}
 .btn:hover{border-color:var(--ink-2)}
+.btn:disabled{opacity:.55;cursor:default}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.primary:hover{filter:brightness(1.08)}
 .btn.danger{color:var(--no);border-color:var(--no)}
 .btn.ghost{background:transparent}
+.btn.small{padding:6px 10px;font-size:13px}
 .btn svg{width:16px;height:16px}
 
 /* Login */
@@ -68,14 +74,14 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 .login .err{color:var(--no);font-size:13.5px;min-height:1em}
 
 /* Summary */
-.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:20px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:20px}
 .tile{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:4px;cursor:pointer;border:0;text-align:left}
 .tile:hover{background:var(--surface-2)}
 .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--accent)}
 .tile .k{font:500 11px/1.2 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px}
 .tile .v{font:600 30px/1 var(--f-display);font-variant-numeric:tabular-nums}
 .tile .s{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
 
 /* Filters */
 .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-block:20px 12px}
@@ -87,102 +93,140 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 
 /* List */
 .list{background:var(--surface);border:1px solid var(--line)}
-.row{display:grid;grid-template-columns:96px minmax(120px,1.1fr) minmax(140px,1.3fr) minmax(110px,.9fr) 130px 128px 120px;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);cursor:pointer;background:transparent;width:100%;text-align:left;border-left:0;border-right:0;border-bottom:0}
+.row{display:grid;grid-template-columns:92px minmax(140px,1.2fr) minmax(160px,1.4fr) 110px 150px 120px;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);cursor:pointer;background:transparent;width:100%;text-align:left;border-left:0;border-right:0;border-bottom:0}
 .row:first-child{border-top:0}
 .row:hover{background:var(--surface-2)}
 .row.head{cursor:default;background:var(--surface-2);font:500 11px/1.2 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);padding-block:10px}
-.row.head:hover{background:var(--surface-2)}
 .c-date{font:500 13px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
-.c-who{font-weight:600}
+.c-who{font-weight:600;min-width:0}
+.c-sub{display:block;font-weight:400;font-size:13px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .c-where{color:var(--ink-2);min-width:0}
-.c-obs{display:block;font-size:13px;color:var(--ink-3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.c-money{font:500 14px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.c-origen{font-size:13.5px;color:var(--ink-2)}
+.c-pres{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.c-money{font:500 13.5px var(--f-mono);font-variant-numeric:tabular-nums}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
 .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.st-pendiente{color:var(--pend);background:var(--pend-bg)}
-.st-en_ejecucion{color:var(--exec);background:var(--exec-bg)}
-.st-finalizada{color:var(--done);background:var(--done-bg)}
-.pr-aceptado{color:var(--ok);background:var(--ok-bg)}
-.pr-no_aceptado{color:var(--no);background:var(--no-bg)}
-.pr-a_confirmar{color:var(--wait);background:var(--wait-bg)}
-.type{font-size:14px}
+.pr-pendiente,.ta-pendiente{color:var(--pend);background:var(--pend-bg)}
+.pr-en_preparacion{color:var(--prep);background:var(--prep-bg)}
+.pr-enviado,.ta-asignada{color:var(--exec);background:var(--exec-bg)}
+.ta-en_proceso{color:var(--exec);background:var(--exec-bg)}
+.pr-aceptado,.ta-finalizada{color:var(--done);background:var(--done-bg)}
+.pr-rechazado,.ta-cancelada{color:var(--no);background:var(--no-bg)}
+.pill.pr-aceptado::before{content:"✓";width:auto;height:auto;background:none;font-size:12px}
+.pill.pr-rechazado::before{content:"✕";width:auto;height:auto;background:none;font-size:11px}
+.foto-count{display:inline-flex;align-items:center;gap:4px;font:500 11.5px var(--f-mono);color:var(--ink-3);margin-left:6px;vertical-align:1px}
+.foto-count svg{width:13px;height:13px}
 .empty{padding:40px 16px;text-align:center;color:var(--ink-2)}
 .empty strong{display:block;font:600 22px var(--f-display);text-transform:uppercase;color:var(--ink);margin-bottom:4px}
 .status-line{font:500 12px var(--f-mono);color:var(--ink-3);margin-top:10px}
 
-@media (max-width:860px){
+@media (max-width:900px){
   .row.head{display:none}
-  .row{grid-template-columns:1fr auto;grid-template-areas:"who date" "where where" "type type" "pills money";gap:6px 12px;padding:14px 16px}
+  .row{grid-template-columns:1fr auto;grid-template-areas:"who date" "where where" "pres ta";gap:6px 12px;padding:14px 16px}
   .c-who{grid-area:who}.c-date{grid-area:date;text-align:right}.c-where{grid-area:where}
-  .type{grid-area:type;color:var(--ink-2)}
-  .pills{grid-area:pills;display:flex;flex-wrap:wrap;gap:6px}
-  .c-money{grid-area:money;align-self:end}
-  .cell-st,.cell-pr{display:contents}
+  .c-origen{display:none}
+  .c-pres{grid-area:pres;flex-direction:row;flex-wrap:wrap;align-items:center}
+  .c-ta{grid-area:ta;align-self:end}
 }
-@media (min-width:861px){ .pills{display:contents} }
 
 /* Dialog */
-dialog{border:0;padding:0;background:var(--surface);color:var(--ink);border-radius:10px;width:min(640px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-shadow:0 20px 60px rgba(0,0,0,.28)}
+dialog{border:0;padding:0;background:var(--surface);color:var(--ink);border-radius:10px;width:min(720px,calc(100vw - 24px));max-height:calc(100dvh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.28)}
 dialog::backdrop{background:rgba(16,24,27,.5)}
-.dlg-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:relative}
+.dlg-head{padding:16px 20px 0;border-bottom:1px solid var(--line);position:relative;background:var(--surface)}
 .dlg-head::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;border-radius:10px 10px 0 0;background:repeating-linear-gradient(-45deg,var(--stripe) 0 10px,var(--ink) 10px 20px)}
-.dlg-head h2{margin:4px 0 0;font:700 24px/1 var(--f-display);text-transform:uppercase}
+.dlg-title{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.dlg-head h2{margin:4px 0 0;font:700 24px/1.05 var(--f-display);text-transform:uppercase}
 .x{border:0;background:transparent;cursor:pointer;padding:6px;border-radius:6px;color:var(--ink-2)}
 .x svg{width:20px;height:20px}
-#frm{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tabs{display:flex;gap:4px;margin-top:14px;overflow-x:auto}
+.tab{border:1px solid transparent;border-bottom:0;background:transparent;padding:10px 14px;border-radius:8px 8px 0 0;cursor:pointer;font:600 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px;white-space:nowrap;margin-bottom:-1px}
+.tab .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;font:600 12px var(--f-mono)}
+.tab[aria-selected="true"]{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.tab:disabled{opacity:.45;cursor:not-allowed}
+.area{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;background:var(--surface-2)}
+.area-hint{grid-column:1/-1;margin:0;font-size:13px;color:var(--ink-2)}
+.sec{grid-column:1/-1;margin:6px 0 -4px;font:600 17px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+.sec::after{content:"";flex:1;border-top:1px solid var(--line)}
 .f{display:flex;flex-direction:column;gap:5px;min-width:0}
 .f.full{grid-column:1/-1}
 label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
-.f input,.f select,.f textarea{padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface-2);width:100%}
-.f textarea{min-height:90px;resize:vertical}
+.f input,.f select,.f textarea{padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);width:100%}
+.f textarea{min-height:84px;resize:vertical}
+.f input:disabled{opacity:.6}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg label{font:600 13.5px var(--f-body);letter-spacing:0;text-transform:none;padding:7px 12px;border:1px solid var(--line-strong);border-radius:999px;cursor:pointer;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
-.seg label.opt-pendiente{--c:var(--pend);--b:var(--pend-bg)}
-.seg label.opt-en_ejecucion{--c:var(--exec);--b:var(--exec-bg)}
-.seg label.opt-finalizada{--c:var(--done);--b:var(--done-bg)}
-.seg label.opt-aceptado{--c:var(--ok);--b:var(--ok-bg)}
-.seg label.opt-no_aceptado{--c:var(--no);--b:var(--no-bg)}
-.seg label.opt-a_confirmar{--c:var(--wait);--b:var(--wait-bg)}
+.seg label{font:600 13.5px var(--f-body);letter-spacing:0;text-transform:none;padding:7px 12px;border:1px solid var(--line-strong);border-radius:999px;cursor:pointer;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;background:var(--surface)}
+.seg label.o-pendiente{--c:var(--pend);--b:var(--pend-bg)}
+.seg label.o-en_preparacion{--c:var(--prep);--b:var(--prep-bg)}
+.seg label.o-enviado,.seg label.o-asignada,.seg label.o-en_proceso{--c:var(--exec);--b:var(--exec-bg)}
+.seg label.o-aceptado,.seg label.o-finalizada{--c:var(--done);--b:var(--done-bg)}
+.seg label.o-rechazado,.seg label.o-cancelada{--c:var(--no);--b:var(--no-bg)}
 .seg input:checked + label{color:var(--c);background:var(--b);border-color:var(--c)}
 .seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.seg input:disabled + label{opacity:.4;cursor:not-allowed}
 .money{position:relative}
 .money span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-family:var(--f-mono)}
 .money input{padding-left:26px;font-family:var(--f-mono)}
+.money.total input{font-weight:600}
+
+/* Datos internos */
+.interno{grid-column:1/-1;border:1.5px dashed var(--int-line);background:var(--int-bg);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.interno-head{display:flex;align-items:center;gap:8px;font:600 12px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--int)}
+.interno-head svg{width:15px;height:15px;flex:none}
+.interno-head small{font:500 12px var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink-2)}
+.interno .f input,.interno .f textarea{background:var(--surface)}
+
+/* Banner del presupuesto */
+.banner{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;border:1.5px solid currentColor;font-weight:600}
+.banner .big{font:700 22px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.banner .sub{font-weight:500;font-size:13.5px;color:var(--ink-2);margin-left:auto;text-align:right}
+.banner svg{width:26px;height:26px;flex:none}
+
+.aviso{grid-column:1/-1;margin:0;font-size:13.5px;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px}
 .dlg-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
-.dlg-foot .right{display:flex;gap:8px;margin-left:auto}
-.err{grid-column:1/-1;color:var(--no);font-size:13.5px}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:600;font-size:14px;z-index:10}
+.dlg-foot .right{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.err{grid-column:1/-1;color:var(--no);font-size:13.5px;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:600;font-size:14px;z-index:10;max-width:calc(100vw - 32px)}
+
 /* Fotos */
-.fotos{grid-column:1/-1;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
-.fotos-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
-.fotos-head .hint{font-size:12.5px;color:var(--ink-3)}
-.etapas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.etapa{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.etapas{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.etapa{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .etapa h3{margin:0;font:600 16px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center}
 .etapa h3 small{font:500 11px var(--f-mono);color:var(--ink-3)}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
-.thumb{position:relative;aspect-ratio:1;max-width:100%;border-radius:5px;overflow:hidden;background:var(--line);border:0;padding:0;cursor:zoom-in}
+.thumb{position:relative;aspect-ratio:1;border-radius:5px;overflow:hidden;background:var(--line);border:0;padding:0;cursor:zoom-in}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb .del{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(16,24,27,.72);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1}
 .thumb .del[data-armed="1"]{background:var(--no);width:auto;padding:0 7px;border-radius:11px;font:600 11px var(--f-body)}
 .thumb.loading{display:flex;align-items:center;justify-content:center;font:500 11px var(--f-mono);color:var(--ink-3);cursor:default}
-.add-foto{display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line-strong);border-radius:6px;padding:8px;font:600 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--accent);cursor:pointer;background:transparent;position:relative}
+.add-foto{display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line-strong);border-radius:6px;padding:8px;font:600 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--accent);cursor:pointer;position:relative}
 .add-foto:hover{border-color:var(--accent)}
 .add-foto input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
 .no-fotos{font-size:12.5px;color:var(--ink-3)}
-.fotos-err{font-size:13px;color:var(--no);margin:0}
-.foto-count{display:inline-flex;align-items:center;gap:4px;font:500 11.5px var(--f-mono);color:var(--ink-3);margin-left:6px;vertical-align:1px}
-.foto-count svg{width:13px;height:13px}
 #lightbox{width:min(1000px,calc(100vw - 24px));background:#0d1214;color:#fff}
 #lightbox::backdrop{background:rgba(5,8,9,.85)}
-.lb-body{position:relative;display:flex;flex-direction:column}
 .lb-body img{width:100%;max-height:calc(100dvh - 120px);object-fit:contain;display:block;background:#0d1214}
 .lb-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;font:500 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;flex-wrap:wrap}
 .lb-bar button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font:600 13px var(--f-body);text-transform:none;letter-spacing:0}
 .lb-nav{display:flex;gap:6px}
-@media (max-width:620px){ .etapas{grid-template-columns:1fr} }
-@media (max-width:520px){ #frm{grid-template-columns:1fr} }
+
+/* Usuarios */
+#dlgUsers .area{grid-template-columns:1fr}
+.users{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.user{display:grid;grid-template-columns:minmax(0,1fr) 130px 170px auto;gap:10px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+.user:first-child{border-top:0}
+.user .nm{font-weight:600;min-width:0}
+.user .nm small{display:block;font-weight:400;color:var(--ink-3);font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.user select{padding:6px 8px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface)}
+.chk{display:flex;align-items:center;gap:6px;font:500 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink)}
+.new-user{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){
+  .user{grid-template-columns:1fr 1fr}
+  .user .nm{grid-column:1/-1}
+  .etapas{grid-template-columns:1fr}
+  .area{grid-template-columns:1fr}
+  .new-user{grid-template-columns:1fr}
+}
 @media (prefers-reduced-motion:no-preference){ .row{transition:background .12s} }
 </style>
 </head>
@@ -191,17 +235,19 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <span class="eyebrow">Mantenimiento · Libro de obra</span>
+      <span class="eyebrow">Gestión de solicitudes y trabajos</span>
       <h1>Urbania 360</h1>
     </div>
     <div class="actions" id="actions" hidden>
+      <span class="who" id="who"></span>
+      <button class="btn ghost" id="btnUsers" type="button" hidden>Usuarios</button>
       <button class="btn ghost" id="btnCsv" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
         Exportar planilla
       </button>
       <button class="btn primary" id="btnNew" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Nuevo pedido
+        Nueva solicitud
       </button>
     </div>
   </header>
@@ -221,23 +267,14 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="filters">
       <div class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Buscar por cliente, dirección, tipo u observación…" aria-label="Buscar">
+        <input id="q" type="search" placeholder="Buscar por cliente, dirección, tipo, solicitud o responsable…" aria-label="Buscar">
       </div>
-      <select id="fEstado" aria-label="Estado de la tarea">
-        <option value="">Todos los estados</option>
-        <option value="pendiente">Pendiente</option>
-        <option value="en_ejecucion">En ejecución</option>
-        <option value="finalizada">Finalizada</option>
-      </select>
-      <select id="fPres" aria-label="Presupuesto">
-        <option value="">Todo presupuesto</option>
-        <option value="aceptado">Aceptado</option>
-        <option value="no_aceptado">No aceptado</option>
-        <option value="a_confirmar">A confirmar</option>
-      </select>
+      <select id="fOrigen" aria-label="Origen de la consulta"></select>
+      <select id="fPres" aria-label="Estado del presupuesto"></select>
+      <select id="fTarea" aria-label="Estado de la tarea"></select>
       <select id="fOrden" aria-label="Ordenar">
         <option value="fecha_desc">Más recientes</option>
-        <option value="fecha_asc">Más antiguos</option>
+        <option value="fecha_asc">Más antiguas</option>
         <option value="monto_desc">Mayor presupuesto</option>
       </select>
       <span class="count" id="count"></span>
@@ -248,46 +285,112 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </div>
 </div>
 
+<!-- Ficha de una solicitud: dos áreas separadas, cada una con su propio guardado -->
 <dialog id="dlg" aria-labelledby="dlgTitle">
   <div class="dlg-head">
-    <div><span class="eyebrow" id="dlgEyebrow">Pedido</span><h2 id="dlgTitle">Nuevo pedido</h2></div>
-    <button class="x" type="button" id="dlgClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="dlg-title">
+      <div><span class="eyebrow" id="dlgEyebrow">Nueva solicitud</span><h2 id="dlgTitle">Nueva solicitud</h2></div>
+      <button class="x" type="button" id="dlgClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" type="button" role="tab" id="tab1" aria-controls="area1" aria-selected="true"><span class="n">1</span>Solicitud de pedido</button>
+      <button class="tab" type="button" role="tab" id="tab2" aria-controls="area2" aria-selected="false"><span class="n">2</span>Presupuesto y trabajo</button>
+    </div>
   </div>
-  <form id="frm" novalidate>
-    <div class="f"><label for="fFecha">Fecha del pedido</label><input id="fFecha" type="date" required></div>
-    <div class="f"><label for="fQuien">Quién lo pide</label><input id="fQuien" type="text" placeholder="Nombre o consorcio" required autocomplete="off" list="dlQuien"></div>
-    <div class="f full"><label for="fDonde">Para dónde</label><input id="fDonde" type="text" placeholder="Dirección, unidad o edificio" required autocomplete="off" list="dlDonde"></div>
-    <div class="f full"><label for="fTipo">Tipo de trabajo</label><input id="fTipo" type="text" list="dlTipo" placeholder="Elegí o escribí uno nuevo" required autocomplete="off"></div>
-    <div class="f full"><label for="fObs">Observaciones</label><textarea id="fObs" placeholder="Qué se pidió, cómo se va a resolver, materiales, accesos…"></textarea></div>
-    <div class="f"><label for="fMonto">Presupuesto</label><div class="money"><span>$</span><input id="fMonto" type="text" inputmode="decimal" placeholder="0"></div></div>
-    <div class="f"><span class="lbl" id="lblPres">Presupuesto aceptado</span>
-      <div class="seg" role="radiogroup" aria-labelledby="lblPres">
-        <input type="radio" name="pres" id="p1" value="aceptado"><label for="p1" class="opt-aceptado">Aceptado</label>
-        <input type="radio" name="pres" id="p2" value="no_aceptado"><label for="p2" class="opt-no_aceptado">No aceptado</label>
-        <input type="radio" name="pres" id="p3" value="a_confirmar" checked><label for="p3" class="opt-a_confirmar">A confirmar</label>
+
+  <!-- ÁREA 1 · SOLICITUD DE PEDIDO -->
+  <form class="area" id="area1" role="tabpanel" aria-labelledby="tab1" novalidate>
+    <div class="sec">Consulta</div>
+    <div class="f"><label for="sFecha">Fecha de ingreso</label><input id="sFecha" type="date" required></div>
+    <div class="f"><label for="sOrigen">De dónde entra la consulta</label><select id="sOrigen"></select></div>
+    <div class="f full"><label for="sTipo">Tipo de trabajo</label><input id="sTipo" type="text" list="dlTipo" placeholder="Elegí o escribí uno nuevo" required autocomplete="off"></div>
+    <div class="f full"><label for="sDetalle">Solicitud de pedido</label><textarea id="sDetalle" placeholder="Qué solicita el cliente"></textarea></div>
+
+    <div class="sec">Cliente / contacto</div>
+    <div class="f full"><label for="sCliente">Nombre o razón social</label><input id="sCliente" type="text" placeholder="Nombre, consorcio o empresa" required autocomplete="off" list="dlCliente"></div>
+    <div class="f"><label for="sTel">Teléfono</label><input id="sTel" type="tel" autocomplete="off"></div>
+    <div class="f"><label for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="off"></div>
+    <div class="f full"><label for="sLugar">Dirección del trabajo</label><input id="sLugar" type="text" placeholder="Dirección, unidad o edificio" required autocomplete="off" list="dlLugar"></div>
+
+    <!-- Solo se muestra a usuarios con permiso; sin permiso el servidor ni envía el dato -->
+    <div class="interno" id="boxReferido" hidden>
+      <div class="interno-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Información interna de la empresa <small>· No visible para el cliente</small>
       </div>
+      <div class="f"><label for="sReferido">Referido por</label><input id="sReferido" type="text" placeholder="Persona, empleado, contacto o fuente que derivó la consulta" autocomplete="off" list="dlReferido"></div>
     </div>
-    <div class="f full"><span class="lbl" id="lblEst">Estado de la tarea</span>
-      <div class="seg" role="radiogroup" aria-labelledby="lblEst">
-        <input type="radio" name="est" id="e1" value="pendiente" checked><label for="e1" class="opt-pendiente">Pendiente</label>
-        <input type="radio" name="est" id="e2" value="en_ejecucion"><label for="e2" class="opt-en_ejecucion">En ejecución</label>
-        <input type="radio" name="est" id="e3" value="finalizada"><label for="e3" class="opt-finalizada">Finalizada</label>
-      </div>
-    </div>
-    <section class="fotos" aria-labelledby="lblFotos">
-      <div class="fotos-head"><span class="lbl" id="lblFotos">Fotos del trabajo</span><span class="hint">Cargá cómo estaba, el avance y cómo quedó.</span></div>
-      <div class="etapas" id="etapas"></div>
-      <p class="fotos-err" id="fotosErr" hidden></p>
-    </section>
-    <p class="err" id="frmErr" hidden></p>
+
+    <p class="err" id="err1" hidden></p>
     <div class="dlg-foot">
-      <div id="delWrap"><button class="btn danger" type="button" id="btnDel">Eliminar</button></div>
+      <div id="delWrap"><button class="btn danger" type="button" id="btnDel">Eliminar solicitud</button></div>
       <div class="right">
-        <button class="btn" type="button" id="btnCancel">Cancelar</button>
-        <button class="btn primary" type="submit" id="btnSave">Guardar pedido</button>
+        <button class="btn primary" type="submit" id="btnSave1">Guardar solicitud</button>
       </div>
     </div>
   </form>
+
+  <!-- ÁREA 2 · PRESUPUESTO Y TRABAJO -->
+  <form class="area" id="area2" role="tabpanel" aria-labelledby="tab2" novalidate hidden>
+    <div class="banner" id="presBanner"></div>
+
+    <div class="sec">Presupuesto</div>
+    <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
+    <div class="f"><label for="gMano">Mano de obra</label><div class="money"><span>$</span><input id="gMano" type="text" inputmode="decimal" placeholder="0"></div></div>
+    <div class="f"><label for="gMat">Materiales</label><div class="money"><span>$</span><input id="gMat" type="text" inputmode="decimal" placeholder="0"></div></div>
+    <div class="f"><label for="gOtros">Otros costos</label><div class="money"><span>$</span><input id="gOtros" type="text" inputmode="decimal" placeholder="0"></div></div>
+    <div class="f"><label for="gTotal">Presupuesto total</label><div class="money total"><span>$</span><input id="gTotal" type="text" inputmode="decimal" placeholder="Se calcula solo"></div></div>
+    <div class="f"><label for="gPago">Forma de pago</label><input id="gPago" type="text" list="dlPago" autocomplete="off"></div>
+    <div class="f"><label for="gEnviado">Fecha de envío del presupuesto</label><input id="gEnviado" type="date"></div>
+    <div class="f full"><button class="btn small" type="button" id="btnPresCliente" style="justify-self:start;align-self:flex-start">Ver presupuesto para el cliente</button></div>
+
+    <div class="sec">Gestión de la tarea</div>
+    <p class="aviso" id="avisoTarea" hidden>La tarea se puede asignar y ejecutar una vez que el presupuesto está <strong>aceptado</strong>.</p>
+    <div class="f full"><span class="lbl" id="lblTarea">Estado de la tarea</span><div class="seg" role="radiogroup" aria-labelledby="lblTarea" id="segTarea"></div></div>
+    <div class="f full"><label for="gResp">Quién realizará el trabajo</label><input id="gResp" type="text" list="dlResp" autocomplete="off"></div>
+    <div class="f"><label for="gInicio">Fecha prevista de inicio</label><input id="gInicio" type="date"></div>
+    <div class="f"><label for="gFin">Fecha de finalización</label><input id="gFin" type="date"></div>
+    <div class="interno">
+      <div class="interno-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Uso interno <small>· No aparece en el presupuesto para el cliente</small>
+      </div>
+      <div class="f"><label for="gObs">Observaciones internas</label><textarea id="gObs" placeholder="Accesos, materiales, coordinación, notas del equipo…"></textarea></div>
+    </div>
+
+    <p class="err" id="err2" hidden></p>
+    <div class="dlg-foot">
+      <div class="right"><button class="btn primary" type="submit" id="btnSave2">Guardar presupuesto y trabajo</button></div>
+    </div>
+
+    <div class="sec">Fotos del trabajo</div>
+    <p class="area-hint">Las fotos se guardan al instante.</p>
+    <div class="etapas" id="etapas"></div>
+    <p class="err" id="fotosErr" hidden></p>
+  </form>
+</dialog>
+
+<dialog id="dlgUsers" aria-labelledby="usersTitle">
+  <div class="dlg-head" style="padding-bottom:14px">
+    <div class="dlg-title">
+      <div><span class="eyebrow">Administración</span><h2 id="usersTitle">Usuarios</h2></div>
+      <button class="x" type="button" id="usersClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
+  <div class="area">
+    <p class="area-hint">Solo los usuarios con “Ve Referido por” pueden ver y modificar ese dato interno. Los administradores siempre lo ven y además gestionan usuarios.</p>
+    <div class="users" id="users"></div>
+    <div class="sec">Agregar usuario</div>
+    <form class="new-user" id="newUser" novalidate>
+      <div class="f"><label for="uNombre">Nombre</label><input id="uNombre" required autocomplete="off"></div>
+      <div class="f"><label for="uEmail">Email</label><input id="uEmail" type="email" required autocomplete="off"></div>
+      <div class="f"><label for="uPass">Contraseña (mín. 6)</label><input id="uPass" type="text" required autocomplete="new-password"></div>
+      <div class="f"><label for="uRol">Rol</label><select id="uRol"><option value="empleado">Empleado</option><option value="admin">Administrador</option></select></div>
+      <label class="chk"><input type="checkbox" id="uRef"> Puede ver “Referido por”</label>
+      <div style="display:flex;justify-content:flex-end"><button class="btn primary" type="submit">Agregar</button></div>
+      <p class="err" id="uErr" hidden></p>
+    </form>
+  </div>
 </dialog>
 
 <dialog id="lightbox" aria-label="Foto ampliada">
@@ -303,38 +406,57 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   <option value="Herrería"></option><option value="Carpintería"></option><option value="Durlock / cielorrasos"></option>
   <option value="Destapaciones"></option><option value="Aire acondicionado"></option><option value="Limpieza de obra"></option>
 </datalist>
-<datalist id="dlQuien"></datalist>
-<datalist id="dlDonde"></datalist>
+<datalist id="dlPago">
+  <option value="Efectivo"></option><option value="Transferencia"></option>
+  <option value="50% anticipo y 50% al finalizar"></option><option value="Tarjeta de crédito"></option>
+</datalist>
+<datalist id="dlCliente"></datalist>
+<datalist id="dlLugar"></datalist>
+<datalist id="dlReferido"></datalist>
+<datalist id="dlResp"></datalist>
 <div class="toast" id="toast" hidden></div>
 
 <script>
 (function(){
-  // Si el front se sirve desde el mismo backend (server.js), dejá esto tal cual.
-  const API_BASE = '/api';
-  const AUTH_BASE = '/api/auth';
+  const API = '/api';
   const REFRESCO_MS = 30000; // cada cuánto se recarga la lista para ver cambios de otros
 
-  const EST = {pendiente:"Pendiente", en_ejecucion:"En ejecución", finalizada:"Finalizada"};
-  const PRES = {aceptado:"Aceptado", no_aceptado:"No aceptado", a_confirmar:"A confirmar"};
-  const ETAPAS = [["antes","Antes"],["durante","Durante"],["despues","Después"]];
+  const ORIGEN = {whatsapp:"WhatsApp", telefono:"Teléfono", web:"Web", redes:"Redes sociales", recomendacion:"Recomendación", otro:"Otro"};
+  const PRES = {pendiente:"Pendiente", en_preparacion:"En preparación", enviado:"Enviado", aceptado:"Aceptado", rechazado:"Rechazado"};
+  const TAREA = {pendiente:"Pendiente", asignada:"Asignada", en_proceso:"En proceso", finalizada:"Finalizada", cancelada:"Cancelada"};
+  const TAREA_SIN_ACEPTAR = ["pendiente","cancelada"];
+  const ETAPAS = [["antes","Antes"],["durante","Durante"],["despues","Después / Finalizado"]];
   const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
   const $ = id => document.getElementById(id);
   const money = new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0});
-  const state = {rows:[], editing:null, loaded:false, fotos:[], pendingNew:[], saved:false,
-    uploading:{antes:0,durante:0,despues:0}, token:localStorage.getItem('urbania_token')};
+  const numFmt = new Intl.NumberFormat("es-AR");
+  const state = {rows:[], yo:null, rec:null, tab:1, fotos:[], uploading:{antes:0,durante:0,despues:0},
+    dirty1:false, dirty2:false, totalManual:false, token:localStorage.getItem('urbania_token')};
 
   function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function fmtDate(iso){ if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; }
   function today(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
   function parseMonto(s){ if(s==null) return null; s=String(s).trim(); if(!s) return null; s=s.replace(/\$/g,"").replace(/\s/g,"").replace(/\./g,"").replace(",","."); const n=Number(s); return isFinite(n)?n:NaN; }
-  function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2600); }
-  function fotoUrl(id){ return `${API_BASE}/fotos/${encodeURIComponent(id)}?t=${encodeURIComponent(state.token)}`; }
-  function normalizar(r){ return {...r, id:String(r.id), monto: r.monto==null ? null : Number(r.monto), fotos:r.fotos||[]}; }
+  function fmtMontoInput(n){ return n==null ? "" : numFmt.format(n); }
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2800); }
+  function fotoUrl(id){ return `${API}/fotos/${encodeURIComponent(id)}?t=${encodeURIComponent(state.token)}`; }
+  function options(sel, map, todos){ sel.innerHTML=(todos?`<option value="">${todos}</option>`:"")+Object.entries(map).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join(""); }
+  function seg(el, name, map){ el.innerHTML=Object.entries(map).map(([k,v],i)=>`<input type="radio" name="${name}" id="${name}${i}" value="${k}"><label for="${name}${i}" class="o-${k}">${esc(v)}</label>`).join(""); }
+  const getRadio = name => { const el=document.querySelector(`input[name="${name}"]:checked`); return el?el.value:null; };
+  const setRadio = (name,val) => { const el=document.querySelector(`input[name="${name}"][value="${val}"]`); if(el) el.checked=true; };
+
+  options($("fOrigen"), ORIGEN, "Todo origen");
+  options($("fPres"), PRES, "Todo presupuesto");
+  options($("fTarea"), TAREA, "Toda tarea");
+  options($("sOrigen"), ORIGEN, "Sin especificar");
+  seg($("segPres"), "pres", PRES);
+  seg($("segTarea"), "tarea", TAREA);
 
   // ---- API ----
   async function api(path, options={}){
-    const res = await fetch(API_BASE+path, {...options, headers:{
-      ...(options.body && !(options.body instanceof Blob) ? {'Content-Type':'application/json'} : {}),
+    const esJson = options.body && !(options.body instanceof Blob);
+    const res = await fetch(API+path, {...options, headers:{
+      ...(esJson ? {'Content-Type':'application/json'} : {}),
       'Authorization':'Bearer '+state.token, ...(options.headers||{})}});
     if(res.status===401){ salir(); throw {code:"auth", message:"Tu sesión venció. Volvé a ingresar."}; }
     if(res.status===204) return null;
@@ -343,17 +465,17 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     return data;
   }
 
-  // ---- Login ----
+  // ---- Sesión ----
   function salir(){
-    localStorage.removeItem('urbania_token'); state.token=null;
+    localStorage.removeItem('urbania_token'); state.token=null; state.yo=null;
     clearInterval(state.timer);
-    if($("dlg").open) $("dlg").close();
+    ["dlg","dlgUsers","lightbox"].forEach(id=>{ if($(id).open) $(id).close(); });
     $("app").hidden=true; $("actions").hidden=true; $("login").hidden=false;
   }
   $("login").addEventListener("submit", async e=>{
     e.preventDefault(); $("loginErr").textContent="";
     try{
-      const res = await fetch(AUTH_BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      const res = await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({email:$("loginEmail").value.trim(), password:$("loginPass").value})});
       const data = await res.json();
       if(!res.ok){ $("loginErr").textContent=data.error||"No se pudo iniciar sesión"; return; }
@@ -362,15 +484,23 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     }catch(err){ $("loginErr").textContent="Error de conexión con el servidor"; }
   });
 
+  async function iniciar(){
+    try{ state.yo = await api('/auth/yo'); }
+    catch(e){ if(e.code!=="auth") $("loginErr").textContent="No se pudo conectar con el servidor."; salir(); return; }
+    $("login").hidden=true; $("app").hidden=false; $("actions").hidden=false;
+    $("who").innerHTML=`${esc(state.yo.nombre)}<button type="button" id="btnSalir">Salir</button>`;
+    $("btnSalir").onclick=salir;
+    $("btnUsers").hidden = state.yo.rol!=="admin";
+    $("boxReferido").hidden = !state.yo.ve_referido;
+    render(); cargar();
+    clearInterval(state.timer);
+    state.timer = setInterval(()=>{ if(!$("dlg").open) cargar(); }, REFRESCO_MS);
+  }
+
   async function cargar(){
     try{
-      const rows = await api('/trabajos');
-      state.rows = rows.map(normalizar);
+      state.rows = (await api('/trabajos')).map(r=>({...r, id:String(r.id)}));
       state.loaded = true;
-      if(state.editing){
-        const u = state.rows.find(x=>x.id===state.editing.id);
-        if(u) state.editing = u;
-      }
       refreshDatalists(); render();
       $("statusLine").textContent = "Sincronizado · se actualiza solo cada 30 segundos";
     }catch(e){
@@ -378,24 +508,18 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     }
   }
 
-  function iniciar(){
-    $("login").hidden=true; $("app").hidden=false; $("actions").hidden=false;
-    render(); cargar();
-    clearInterval(state.timer);
-    state.timer = setInterval(()=>{ if(!$("dlg").open) cargar(); }, REFRESCO_MS);
-  }
-
   // ---- Lista ----
   function filtered(){
-    const q=$("q").value.trim().toLowerCase(), fe=$("fEstado").value, fp=$("fPres").value, ord=$("fOrden").value;
-    let r=state.rows.filter(x=>{
-      if(fe && x.estado!==fe) return false;
-      if(fp && x.presupuesto!==fp) return false;
-      if(q){ const hay=[x.solicitante,x.lugar,x.tipo,x.observaciones].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    const q=$("q").value.trim().toLowerCase(), fo=$("fOrigen").value, fp=$("fPres").value, ft=$("fTarea").value, ord=$("fOrden").value;
+    const r=state.rows.filter(x=>{
+      if(fo && x.origen!==fo) return false;
+      if(fp && x.presupuesto_estado!==fp) return false;
+      if(ft && x.estado!==ft) return false;
+      if(q){ const hay=[x.solicitante,x.lugar,x.tipo,x.detalle,x.responsable,x.referido_por].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
       return true;
     });
     r.sort((a,b)=>{
-      if(ord==="monto_desc") return (b.monto||0)-(a.monto||0);
+      if(ord==="monto_desc") return (b.presupuesto_total||0)-(a.presupuesto_total||0);
       const c=(a.fecha||"").localeCompare(b.fecha||"") || String(a.creado_en||"").localeCompare(String(b.creado_en||""));
       return ord==="fecha_asc"?c:-c;
     });
@@ -403,24 +527,26 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }
 
   function renderSummary(){
-    const r=state.rows, n=k=>r.filter(x=>x.estado===k).length;
-    const acept=r.filter(x=>x.presupuesto==="aceptado"), tot=acept.reduce((s,x)=>s+(x.monto||0),0);
-    const conf=r.filter(x=>x.presupuesto==="a_confirmar").length;
+    const r=state.rows, nP=k=>r.filter(x=>x.presupuesto_estado===k), nT=k=>r.filter(x=>x.estado===k).length;
+    const acept=nP("aceptado"), tot=acept.reduce((s,x)=>s+(x.presupuesto_total||0),0);
     const tiles=[
-      {k:"Total de pedidos", v:r.length, s:"Historial completo", f:null},
-      {k:"Pendientes", v:n("pendiente"), s:"Sin empezar", f:["est","pendiente"], c:"var(--pend)"},
-      {k:"En ejecución", v:n("en_ejecucion"), s:"En curso", f:["est","en_ejecucion"], c:"var(--exec)"},
-      {k:"Finalizadas", v:n("finalizada"), s:"Terminadas", f:["est","finalizada"], c:"var(--done)"},
-      {k:"Presupuestos aceptados", v:acept.length, s:money.format(tot)+(conf?` · ${conf} a confirmar`:""), f:["pres","aceptado"], c:"var(--ok)"},
+      {k:"Solicitudes", v:r.length, s:"Historial completo", f:null},
+      {k:"Presup. pendientes", v:nP("pendiente").length+nP("en_preparacion").length, s:`${nP("en_preparacion").length} en preparación`, f:["pres","pendiente"], c:"var(--pend)"},
+      {k:"Enviados", v:nP("enviado").length, s:"Esperando respuesta", f:["pres","enviado"], c:"var(--exec)"},
+      {k:"Aceptados", v:acept.length, s:money.format(tot), f:["pres","aceptado"], c:"var(--done)"},
+      {k:"Rechazados", v:nP("rechazado").length, s:"No aceptados", f:["pres","rechazado"], c:"var(--no)"},
+      {k:"En proceso", v:nT("en_proceso")+nT("asignada"), s:`${nT("asignada")} asignadas`, f:["tarea","en_proceso"], c:"var(--exec)"},
+      {k:"Finalizadas", v:nT("finalizada"), s:"Trabajos terminados", f:["tarea","finalizada"], c:"var(--done)"},
     ];
+    const sel = {pres:$("fPres"), tarea:$("fTarea")};
     $("summary").innerHTML=tiles.map((t,i)=>{
-      const on = t.f ? ((t.f[0]==="est"?$("fEstado").value:$("fPres").value)===t.f[1]) : (!$("fEstado").value && !$("fPres").value);
+      const on = t.f ? sel[t.f[0]].value===t.f[1] : (!$("fPres").value && !$("fTarea").value);
       return `<button class="tile" type="button" data-i="${i}" aria-pressed="${on}"><span class="k">${t.c?`<span class="dot" style="background:${t.c}"></span>`:""}${esc(t.k)}</span><span class="v">${t.v}</span><span class="s">${esc(t.s)}</span></button>`;
     }).join("");
     $("summary").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
       const t=tiles[+b.dataset.i];
-      $("fEstado").value=""; $("fPres").value="";
-      if(t.f){ (t.f[0]==="est"?$("fEstado"):$("fPres")).value=t.f[1]; }
+      $("fPres").value=""; $("fTarea").value="";
+      if(t.f) sel[t.f[0]].value=t.f[1];
       render();
     });
   }
@@ -428,83 +554,224 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function renderList(){
     const r=filtered();
     $("count").textContent = state.loaded ? `${r.length} de ${state.rows.length}` : "";
-    const head=`<div class="row head" role="presentation"><span>Fecha</span><span>Quién pide</span><span>Para dónde</span><span>Tipo</span><span>Presupuesto</span><span>Aprobación</span><span>Estado</span></div>`;
-    if(!state.loaded){ $("list").innerHTML=`<div class="empty">Cargando pedidos…</div>`; return; }
+    if(!state.loaded){ $("list").innerHTML=`<div class="empty">Cargando solicitudes…</div>`; return; }
     if(!r.length){
       $("list").innerHTML = state.rows.length
         ? `<div class="empty"><strong>Sin resultados</strong>Probá con otra búsqueda o quitá los filtros.</div>`
-        : `<div class="empty"><strong>Todavía no hay pedidos</strong>Cargá el primero con “Nuevo pedido”.</div>`;
+        : `<div class="empty"><strong>Todavía no hay solicitudes</strong>Cargá la primera con “Nueva solicitud”.</div>`;
       return;
     }
+    const head=`<div class="row head" role="presentation"><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Origen</span><span>Presupuesto</span><span>Tarea</span></div>`;
     $("list").innerHTML = head + r.map(x=>`
       <button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
         <span class="c-date">${fmtDate(x.fecha)}</span>
-        <span class="c-who">${esc(x.solicitante)}</span>
-        <span class="c-where">${esc(x.lugar)}${x.observaciones?`<span class="c-obs">${esc(x.observaciones)}</span>`:""}</span>
-        <span class="type">${esc(x.tipo)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span>
-        <span class="c-money">${x.monto!=null?money.format(x.monto):"—"}</span>
-        <span class="pills"><span class="cell-pr"><span class="pill pr-${esc(x.presupuesto)}">${PRES[x.presupuesto]||"—"}</span></span>
-        <span class="cell-st"><span class="pill st-${esc(x.estado)}">${EST[x.estado]||"—"}</span></span></span>
+        <span class="c-who">${esc(x.solicitante)}<span class="c-sub">${esc(x.tipo)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span></span>
+        <span class="c-where">${esc(x.lugar)}${x.detalle?`<span class="c-sub">${esc(x.detalle)}</span>`:""}</span>
+        <span class="c-origen">${esc(ORIGEN[x.origen]||"—")}</span>
+        <span class="c-pres"><span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span>${x.presupuesto_total!=null?`<span class="c-money">${money.format(x.presupuesto_total)}</span>`:""}</span>
+        <span class="c-ta"><span class="pill ta-${esc(x.estado)}">${TAREA[x.estado]||"—"}</span></span>
       </button>`).join("");
     $("list").querySelectorAll(".row[data-id]").forEach(b=>b.onclick=()=>openDlg(state.rows.find(x=>x.id===b.dataset.id)));
   }
 
   function refreshDatalists(){
     const uniq=k=>[...new Set(state.rows.map(x=>x[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
-    $("dlQuien").innerHTML=uniq("solicitante").map(v=>`<option value="${esc(v)}"></option>`).join("");
-    $("dlDonde").innerHTML=uniq("lugar").map(v=>`<option value="${esc(v)}"></option>`).join("");
+    const fill=(id,vals)=>$(id).innerHTML=vals.map(v=>`<option value="${esc(v)}"></option>`).join("");
+    fill("dlCliente", uniq("solicitante")); fill("dlLugar", uniq("lugar")); fill("dlResp", uniq("responsable"));
+    fill("dlReferido", state.yo && state.yo.ve_referido ? uniq("referido_por") : []);
   }
 
   function render(){ renderSummary(); renderList(); }
 
-  // ---- Diálogo ----
-  const dlg=$("dlg"), frm=$("frm");
-  function setRadio(name,val){ const el=frm.querySelector(`input[name="${name}"][value="${val}"]`); if(el) el.checked=true; }
-  function getRadio(name){ const el=frm.querySelector(`input[name="${name}"]:checked`); return el?el.value:null; }
-  function openDlg(rec){
-    state.editing = rec || null;
-    $("dlgTitle").textContent = rec ? "Editar pedido" : "Nuevo pedido";
-    $("dlgEyebrow").textContent = rec ? `Pedido del ${fmtDate(rec.fecha)}` : "Carga";
-    $("fFecha").value = rec?.fecha || today();
-    $("fQuien").value = rec?.solicitante || "";
-    $("fDonde").value = rec?.lugar || "";
-    $("fTipo").value = rec?.tipo || "";
-    $("fObs").value = rec?.observaciones || "";
-    $("fMonto").value = rec?.monto!=null ? new Intl.NumberFormat("es-AR").format(rec.monto) : "";
-    setRadio("pres", rec?.presupuesto || "a_confirmar");
-    setRadio("est", rec?.estado || "pendiente");
-    $("delWrap").hidden = !rec;
-    resetDel(); $("frmErr").hidden=true; fotosErr("");
-    state.fotos = rec ? rec.fotos.slice() : [];
-    state.pendingNew = []; state.saved = false; state.uploading={antes:0,durante:0,despues:0};
-    renderFotos();
-    dlg.showModal();
-    if(!rec) setTimeout(()=>$("fQuien").focus(),30);
+  // ---- Ficha: dos áreas ----
+  const dlg=$("dlg");
+  function setTab(n){
+    if(n===2 && !state.rec) return;
+    state.tab=n;
+    $("tab1").setAttribute("aria-selected", n===1); $("tab2").setAttribute("aria-selected", n===2);
+    $("area1").hidden = n!==1; $("area2").hidden = n!==2;
   }
-  const busyUploading = () => Object.values(state.uploading).some(n=>n>0);
+  $("tab1").onclick=()=>setTab(1); $("tab2").onclick=()=>setTab(2);
+
+  function fillArea1(rec){
+    $("sFecha").value = rec?.fecha || today();
+    $("sOrigen").value = rec?.origen || "";
+    $("sTipo").value = rec?.tipo || "";
+    $("sDetalle").value = rec?.detalle || "";
+    $("sCliente").value = rec?.solicitante || "";
+    $("sTel").value = rec?.cliente_telefono || "";
+    $("sEmail").value = rec?.cliente_email || "";
+    $("sLugar").value = rec?.lugar || "";
+    $("sReferido").value = rec?.referido_por || "";
+    state.dirty1=false; $("err1").hidden=true;
+  }
+  function fillArea2(rec){
+    setRadio("pres", rec.presupuesto_estado || "pendiente");
+    setRadio("tarea", rec.estado || "pendiente");
+    $("gMano").value = fmtMontoInput(rec.mano_obra);
+    $("gMat").value = fmtMontoInput(rec.materiales);
+    $("gOtros").value = fmtMontoInput(rec.otros_costos);
+    $("gTotal").value = fmtMontoInput(rec.presupuesto_total);
+    const suma = sumaPartes();
+    state.totalManual = rec.presupuesto_total!=null && (suma===null || Math.abs(suma-rec.presupuesto_total)>0.005);
+    $("gPago").value = rec.forma_pago || "";
+    $("gEnviado").value = rec.presupuesto_enviado || "";
+    $("gResp").value = rec.responsable || "";
+    $("gInicio").value = rec.inicio_previsto || "";
+    $("gFin").value = rec.finalizado_en || "";
+    $("gObs").value = rec.observaciones_internas || "";
+    state.dirty2=false; $("err2").hidden=true;
+    state.fotos = (rec.fotos||[]).map(f=>({...f, id:String(f.id)}));
+    syncArea2(); renderFotos();
+  }
+  function setHeader(){
+    const rec=state.rec;
+    $("dlgTitle").textContent = rec ? rec.solicitante : "Nueva solicitud";
+    $("dlgEyebrow").textContent = rec ? `Solicitud N° ${rec.id} · ingresó el ${fmtDate(rec.fecha)}` : "Carga · área 1";
+    $("tab2").disabled = !rec;
+    $("tab2").title = rec ? "" : "Guardá primero la solicitud";
+    $("delWrap").hidden = !rec;
+    $("btnSave1").textContent = rec ? "Guardar solicitud" : "Crear solicitud";
+  }
+  function openDlg(rec){
+    state.rec = rec || null;
+    setHeader(); fillArea1(rec);
+    if(rec) fillArea2(rec);
+    resetDel(); setTab(1);
+    dlg.showModal();
+    if(!rec) setTimeout(()=>$("sTipo").focus(),30);
+  }
+
+  function hayCambios(){ return state.dirty1 || state.dirty2; }
+  const subiendo = () => Object.values(state.uploading).some(n=>n>0);
   function closeDlg(){
-    if(busyUploading() && !state.saved){ fotosErr("Esperá a que terminen de subir las fotos."); return; }
+    if(subiendo()){ fotosErr("Esperá a que terminen de subir las fotos."); return; }
+    if(hayCambios() && !confirm("Hay cambios sin guardar. ¿Cerrar igual?")) return;
     dlg.close();
   }
-  dlg.addEventListener("cancel",e=>{ if(busyUploading()){ e.preventDefault(); fotosErr("Esperá a que terminen de subir las fotos."); } });
-  dlg.addEventListener("close",()=>{
-    // Fotos subidas a un pedido nuevo que no se guardó: se borran para no ocupar espacio
-    if(!state.saved && state.pendingNew.length){
-      const ids=state.pendingNew.slice(); state.pendingNew=[];
-      ids.forEach(id=>api('/fotos/'+id,{method:'DELETE'}).catch(()=>{}));
-    }
-    // Si se tocaron fotos de un pedido existente, refrescamos la lista
-    const habiaEdicion = !!state.editing;
-    state.editing=null;
-    if(habiaEdicion) cargar();
+  dlg.addEventListener("cancel",e=>{ e.preventDefault(); closeDlg(); });
+  dlg.addEventListener("close",()=>{ state.rec=null; cargar(); });
+  $("dlgClose").onclick=closeDlg;
+  $("area1").addEventListener("input",()=>state.dirty1=true);
+  $("area2").addEventListener("input",e=>{ if(!e.target.closest(".etapas")) state.dirty2=true; });
+
+  // Área 2: totales, banner y estados permitidos
+  function sumaPartes(){
+    const ps=[$("gMano").value,$("gMat").value,$("gOtros").value].map(parseMonto).filter(v=>v!==null && !Number.isNaN(v));
+    return ps.length ? ps.reduce((a,b)=>a+b,0) : null;
+  }
+  ["gMano","gMat","gOtros"].forEach(id=>$(id).addEventListener("input",()=>{
+    if(!state.totalManual){ const s=sumaPartes(); $("gTotal").value = s===null ? "" : numFmt.format(s); }
+  }));
+  $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; });
+  $("segPres").addEventListener("change",syncArea2);
+  $("segTarea").addEventListener("change",syncArea2);
+
+  function syncArea2(){
+    const p=getRadio("pres")||"pendiente", aceptado=p==="aceptado";
+    const icon = aceptado ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>'
+      : p==="rechazado" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>';
+    const total=parseMonto($("gTotal").value);
+    const b=$("presBanner");
+    b.className=`banner pr-${p}`;
+    b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span></span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}</span>`;
+    // Sin presupuesto aceptado solo se permite Pendiente o Cancelada
+    document.querySelectorAll('input[name="tarea"]').forEach(i=>{ i.disabled = !aceptado && !TAREA_SIN_ACEPTAR.includes(i.value); });
+    if(!aceptado && !TAREA_SIN_ACEPTAR.includes(getRadio("tarea"))) setRadio("tarea","pendiente");
+    $("avisoTarea").hidden = aceptado;
+  }
+  $("gTotal").addEventListener("input",syncArea2);
+  $("gEnviado").addEventListener("input",syncArea2);
+
+  function mostrarErr(id, e){ $(id).textContent=(e&&e.message)||"No se pudo guardar. Revisá la conexión y probá de nuevo."; $(id).hidden=false; }
+
+  // Guardar área 1
+  $("area1").addEventListener("submit",async e=>{
+    e.preventDefault(); $("err1").hidden=true;
+    const body={
+      fecha:$("sFecha").value, origen:$("sOrigen").value, tipo:$("sTipo").value.trim(), detalle:$("sDetalle").value.trim(),
+      solicitante:$("sCliente").value.trim(), cliente_telefono:$("sTel").value.trim(), cliente_email:$("sEmail").value.trim(),
+      lugar:$("sLugar").value.trim(),
+    };
+    if(state.yo.ve_referido) body.referido_por=$("sReferido").value.trim();
+    const miss=[]; if(!body.fecha) miss.push("fecha de ingreso"); if(!body.tipo) miss.push("tipo de trabajo"); if(!body.solicitante) miss.push("cliente"); if(!body.lugar) miss.push("dirección del trabajo");
+    if(miss.length){ mostrarErr("err1",{message:"Falta completar: "+miss.join(", ")+"."}); return; }
+    $("btnSave1").disabled=true;
+    try{
+      const nuevo = !state.rec;
+      const rec = nuevo ? await api('/trabajos',{method:'POST',body:JSON.stringify(body)})
+                        : await api(`/trabajos/${state.rec.id}/solicitud`,{method:'PUT',body:JSON.stringify(body)});
+      state.rec = {...rec, id:String(rec.id)};
+      state.dirty1=false; setHeader();
+      if(nuevo){ fillArea2(state.rec); setTab(2); toast("Solicitud creada. Ya podés cargar el presupuesto."); }
+      else toast("Solicitud guardada");
+    }catch(err){ mostrarErr("err1",err); }
+    finally{ $("btnSave1").disabled=false; }
   });
 
+  // Guardar área 2
+  $("area2").addEventListener("submit",async e=>{
+    e.preventDefault(); $("err2").hidden=true;
+    const nums={mano_obra:parseMonto($("gMano").value), materiales:parseMonto($("gMat").value), otros_costos:parseMonto($("gOtros").value), presupuesto_total:parseMonto($("gTotal").value)};
+    if(Object.values(nums).some(Number.isNaN)){ mostrarErr("err2",{message:"Los importes tienen que ser números, por ejemplo 150000 o 150.000."}); return; }
+    const body={...nums, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value,
+      presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
+      inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim()};
+    $("btnSave2").disabled=true;
+    try{
+      const rec = await api(`/trabajos/${state.rec.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
+      state.rec = {...rec, id:String(rec.id)};
+      fillArea2(state.rec);
+      toast("Presupuesto y trabajo guardados");
+    }catch(err){ mostrarErr("err2",err); }
+    finally{ $("btnSave2").disabled=false; }
+  });
+
+  // Eliminar solicitud
+  function resetDel(){ const b=$("btnDel"); b.textContent="Eliminar solicitud"; b.dataset.armed=""; }
+  $("btnDel").onclick=async()=>{
+    const b=$("btnDel");
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Seguro? Tocá de nuevo para eliminar"; return; }
+    try{
+      await api('/trabajos/'+state.rec.id,{method:'DELETE'});
+      state.dirty1=state.dirty2=false; dlg.close(); toast("Solicitud eliminada");
+    }catch(e){ mostrarErr("err1",e); }
+  };
+
+  // ---- Presupuesto para el cliente (sin datos internos) ----
+  $("btnPresCliente").onclick=async()=>{
+    if(state.dirty2 && !confirm("Hay cambios sin guardar en el presupuesto. El documento va a mostrar lo último guardado. ¿Continuar?")) return;
+    const w = window.open("", "_blank");
+    if(!w){ toast("El navegador bloqueó la ventana. Permití ventanas emergentes."); return; }
+    try{
+      const p = await api(`/trabajos/${state.rec.id}/presupuesto-cliente`);
+      const fila=(k,v)=>v!=null?`<tr><td>${k}</td><td class="n">${money.format(v)}</td></tr>`:"";
+      w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Presupuesto N° ${p.numero} · Urbania 360</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;color:#1B2529;max-width:720px;margin:32px auto;padding:0 20px}
+h1{font-size:28px;margin:0;letter-spacing:.02em;text-transform:uppercase}.muted{color:#5E6A6E}
+.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1B2529;padding-bottom:12px;margin-bottom:20px}
+dl{display:grid;grid-template-columns:160px 1fr;gap:6px 12px;margin:0 0 20px}dt{color:#5E6A6E}dd{margin:0}
+table{width:100%;border-collapse:collapse;margin:8px 0 20px}td{padding:8px 0;border-bottom:1px solid #D5D9D2}.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.t td{font-weight:700;font-size:18px;border-bottom:0;border-top:2px solid #1B2529}
+.print{margin-top:24px}@media print{.print{display:none}}</style></head><body>
+<div class="head"><div><h1>Urbania 360</h1><div class="muted">Presupuesto</div></div><div class="muted">N° ${p.numero}<br>${fmtDate(p.presupuesto_enviado||today())}</div></div>
+<dl><dt>Cliente</dt><dd>${esc(p.cliente)}</dd><dt>Dirección</dt><dd>${esc(p.lugar)}</dd><dt>Trabajo</dt><dd>${esc(p.tipo)}</dd>
+${p.detalle?`<dt>Detalle</dt><dd>${esc(p.detalle).replace(/\n/g,"<br>")}</dd>`:""}</dl>
+<table>${fila("Mano de obra",p.mano_obra)}${fila("Materiales",p.materiales)}${fila("Otros costos",p.otros_costos)}
+<tr class="t"><td>Total</td><td class="n">${p.presupuesto_total!=null?money.format(p.presupuesto_total):"A definir"}</td></tr></table>
+${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
+<button class="print" onclick="print()">Imprimir / guardar PDF</button></body></html>`);
+      w.document.close();
+    }catch(e){ w.close(); toast(e.message||"No se pudo armar el presupuesto"); }
+  };
+
   // ---- Fotos ----
-  function fotosErr(msg){ const el=$("fotosErr"); el.textContent=msg; el.hidden=!msg; }
+  function fotosErr(msg){ $("fotosErr").textContent=msg; $("fotosErr").hidden=!msg; }
   function renderFotos(){
     $("etapas").innerHTML = ETAPAS.map(([k,label])=>{
       const fs=state.fotos.filter(f=>f.etapa===k), n=state.uploading[k]||0;
-      const thumbs = fs.map(f=>`<div class="thumb" role="button" tabindex="0" data-view="${esc(f.id)}"><img src="${fotoUrl(f.id)}" alt="Foto ${label.toLowerCase()}" loading="lazy"><button type="button" class="del" data-del="${esc(f.id)}" aria-label="Quitar foto">×</button></div>`).join("")
+      const thumbs = fs.map(f=>`<div class="thumb" role="button" tabindex="0" data-view="${esc(f.id)}"><img src="${fotoUrl(f.id)}" alt="Foto ${esc(label.toLowerCase())}" loading="lazy"><button type="button" class="del" data-del="${esc(f.id)}" aria-label="Quitar foto">×</button></div>`).join("")
         + Array.from({length:n},()=>`<div class="thumb loading">Subiendo…</div>`).join("");
       return `<div class="etapa"><h3>${label}<small>${fs.length||""}</small></h3>
         ${(fs.length||n)?`<div class="thumbs">${thumbs}</div>`:`<span class="no-fotos">Sin fotos</span>`}
@@ -524,7 +791,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const OK=["image/jpeg","image/png","image/webp","image/gif"];
     try{
       const bmp = await createImageBitmap(file);
-      const max=2000, s=Math.min(1, max/Math.max(bmp.width,bmp.height));
+      const s=Math.min(1, 2000/Math.max(bmp.width,bmp.height));
       const c=document.createElement("canvas"); c.width=Math.round(bmp.width*s); c.height=Math.round(bmp.height*s);
       c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
       const blob = await new Promise(r=>c.toBlob(r,"image/jpeg",0.85));
@@ -536,20 +803,17 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
   let uploadChain=Promise.resolve();
   function addFotos(etapa, files){
-    if(!files.length) return;
+    if(!files.length || !state.rec) return;
     fotosErr("");
+    const trabajoId = state.rec.id;
     state.uploading[etapa]+=files.length; renderFotos();
-    const trabajoId = state.editing ? state.editing.id : null;
     files.forEach(file=>{
       uploadChain = uploadChain.then(async()=>{
         try{
           const blob = await shrink(file);
           if(blob.size > 20*1024*1024) throw {code:"too_large"};
-          const qs = `?etapa=${etapa}` + (trabajoId ? `&trabajo_id=${trabajoId}` : "");
-          const res = await api('/fotos'+qs, {method:'POST', body:blob, headers:{'Content-Type':blob.type||'image/jpeg'}});
-          const foto = {id:String(res.id), etapa:res.etapa, subida:res.subida};
-          state.fotos = [...state.fotos, foto];
-          if(!trabajoId) state.pendingNew.push(foto.id);
+          const res = await api(`/fotos?etapa=${etapa}&trabajo_id=${trabajoId}`, {method:'POST', body:blob, headers:{'Content-Type':blob.type||'image/jpeg'}});
+          if(state.rec && state.rec.id===trabajoId) state.fotos = [...state.fotos, {id:String(res.id), etapa:res.etapa, subida:res.subida}];
         }catch(e){
           const c=e&&e.code;
           fotosErr(c==="unsupported_type" ? `“${file.name}” no es un formato compatible. Usá fotos JPG o PNG.`
@@ -565,16 +829,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
   async function delFoto(btn){
     if(btn.dataset.armed!=="1"){ btn.dataset.armed="1"; btn.textContent="Quitar"; setTimeout(()=>{ if(btn.isConnected){ btn.dataset.armed=""; btn.textContent="×"; } },3000); return; }
-    const id=btn.dataset.del;
-    const prev=state.fotos;
+    const id=btn.dataset.del, prev=state.fotos;
     state.fotos = state.fotos.filter(f=>f.id!==id); renderFotos();
-    try{
-      await api('/fotos/'+id,{method:'DELETE'});
-      state.pendingNew = state.pendingNew.filter(x=>x!==id);
-    }catch(e){ state.fotos=prev; renderFotos(); fotosErr("No se pudo quitar la foto. Probá de nuevo."); }
+    try{ await api('/fotos/'+id,{method:'DELETE'}); }
+    catch(e){ state.fotos=prev; renderFotos(); fotosErr("No se pudo quitar la foto. Probá de nuevo."); }
   }
 
-  // ---- Visor de fotos ----
+  // Visor de fotos
   const lb=$("lightbox"); let lbIdx=0, lbList=[];
   function openLb(id){
     lbList = ETAPAS.flatMap(([k])=>state.fotos.filter(f=>f.etapa===k));
@@ -593,64 +854,67 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   $("lbClose").onclick=()=>lb.close();
   lb.addEventListener("click",e=>{ if(e.target===lb) lb.close(); });
   lb.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft") $("lbPrev").click(); if(e.key==="ArrowRight") $("lbNext").click(); });
-  $("dlgClose").onclick=closeDlg; $("btnCancel").onclick=closeDlg;
-  dlg.addEventListener("click",e=>{ if(e.target===dlg) closeDlg(); });
 
-  function resetDel(){ const b=$("btnDel"); b.textContent="Eliminar"; b.dataset.armed=""; }
-  $("btnDel").onclick=async()=>{
-    const b=$("btnDel");
-    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Seguro? Tocá de nuevo para eliminar"; return; }
-    if(!state.editing) return;
+  // ---- Usuarios (solo admin) ----
+  const dlgU=$("dlgUsers");
+  async function cargarUsuarios(){
     try{
-      await api('/trabajos/'+state.editing.id,{method:'DELETE'});
-      state.saved=true; closeDlg(); toast("Pedido eliminado");
-    }catch(e){ showErr(e); }
-  };
-
-  function showErr(e){
-    $("frmErr").textContent = (e&&e.message) || "No se pudo guardar. Revisá la conexión y probá de nuevo.";
-    $("frmErr").hidden=false;
+      const us = await api('/auth/usuarios');
+      $("users").innerHTML = us.map(u=>`<div class="user" data-id="${u.id}">
+        <span class="nm">${esc(u.nombre)}<small>${esc(u.email)}</small></span>
+        <select data-k="rol" aria-label="Rol de ${esc(u.nombre)}"><option value="empleado"${u.rol==="empleado"?" selected":""}>Empleado</option><option value="admin"${u.rol==="admin"?" selected":""}>Administrador</option></select>
+        <label class="chk"><input type="checkbox" data-k="ref"${u.ve_referido?" checked":""}${u.rol==="admin"?" disabled":""}> Ve “Referido por”</label>
+        ${u.id===state.yo.id?`<span class="who">Vos</span>`:`<button class="btn small danger" type="button" data-del>Quitar</button>`}
+      </div>`).join("");
+      $("users").querySelectorAll(".user").forEach(row=>{
+        const id=row.dataset.id, rol=row.querySelector('[data-k="rol"]'), ref=row.querySelector('[data-k="ref"]');
+        const guardar=async()=>{
+          try{ await api('/auth/usuarios/'+id,{method:'PUT',body:JSON.stringify({rol:rol.value, ve_referido:ref.checked})}); toast("Permisos actualizados"); }
+          catch(e){ toast(e.message); }
+          await cargarUsuarios();
+          if(String(id)===String(state.yo.id)) iniciar();
+        };
+        rol.onchange=guardar; ref.onchange=guardar;
+        const del=row.querySelector("[data-del]");
+        if(del) del.onclick=async()=>{
+          if(!del.dataset.armed){ del.dataset.armed="1"; del.textContent="¿Seguro?"; return; }
+          try{ await api('/auth/usuarios/'+id,{method:'DELETE'}); toast("Usuario eliminado"); }catch(e){ toast(e.message); }
+          cargarUsuarios();
+        };
+      });
+    }catch(e){ $("users").innerHTML=`<p class="err" style="padding:12px">${esc(e.message)}</p>`; }
   }
-
-  frm.addEventListener("submit",async e=>{
-    e.preventDefault();
-    const monto=parseMonto($("fMonto").value);
-    const rec={
-      fecha:$("fFecha").value, solicitante:$("fQuien").value.trim(), lugar:$("fDonde").value.trim(),
-      tipo:$("fTipo").value.trim(), observaciones:$("fObs").value.trim(),
-      monto: monto, presupuesto:getRadio("pres"), estado:getRadio("est")
-    };
-    const miss=[]; if(!rec.fecha) miss.push("fecha"); if(!rec.solicitante) miss.push("quién lo pide"); if(!rec.lugar) miss.push("para dónde"); if(!rec.tipo) miss.push("tipo de trabajo");
-    if(miss.length){ $("frmErr").textContent="Falta completar: "+miss.join(", ")+"."; $("frmErr").hidden=false; return; }
-    if(Number.isNaN(monto)){ $("frmErr").textContent="El presupuesto tiene que ser un número, por ejemplo 150000 o 150.000."; $("frmErr").hidden=false; return; }
-    $("btnSave").disabled=true;
+  $("btnUsers").onclick=()=>{ $("uErr").hidden=true; cargarUsuarios(); dlgU.showModal(); };
+  $("usersClose").onclick=()=>dlgU.close();
+  $("uRol").onchange=()=>{ const a=$("uRol").value==="admin"; $("uRef").checked=a||$("uRef").checked; $("uRef").disabled=a; };
+  $("newUser").addEventListener("submit",async e=>{
+    e.preventDefault(); $("uErr").hidden=true;
     try{
-      await uploadChain;
-      if(state.editing){
-        await api('/trabajos/'+state.editing.id,{method:'PUT', body:JSON.stringify(rec)});
-        toast("Cambios guardados");
-      }else{
-        await api('/trabajos',{method:'POST', body:JSON.stringify({...rec, foto_ids:state.pendingNew})});
-        toast("Pedido cargado");
-      }
-      state.saved=true; state.pendingNew=[];
-      closeDlg(); cargar();
-    }catch(err){ showErr(err); }
-    finally{ $("btnSave").disabled=false; }
+      await api('/auth/usuarios',{method:'POST',body:JSON.stringify({nombre:$("uNombre").value.trim(), email:$("uEmail").value.trim(),
+        password:$("uPass").value, rol:$("uRol").value, ve_referido:$("uRef").checked})});
+      $("newUser").reset(); $("uRef").disabled=false; toast("Usuario agregado"); cargarUsuarios();
+    }catch(err){ $("uErr").textContent=err.message; $("uErr").hidden=false; }
   });
 
-  ["q","fEstado","fPres","fOrden"].forEach(id=>$(id).addEventListener("input",render));
+  // ---- Filtros ----
+  ["q","fOrigen","fPres","fTarea","fOrden"].forEach(id=>$(id).addEventListener("input",render));
   $("btnNew").onclick=()=>openDlg(null);
 
-  // ---- Exportar planilla (CSV que abre en Excel) ----
+  // ---- Exportar planilla (CSV que abre en Excel). "Referido por" solo si el usuario tiene permiso ----
   $("btnCsv").onclick=()=>{
     const r=filtered();
-    const cols=[["Fecha del pedido",x=>fmtDate(x.fecha)],["Quién lo pide",x=>x.solicitante],["Para dónde",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],["Observaciones",x=>x.observaciones],["Presupuesto ($)",x=>x.monto??""],["Presupuesto aceptado",x=>PRES[x.presupuesto]||""],["Estado de la tarea",x=>EST[x.estado]||""],["Fotos",x=>x.fotos.length]];
+    const cols=[["N°",x=>x.id],["Fecha de ingreso",x=>fmtDate(x.fecha)],["Origen",x=>ORIGEN[x.origen]||""],["Cliente",x=>x.solicitante],
+      ["Teléfono",x=>x.cliente_telefono],["Email",x=>x.cliente_email],["Dirección",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],["Solicitud",x=>x.detalle]];
+    if(state.yo.ve_referido) cols.push(["Referido por (interno)",x=>x.referido_por]);
+    cols.push(["Mano de obra",x=>x.mano_obra??""],["Materiales",x=>x.materiales??""],["Otros costos",x=>x.otros_costos??""],["Presupuesto total",x=>x.presupuesto_total??""],
+      ["Forma de pago",x=>x.forma_pago],["Envío del presupuesto",x=>x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):""],["Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],
+      ["Estado de la tarea",x=>TAREA[x.estado]||""],["Responsable",x=>x.responsable],["Inicio previsto",x=>x.inicio_previsto?fmtDate(x.inicio_previsto):""],
+      ["Finalización",x=>x.finalizado_en?fmtDate(x.finalizado_en):""],["Fotos",x=>x.fotos.length]);
     const q=v=>{ v=String(v??""); return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
     const csv="﻿"+[cols.map(c=>q(c[0])).join(";"), ...r.map(x=>cols.map(c=>q(c[1](x))).join(";"))].join("\r\n");
     const a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
-    a.download=`urbania-360-pedidos-${today()}.csv`;
+    a.download=`urbania-360-solicitudes-${today()}.csv`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   };

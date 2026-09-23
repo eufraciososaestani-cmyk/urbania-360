@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000;
     await pool.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
     const { SEED_ADMIN_NOMBRE, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } = process.env;
     if (SEED_ADMIN_NOMBRE && SEED_ADMIN_EMAIL && SEED_ADMIN_PASSWORD) {
-      await auth.guardarUsuario(SEED_ADMIN_NOMBRE, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD);
+      await auth.guardarAdmin(SEED_ADMIN_NOMBRE, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD);
       console.log(`Usuario listo: ${SEED_ADMIN_EMAIL}`);
     }
   } catch (err) {
