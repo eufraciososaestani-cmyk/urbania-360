@@ -20,6 +20,8 @@
   --wait:#5E6A6E; --wait-bg:#E6E9E6;
   --int:#8A5A00; --int-bg:#FFF6DD; --int-line:#E2C46E;
   --stripe:#F5C542;
+  --a1:#1E5A73; --a1-soft:#DCE9EE;   /* Área 1 · Solicitudes */
+  --a2:#9A5B13; --a2-soft:#F6E7D2;   /* Área 2 · Presupuestos y trabajos */
   --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -38,6 +40,8 @@
     --no:#EE9486; --no-bg:#402320;
     --wait:#A9B4B3; --wait-bg:#2A3436;
     --int:#F0C868; --int-bg:#2E2712; --int-line:#6B5A26;
+    --a1:#6FB3CF; --a1-soft:#1F3842;
+    --a2:#E3A45A; --a2-soft:#3A2A17;
   }
 }
 *{box-sizing:border-box}
@@ -93,7 +97,12 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 
 /* List */
 .list{background:var(--surface);border:1px solid var(--line)}
-.row{display:grid;grid-template-columns:92px minmax(140px,1.2fr) minmax(160px,1.4fr) 110px 150px 120px;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);cursor:pointer;background:transparent;width:100%;text-align:left;border-left:0;border-right:0;border-bottom:0}
+.list.m1{--cols:92px minmax(150px,1.2fr) minmax(170px,1.5fr) 130px 120px}
+.list.m1.ref{--cols:92px minmax(150px,1.2fr) minmax(170px,1.5fr) 130px 120px minmax(120px,.9fr)}
+.list.m2{--cols:minmax(170px,1.4fr) 130px 130px 100px minmax(110px,.9fr) 120px}
+.c-ref{font-size:13.5px;color:var(--int);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-num{font:500 12px var(--f-mono);color:var(--ink-3)}
+.row{display:grid;grid-template-columns:var(--cols);gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);cursor:pointer;background:transparent;width:100%;text-align:left;border-left:0;border-right:0;border-bottom:0}
 .row:first-child{border-top:0}
 .row:hover{background:var(--surface-2)}
 .row.head{cursor:default;background:var(--surface-2);font:500 11px/1.2 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);padding-block:10px}
@@ -122,11 +131,11 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 
 @media (max-width:900px){
   .row.head{display:none}
-  .row{grid-template-columns:1fr auto;grid-template-areas:"who date" "where where" "pres ta";gap:6px 12px;padding:14px 16px}
-  .c-who{grid-area:who}.c-date{grid-area:date;text-align:right}.c-where{grid-area:where}
-  .c-origen{display:none}
-  .c-pres{grid-area:pres;flex-direction:row;flex-wrap:wrap;align-items:center}
-  .c-ta{grid-area:ta;align-self:end}
+  .row{grid-template-columns:1fr auto;gap:6px 12px;padding:14px 16px}
+  .row > *{grid-column:1/-1}
+  .row > .c-date{grid-column:2;grid-row:1;text-align:right}
+  .row > .c-who{grid-column:1;grid-row:1}
+  .c-pres{flex-direction:row;flex-wrap:wrap;align-items:center}
 }
 
 /* Dialog */
@@ -138,11 +147,32 @@ dialog::backdrop{background:rgba(16,24,27,.5)}
 .dlg-head h2{margin:4px 0 0;font:700 24px/1.05 var(--f-display);text-transform:uppercase}
 .x{border:0;background:transparent;cursor:pointer;padding:6px;border-radius:6px;color:var(--ink-2)}
 .x svg{width:20px;height:20px}
-.tabs{display:flex;gap:4px;margin-top:14px;overflow-x:auto}
-.tab{border:1px solid transparent;border-bottom:0;background:transparent;padding:10px 14px;border-radius:8px 8px 0 0;cursor:pointer;font:600 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px;white-space:nowrap;margin-bottom:-1px}
-.tab .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;font:600 12px var(--f-mono)}
-.tab[aria-selected="true"]{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
-.tab:disabled{opacity:.45;cursor:not-allowed}
+.dlg-head.m1::before{background:var(--a1)}
+.dlg-head.m2::before{background:repeating-linear-gradient(-45deg,var(--stripe) 0 10px,var(--ink) 10px 20px)}
+.mod-tag{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:4px}
+.mod-tag.m1{color:var(--a1);background:var(--a1-soft)}
+.mod-tag.m2{color:var(--a2);background:var(--a2-soft)}
+.dlg-sub{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 0 14px;font-size:13.5px;color:var(--ink-2)}
+.link-mod{border:0;background:none;padding:0;cursor:pointer;font:600 13.5px var(--f-body);text-decoration:underline;text-underline-offset:3px}
+.link-mod.m1{color:var(--a1)}
+.link-mod.m2{color:var(--a2)}
+.link-mod:disabled{color:var(--ink-3);text-decoration:none;cursor:default}
+#dlgPres .btn.primary{background:var(--a2);border-color:var(--a2);color:var(--accent-ink)}
+#dlgSol .btn.primary{background:var(--a1);border-color:var(--a1);color:var(--accent-ink)}
+
+/* Áreas (módulos) */
+.modulos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.modulo{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;color:var(--ink-2)}
+.modulo .num{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;font:700 18px var(--f-display);border:2px solid currentColor}
+.modulo .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.modulo .t b{font:700 20px/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
+.modulo .t span{font-size:13px}
+.modulo.m1 .num{color:var(--a1)} .modulo.m2 .num{color:var(--a2)}
+.modulo.m1[aria-current="page"]{border-color:var(--a1);box-shadow:inset 0 -4px 0 var(--a1);background:var(--a1-soft)}
+.modulo.m2[aria-current="page"]{border-color:var(--a2);box-shadow:inset 0 -4px 0 var(--a2);background:var(--a2-soft)}
+.modulo:hover{border-color:var(--ink-3)}
+body[data-mod="1"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a1)}
+body[data-mod="2"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a2)}
 .area{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;background:var(--surface-2)}
 .area-hint{grid-column:1/-1;margin:0;font-size:13px;color:var(--ink-2)}
 .sec{grid-column:1/-1;margin:6px 0 -4px;font:600 17px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
@@ -221,6 +251,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 .chk{display:flex;align-items:center;gap:6px;font:500 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink)}
 .new-user{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:640px){
+  .modulos{grid-template-columns:1fr}
   .user{grid-template-columns:1fr 1fr}
   .user .nm{grid-column:1/-1}
   .etapas{grid-template-columns:1fr}
@@ -262,12 +293,24 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </form>
 
   <div id="app" hidden>
+    <!-- Las dos áreas de la app: cada una tiene su propia pantalla, lista y ficha -->
+    <nav class="modulos" aria-label="Áreas">
+      <button class="modulo m1" type="button" id="navM1" aria-current="page">
+        <span class="num">1</span>
+        <span class="t"><b>Solicitudes de pedido</b><span id="navM1s">Consultas, clientes y origen</span></span>
+      </button>
+      <button class="modulo m2" type="button" id="navM2">
+        <span class="num">2</span>
+        <span class="t"><b>Presupuestos y trabajos</b><span id="navM2s">Presupuesto, aceptación, ejecución y fotos</span></span>
+      </button>
+    </nav>
+
     <section class="summary" id="summary" aria-label="Resumen"></section>
 
     <div class="filters">
       <div class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Buscar por cliente, dirección, tipo, solicitud o responsable…" aria-label="Buscar">
+        <input id="q" type="search" aria-label="Buscar">
       </div>
       <select id="fOrigen" aria-label="Origen de la consulta"></select>
       <select id="fPres" aria-label="Estado del presupuesto"></select>
@@ -285,21 +328,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </div>
 </div>
 
-<!-- Ficha de una solicitud: dos áreas separadas, cada una con su propio guardado -->
-<dialog id="dlg" aria-labelledby="dlgTitle">
-  <div class="dlg-head">
+<!-- ÁREA 1 · SOLICITUD DE PEDIDO -->
+<dialog id="dlgSol" aria-labelledby="solTitle">
+  <div class="dlg-head m1">
     <div class="dlg-title">
-      <div><span class="eyebrow" id="dlgEyebrow">Nueva solicitud</span><h2 id="dlgTitle">Nueva solicitud</h2></div>
-      <button class="x" type="button" id="dlgClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div><span class="mod-tag m1">Área 1 · Solicitud de pedido</span><h2 id="solTitle">Nueva solicitud</h2></div>
+      <button class="x" type="button" id="solClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="tabs" role="tablist">
-      <button class="tab" type="button" role="tab" id="tab1" aria-controls="area1" aria-selected="true"><span class="n">1</span>Solicitud de pedido</button>
-      <button class="tab" type="button" role="tab" id="tab2" aria-controls="area2" aria-selected="false"><span class="n">2</span>Presupuesto y trabajo</button>
-    </div>
+    <div class="dlg-sub"><span id="solSub">Carga de una consulta nueva</span><button class="link-mod m2" type="button" id="solIrPres">Ir a presupuesto y trabajo →</button></div>
   </div>
-
-  <!-- ÁREA 1 · SOLICITUD DE PEDIDO -->
-  <form class="area" id="area1" role="tabpanel" aria-labelledby="tab1" novalidate>
+  <form class="area" id="area1" novalidate>
     <div class="sec">Consulta</div>
     <div class="f"><label for="sFecha">Fecha de ingreso</label><input id="sFecha" type="date" required></div>
     <div class="f"><label for="sOrigen">De dónde entra la consulta</label><select id="sOrigen"></select></div>
@@ -329,9 +367,18 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       </div>
     </div>
   </form>
+</dialog>
 
-  <!-- ÁREA 2 · PRESUPUESTO Y TRABAJO -->
-  <form class="area" id="area2" role="tabpanel" aria-labelledby="tab2" novalidate hidden>
+<!-- ÁREA 2 · PRESUPUESTO Y TRABAJO -->
+<dialog id="dlgPres" aria-labelledby="presTitle">
+  <div class="dlg-head m2">
+    <div class="dlg-title">
+      <div><span class="mod-tag m2">Área 2 · Presupuesto y trabajo</span><h2 id="presTitle">Presupuesto</h2></div>
+      <button class="x" type="button" id="presClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="dlg-sub"><span id="presSub"></span><button class="link-mod m1" type="button" id="presIrSol">← Ver solicitud</button></div>
+  </div>
+  <form class="area" id="area2" novalidate>
     <div class="banner" id="presBanner"></div>
 
     <div class="sec">Presupuesto</div>
@@ -342,7 +389,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="f"><label for="gTotal">Presupuesto total</label><div class="money total"><span>$</span><input id="gTotal" type="text" inputmode="decimal" placeholder="Se calcula solo"></div></div>
     <div class="f"><label for="gPago">Forma de pago</label><input id="gPago" type="text" list="dlPago" autocomplete="off"></div>
     <div class="f"><label for="gEnviado">Fecha de envío del presupuesto</label><input id="gEnviado" type="date"></div>
-    <div class="f full"><button class="btn small" type="button" id="btnPresCliente" style="justify-self:start;align-self:flex-start">Ver presupuesto para el cliente</button></div>
+    <div class="f full"><button class="btn small" type="button" id="btnPresCliente" style="align-self:flex-start">Ver presupuesto para el cliente</button></div>
 
     <div class="sec">Gestión de la tarea</div>
     <p class="aviso" id="avisoTarea" hidden>La tarea se puede asignar y ejecutar una vez que el presupuesto está <strong>aceptado</strong>.</p>
@@ -430,12 +477,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const $ = id => document.getElementById(id);
   const money = new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0});
   const numFmt = new Intl.NumberFormat("es-AR");
-  const state = {rows:[], yo:null, rec:null, tab:1, fotos:[], uploading:{antes:0,durante:0,despues:0},
+  const state = {rows:[], yo:null, mod:1, quick:{1:0, 2:0}, sol:null, pres:null, fotos:[], uploading:{antes:0,durante:0,despues:0},
     dirty1:false, dirty2:false, totalManual:false, token:localStorage.getItem('urbania_token')};
 
   function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function fmtDate(iso){ if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; }
   function today(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+  function diasDesde(iso){ return iso ? Math.floor((Date.parse(today())-Date.parse(iso))/864e5) : 1e9; }
   function parseMonto(s){ if(s==null) return null; s=String(s).trim(); if(!s) return null; s=s.replace(/\$/g,"").replace(/\s/g,"").replace(/\./g,"").replace(",","."); const n=Number(s); return isFinite(n)?n:NaN; }
   function fmtMontoInput(n){ return n==null ? "" : numFmt.format(n); }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2800); }
@@ -444,6 +492,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function seg(el, name, map){ el.innerHTML=Object.entries(map).map(([k,v],i)=>`<input type="radio" name="${name}" id="${name}${i}" value="${k}"><label for="${name}${i}" class="o-${k}">${esc(v)}</label>`).join(""); }
   const getRadio = name => { const el=document.querySelector(`input[name="${name}"]:checked`); return el?el.value:null; };
   const setRadio = (name,val) => { const el=document.querySelector(`input[name="${name}"][value="${val}"]`); if(el) el.checked=true; };
+  const porId = id => state.rows.find(x=>x.id===String(id));
 
   options($("fOrigen"), ORIGEN, "Todo origen");
   options($("fPres"), PRES, "Todo presupuesto");
@@ -469,7 +518,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function salir(){
     localStorage.removeItem('urbania_token'); state.token=null; state.yo=null;
     clearInterval(state.timer);
-    ["dlg","dlgUsers","lightbox"].forEach(id=>{ if($(id).open) $(id).close(); });
+    ["dlgSol","dlgPres","dlgUsers","lightbox"].forEach(id=>{ if($(id) && $(id).open) $(id).close(); });
     $("app").hidden=true; $("actions").hidden=true; $("login").hidden=false;
   }
   $("login").addEventListener("submit", async e=>{
@@ -492,9 +541,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("btnSalir").onclick=salir;
     $("btnUsers").hidden = state.yo.rol!=="admin";
     $("boxReferido").hidden = !state.yo.ve_referido;
-    render(); cargar();
+    setMod(state.mod); cargar();
     clearInterval(state.timer);
-    state.timer = setInterval(()=>{ if(!$("dlg").open) cargar(); }, REFRESCO_MS);
+    state.timer = setInterval(()=>{ if(!$("dlgSol").open && !$("dlgPres").open) cargar(); }, REFRESCO_MS);
   }
 
   async function cargar(){
@@ -508,14 +557,54 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     }
   }
 
-  // ---- Lista ----
+  // ---- Áreas ----
+  // Cada área tiene sus propios indicadores, filtros y columnas.
+  const TILES = {
+    1: [
+      {k:"Solicitudes", s:()=>"Historial completo", f:()=>true},
+      {k:"Últimos 7 días", s:()=>"Consultas nuevas", f:x=>diasDesde(x.fecha)<=7, c:"var(--a1)"},
+      {k:"Sin presupuestar", s:()=>"Pendiente o en preparación", f:x=>["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
+      {k:"Por recomendación", s:()=>"Origen: recomendación", f:x=>x.origen==="recomendacion", c:"var(--ink-3)"},
+    ],
+    2: [
+      {k:"Presupuestos", s:()=>"Todos", f:()=>true},
+      {k:"Por preparar", s:r=>`${r.filter(x=>x.presupuesto_estado==="en_preparacion").length} en preparación`, f:x=>["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
+      {k:"Enviados", s:()=>"Esperando respuesta", f:x=>x.presupuesto_estado==="enviado", c:"var(--exec)"},
+      {k:"Aceptados", s:r=>money.format(r.filter(x=>x.presupuesto_estado==="aceptado").reduce((a,x)=>a+(x.presupuesto_total||0),0)), f:x=>x.presupuesto_estado==="aceptado", c:"var(--done)"},
+      {k:"Rechazados", s:()=>"No aceptados", f:x=>x.presupuesto_estado==="rechazado", c:"var(--no)"},
+      {k:"En ejecución", s:r=>`${r.filter(x=>x.estado==="asignada").length} asignadas`, f:x=>["asignada","en_proceso"].includes(x.estado), c:"var(--exec)"},
+      {k:"Finalizados", s:()=>"Trabajos terminados", f:x=>x.estado==="finalizada", c:"var(--done)"},
+    ],
+  };
+
+  function setMod(m){
+    state.mod=m;
+    document.body.dataset.mod=m;
+    $("navM1").setAttribute("aria-current", m===1?"page":"false");
+    $("navM2").setAttribute("aria-current", m===2?"page":"false");
+    $("fOrigen").hidden = m!==1;
+    $("fPres").hidden = $("fTarea").hidden = m!==2;
+    $("fOrden").options[2].hidden = m!==2;
+    if(m!==2 && $("fOrden").value==="monto_desc") $("fOrden").value="fecha_desc";
+    $("q").placeholder = m===1 ? "Buscar por cliente, teléfono, dirección, tipo o pedido…" : "Buscar por cliente, dirección, responsable o forma de pago…";
+    $("btnNew").hidden = m!==1;
+    render();
+  }
+  $("navM1").onclick=()=>setMod(1);
+  $("navM2").onclick=()=>setMod(2);
+
   function filtered(){
-    const q=$("q").value.trim().toLowerCase(), fo=$("fOrigen").value, fp=$("fPres").value, ft=$("fTarea").value, ord=$("fOrden").value;
+    const m=state.mod, q=$("q").value.trim().toLowerCase(), ord=$("fOrden").value, tile=TILES[m][state.quick[m]];
     const r=state.rows.filter(x=>{
-      if(fo && x.origen!==fo) return false;
-      if(fp && x.presupuesto_estado!==fp) return false;
-      if(ft && x.estado!==ft) return false;
-      if(q){ const hay=[x.solicitante,x.lugar,x.tipo,x.detalle,x.responsable,x.referido_por].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+      if(tile && !tile.f(x)) return false;
+      if(m===1){
+        if($("fOrigen").value && x.origen!==$("fOrigen").value) return false;
+        if(q && ![x.solicitante,x.cliente_telefono,x.cliente_email,x.lugar,x.tipo,x.detalle,x.referido_por].join(" ").toLowerCase().includes(q)) return false;
+      }else{
+        if($("fPres").value && x.presupuesto_estado!==$("fPres").value) return false;
+        if($("fTarea").value && x.estado!==$("fTarea").value) return false;
+        if(q && ![x.solicitante,x.lugar,x.tipo,x.responsable,x.forma_pago].join(" ").toLowerCase().includes(q)) return false;
+      }
       return true;
     });
     r.sort((a,b)=>{
@@ -526,52 +615,52 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     return r;
   }
 
+  function renderNav(){
+    const r=state.rows;
+    $("navM1s").textContent = `${r.length} solicitudes · ${r.filter(x=>diasDesde(x.fecha)<=7).length} en los últimos 7 días`;
+    $("navM2s").textContent = `${r.filter(x=>x.presupuesto_estado==="aceptado").length} aceptados · ${r.filter(x=>["asignada","en_proceso"].includes(x.estado)).length} en ejecución`;
+  }
+
   function renderSummary(){
-    const r=state.rows, nP=k=>r.filter(x=>x.presupuesto_estado===k), nT=k=>r.filter(x=>x.estado===k).length;
-    const acept=nP("aceptado"), tot=acept.reduce((s,x)=>s+(x.presupuesto_total||0),0);
-    const tiles=[
-      {k:"Solicitudes", v:r.length, s:"Historial completo", f:null},
-      {k:"Presup. pendientes", v:nP("pendiente").length+nP("en_preparacion").length, s:`${nP("en_preparacion").length} en preparación`, f:["pres","pendiente"], c:"var(--pend)"},
-      {k:"Enviados", v:nP("enviado").length, s:"Esperando respuesta", f:["pres","enviado"], c:"var(--exec)"},
-      {k:"Aceptados", v:acept.length, s:money.format(tot), f:["pres","aceptado"], c:"var(--done)"},
-      {k:"Rechazados", v:nP("rechazado").length, s:"No aceptados", f:["pres","rechazado"], c:"var(--no)"},
-      {k:"En proceso", v:nT("en_proceso")+nT("asignada"), s:`${nT("asignada")} asignadas`, f:["tarea","en_proceso"], c:"var(--exec)"},
-      {k:"Finalizadas", v:nT("finalizada"), s:"Trabajos terminados", f:["tarea","finalizada"], c:"var(--done)"},
-    ];
-    const sel = {pres:$("fPres"), tarea:$("fTarea")};
-    $("summary").innerHTML=tiles.map((t,i)=>{
-      const on = t.f ? sel[t.f[0]].value===t.f[1] : (!$("fPres").value && !$("fTarea").value);
-      return `<button class="tile" type="button" data-i="${i}" aria-pressed="${on}"><span class="k">${t.c?`<span class="dot" style="background:${t.c}"></span>`:""}${esc(t.k)}</span><span class="v">${t.v}</span><span class="s">${esc(t.s)}</span></button>`;
-    }).join("");
-    $("summary").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
-      const t=tiles[+b.dataset.i];
-      $("fPres").value=""; $("fTarea").value="";
-      if(t.f) sel[t.f[0]].value=t.f[1];
-      render();
-    });
+    const m=state.mod, r=state.rows;
+    $("summary").innerHTML=TILES[m].map((t,i)=>`<button class="tile" type="button" data-i="${i}" aria-pressed="${state.quick[m]===i}"><span class="k">${t.c?`<span class="dot" style="background:${t.c}"></span>`:""}${esc(t.k)}</span><span class="v">${r.filter(t.f).length}</span><span class="s">${esc(t.s(r))}</span></button>`).join("");
+    $("summary").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{ state.quick[m]=+b.dataset.i; render(); });
   }
 
   function renderList(){
-    const r=filtered();
+    const m=state.mod, r=filtered(), ref=m===1 && state.yo && state.yo.ve_referido;
+    $("list").className = `list m${m}${ref?" ref":""}`;
     $("count").textContent = state.loaded ? `${r.length} de ${state.rows.length}` : "";
-    if(!state.loaded){ $("list").innerHTML=`<div class="empty">Cargando solicitudes…</div>`; return; }
+    if(!state.loaded){ $("list").innerHTML=`<div class="empty">Cargando…</div>`; return; }
     if(!r.length){
       $("list").innerHTML = state.rows.length
         ? `<div class="empty"><strong>Sin resultados</strong>Probá con otra búsqueda o quitá los filtros.</div>`
-        : `<div class="empty"><strong>Todavía no hay solicitudes</strong>Cargá la primera con “Nueva solicitud”.</div>`;
+        : `<div class="empty"><strong>Todavía no hay solicitudes</strong>Cargá la primera con “Nueva solicitud” en el área 1.</div>`;
       return;
     }
-    const head=`<div class="row head" role="presentation"><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Origen</span><span>Presupuesto</span><span>Tarea</span></div>`;
-    $("list").innerHTML = head + r.map(x=>`
-      <button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
-        <span class="c-date">${fmtDate(x.fecha)}</span>
-        <span class="c-who">${esc(x.solicitante)}<span class="c-sub">${esc(x.tipo)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span></span>
-        <span class="c-where">${esc(x.lugar)}${x.detalle?`<span class="c-sub">${esc(x.detalle)}</span>`:""}</span>
-        <span class="c-origen">${esc(ORIGEN[x.origen]||"—")}</span>
-        <span class="c-pres"><span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span>${x.presupuesto_total!=null?`<span class="c-money">${money.format(x.presupuesto_total)}</span>`:""}</span>
-        <span class="c-ta"><span class="pill ta-${esc(x.estado)}">${TAREA[x.estado]||"—"}</span></span>
-      </button>`).join("");
-    $("list").querySelectorAll(".row[data-id]").forEach(b=>b.onclick=()=>openDlg(state.rows.find(x=>x.id===b.dataset.id)));
+    if(m===1){
+      $("list").innerHTML = `<div class="row head" role="presentation"><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Tipo</span><span>Origen</span>${ref?"<span>Referido por</span>":""}</div>`
+        + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
+          <span class="c-date">${fmtDate(x.fecha)}</span>
+          <span class="c-who">${esc(x.solicitante)}${x.cliente_telefono?`<span class="c-sub">${esc(x.cliente_telefono)}</span>`:""}</span>
+          <span class="c-where">${esc(x.lugar)}${x.detalle?`<span class="c-sub">${esc(x.detalle)}</span>`:""}</span>
+          <span class="c-origen">${esc(x.tipo)}</span>
+          <span class="c-origen">${esc(ORIGEN[x.origen]||"—")}</span>
+          ${ref?`<span class="c-ref" title="Dato interno">${esc(x.referido_por||"—")}</span>`:""}
+        </button>`).join("");
+      $("list").querySelectorAll(".row[data-id]").forEach(b=>b.onclick=()=>openSol(porId(b.dataset.id)));
+    }else{
+      $("list").innerHTML = `<div class="row head" role="presentation"><span>Solicitud</span><span>Presupuesto</span><span>Estado</span><span>Enviado</span><span>Responsable</span><span>Tarea</span></div>`
+        + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
+          <span class="c-who"><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}<span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span></span>
+          <span class="c-money">${x.presupuesto_total!=null?money.format(x.presupuesto_total):"—"}</span>
+          <span class="c-pres"><span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span></span>
+          <span class="c-date">${x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):"—"}</span>
+          <span class="c-origen">${esc(x.responsable||"—")}</span>
+          <span class="c-ta"><span class="pill ta-${esc(x.estado)}">${TAREA[x.estado]||"—"}</span></span>
+        </button>`).join("");
+      $("list").querySelectorAll(".row[data-id]").forEach(b=>b.onclick=()=>openPres(porId(b.dataset.id)));
+    }
   }
 
   function refreshDatalists(){
@@ -581,19 +670,21 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     fill("dlReferido", state.yo && state.yo.ve_referido ? uniq("referido_por") : []);
   }
 
-  function render(){ renderSummary(); renderList(); }
+  function render(){ renderNav(); renderSummary(); renderList(); }
 
-  // ---- Ficha: dos áreas ----
-  const dlg=$("dlg");
-  function setTab(n){
-    if(n===2 && !state.rec) return;
-    state.tab=n;
-    $("tab1").setAttribute("aria-selected", n===1); $("tab2").setAttribute("aria-selected", n===2);
-    $("area1").hidden = n!==1; $("area2").hidden = n!==2;
+  // ---- ÁREA 1 · Ficha de la solicitud ----
+  const dlgSol=$("dlgSol"), dlgPres=$("dlgPres");
+  function setSolHeader(){
+    const rec=state.sol;
+    $("solTitle").textContent = rec ? rec.solicitante : "Nueva solicitud";
+    $("solSub").textContent = rec ? `Solicitud N° ${rec.id} · ingresó el ${fmtDate(rec.fecha)}` : "Carga de una consulta nueva";
+    $("solIrPres").disabled = !rec;
+    $("solIrPres").textContent = rec ? "Ir a presupuesto y trabajo →" : "El presupuesto se carga después de guardar";
+    $("delWrap").hidden = !rec;
+    $("btnSave1").textContent = rec ? "Guardar solicitud" : "Crear solicitud";
   }
-  $("tab1").onclick=()=>setTab(1); $("tab2").onclick=()=>setTab(2);
-
-  function fillArea1(rec){
+  function openSol(rec){
+    state.sol = rec || null;
     $("sFecha").value = rec?.fecha || today();
     $("sOrigen").value = rec?.origen || "";
     $("sTipo").value = rec?.tipo || "";
@@ -604,8 +695,61 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("sLugar").value = rec?.lugar || "";
     $("sReferido").value = rec?.referido_por || "";
     state.dirty1=false; $("err1").hidden=true;
+    setSolHeader(); resetDel();
+    dlgSol.showModal();
+    if(!rec) setTimeout(()=>$("sTipo").focus(),30);
   }
-  function fillArea2(rec){
+  function closeSol(){
+    if(state.dirty1 && !confirm("Hay cambios sin guardar en la solicitud. ¿Cerrar igual?")) return false;
+    state.dirty1=false; dlgSol.close(); return true;
+  }
+  dlgSol.addEventListener("cancel",e=>{ e.preventDefault(); closeSol(); });
+  dlgSol.addEventListener("close",()=>{ state.sol=null; cargar(); });
+  $("solClose").onclick=closeSol;
+  $("area1").addEventListener("input",()=>state.dirty1=true);
+  $("solIrPres").onclick=()=>{ const rec=state.sol; if(rec && closeSol()) { setMod(2); openPres(porId(rec.id)||rec); } };
+
+  $("area1").addEventListener("submit",async e=>{
+    e.preventDefault(); $("err1").hidden=true;
+    const body={
+      fecha:$("sFecha").value, origen:$("sOrigen").value, tipo:$("sTipo").value.trim(), detalle:$("sDetalle").value.trim(),
+      solicitante:$("sCliente").value.trim(), cliente_telefono:$("sTel").value.trim(), cliente_email:$("sEmail").value.trim(),
+      lugar:$("sLugar").value.trim(),
+    };
+    if(state.yo.ve_referido) body.referido_por=$("sReferido").value.trim();
+    const miss=[]; if(!body.fecha) miss.push("fecha de ingreso"); if(!body.tipo) miss.push("tipo de trabajo"); if(!body.solicitante) miss.push("cliente"); if(!body.lugar) miss.push("dirección del trabajo");
+    if(miss.length){ mostrarErr("err1",{message:"Falta completar: "+miss.join(", ")+"."}); return; }
+    $("btnSave1").disabled=true;
+    try{
+      const nuevo = !state.sol;
+      const rec = nuevo ? await api('/trabajos',{method:'POST',body:JSON.stringify(body)})
+                        : await api(`/trabajos/${state.sol.id}/solicitud`,{method:'PUT',body:JSON.stringify(body)});
+      state.sol = {...rec, id:String(rec.id)};
+      state.dirty1=false; setSolHeader();
+      toast(nuevo ? "Solicitud creada. Ya podés cargar su presupuesto en el área 2." : "Solicitud guardada");
+    }catch(err){ mostrarErr("err1",err); }
+    finally{ $("btnSave1").disabled=false; }
+  });
+
+  function resetDel(){ const b=$("btnDel"); b.textContent="Eliminar solicitud"; b.dataset.armed=""; }
+  $("btnDel").onclick=async()=>{
+    const b=$("btnDel");
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Seguro? Se borra también su presupuesto. Tocá de nuevo"; return; }
+    try{
+      await api('/trabajos/'+state.sol.id,{method:'DELETE'});
+      state.dirty1=false; dlgSol.close(); toast("Solicitud eliminada");
+    }catch(e){ mostrarErr("err1",e); }
+  };
+
+  // ---- ÁREA 2 · Ficha del presupuesto y trabajo ----
+  function openPres(rec){
+    state.pres = rec;
+    $("presTitle").textContent = `Presupuesto N° ${rec.id}`;
+    $("presSub").textContent = `${rec.solicitante} · ${rec.tipo} · ${rec.lugar}`;
+    fillPres(rec);
+    dlgPres.showModal();
+  }
+  function fillPres(rec){
     setRadio("pres", rec.presupuesto_estado || "pendiente");
     setRadio("tarea", rec.estado || "pendiente");
     $("gMano").value = fmtMontoInput(rec.mano_obra);
@@ -620,50 +764,32 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("gInicio").value = rec.inicio_previsto || "";
     $("gFin").value = rec.finalizado_en || "";
     $("gObs").value = rec.observaciones_internas || "";
-    state.dirty2=false; $("err2").hidden=true;
+    state.dirty2=false; $("err2").hidden=true; fotosErr("");
     state.fotos = (rec.fotos||[]).map(f=>({...f, id:String(f.id)}));
     syncArea2(); renderFotos();
   }
-  function setHeader(){
-    const rec=state.rec;
-    $("dlgTitle").textContent = rec ? rec.solicitante : "Nueva solicitud";
-    $("dlgEyebrow").textContent = rec ? `Solicitud N° ${rec.id} · ingresó el ${fmtDate(rec.fecha)}` : "Carga · área 1";
-    $("tab2").disabled = !rec;
-    $("tab2").title = rec ? "" : "Guardá primero la solicitud";
-    $("delWrap").hidden = !rec;
-    $("btnSave1").textContent = rec ? "Guardar solicitud" : "Crear solicitud";
-  }
-  function openDlg(rec){
-    state.rec = rec || null;
-    setHeader(); fillArea1(rec);
-    if(rec) fillArea2(rec);
-    resetDel(); setTab(1);
-    dlg.showModal();
-    if(!rec) setTimeout(()=>$("sTipo").focus(),30);
-  }
-
-  function hayCambios(){ return state.dirty1 || state.dirty2; }
   const subiendo = () => Object.values(state.uploading).some(n=>n>0);
-  function closeDlg(){
-    if(subiendo()){ fotosErr("Esperá a que terminen de subir las fotos."); return; }
-    if(hayCambios() && !confirm("Hay cambios sin guardar. ¿Cerrar igual?")) return;
-    dlg.close();
+  function closePres(){
+    if(subiendo()){ fotosErr("Esperá a que terminen de subir las fotos."); return false; }
+    if(state.dirty2 && !confirm("Hay cambios sin guardar en el presupuesto. ¿Cerrar igual?")) return false;
+    state.dirty2=false; dlgPres.close(); return true;
   }
-  dlg.addEventListener("cancel",e=>{ e.preventDefault(); closeDlg(); });
-  dlg.addEventListener("close",()=>{ state.rec=null; cargar(); });
-  $("dlgClose").onclick=closeDlg;
-  $("area1").addEventListener("input",()=>state.dirty1=true);
+  dlgPres.addEventListener("cancel",e=>{ e.preventDefault(); closePres(); });
+  dlgPres.addEventListener("close",()=>{ state.pres=null; cargar(); });
+  $("presClose").onclick=closePres;
   $("area2").addEventListener("input",e=>{ if(!e.target.closest(".etapas")) state.dirty2=true; });
+  $("presIrSol").onclick=()=>{ const rec=state.pres; if(rec && closePres()) { setMod(1); openSol(porId(rec.id)||rec); } };
 
-  // Área 2: totales, banner y estados permitidos
   function sumaPartes(){
     const ps=[$("gMano").value,$("gMat").value,$("gOtros").value].map(parseMonto).filter(v=>v!==null && !Number.isNaN(v));
     return ps.length ? ps.reduce((a,b)=>a+b,0) : null;
   }
   ["gMano","gMat","gOtros"].forEach(id=>$(id).addEventListener("input",()=>{
     if(!state.totalManual){ const s=sumaPartes(); $("gTotal").value = s===null ? "" : numFmt.format(s); }
+    syncArea2();
   }));
-  $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; });
+  $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; syncArea2(); });
+  $("gEnviado").addEventListener("input",syncArea2);
   $("segPres").addEventListener("change",syncArea2);
   $("segTarea").addEventListener("change",syncArea2);
 
@@ -681,36 +807,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     if(!aceptado && !TAREA_SIN_ACEPTAR.includes(getRadio("tarea"))) setRadio("tarea","pendiente");
     $("avisoTarea").hidden = aceptado;
   }
-  $("gTotal").addEventListener("input",syncArea2);
-  $("gEnviado").addEventListener("input",syncArea2);
 
   function mostrarErr(id, e){ $(id).textContent=(e&&e.message)||"No se pudo guardar. Revisá la conexión y probá de nuevo."; $(id).hidden=false; }
 
-  // Guardar área 1
-  $("area1").addEventListener("submit",async e=>{
-    e.preventDefault(); $("err1").hidden=true;
-    const body={
-      fecha:$("sFecha").value, origen:$("sOrigen").value, tipo:$("sTipo").value.trim(), detalle:$("sDetalle").value.trim(),
-      solicitante:$("sCliente").value.trim(), cliente_telefono:$("sTel").value.trim(), cliente_email:$("sEmail").value.trim(),
-      lugar:$("sLugar").value.trim(),
-    };
-    if(state.yo.ve_referido) body.referido_por=$("sReferido").value.trim();
-    const miss=[]; if(!body.fecha) miss.push("fecha de ingreso"); if(!body.tipo) miss.push("tipo de trabajo"); if(!body.solicitante) miss.push("cliente"); if(!body.lugar) miss.push("dirección del trabajo");
-    if(miss.length){ mostrarErr("err1",{message:"Falta completar: "+miss.join(", ")+"."}); return; }
-    $("btnSave1").disabled=true;
-    try{
-      const nuevo = !state.rec;
-      const rec = nuevo ? await api('/trabajos',{method:'POST',body:JSON.stringify(body)})
-                        : await api(`/trabajos/${state.rec.id}/solicitud`,{method:'PUT',body:JSON.stringify(body)});
-      state.rec = {...rec, id:String(rec.id)};
-      state.dirty1=false; setHeader();
-      if(nuevo){ fillArea2(state.rec); setTab(2); toast("Solicitud creada. Ya podés cargar el presupuesto."); }
-      else toast("Solicitud guardada");
-    }catch(err){ mostrarErr("err1",err); }
-    finally{ $("btnSave1").disabled=false; }
-  });
-
-  // Guardar área 2
   $("area2").addEventListener("submit",async e=>{
     e.preventDefault(); $("err2").hidden=true;
     const nums={mano_obra:parseMonto($("gMano").value), materiales:parseMonto($("gMat").value), otros_costos:parseMonto($("gOtros").value), presupuesto_total:parseMonto($("gTotal").value)};
@@ -720,24 +819,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim()};
     $("btnSave2").disabled=true;
     try{
-      const rec = await api(`/trabajos/${state.rec.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
-      state.rec = {...rec, id:String(rec.id)};
-      fillArea2(state.rec);
+      const rec = await api(`/trabajos/${state.pres.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
+      state.pres = {...rec, id:String(rec.id)};
+      fillPres(state.pres);
       toast("Presupuesto y trabajo guardados");
     }catch(err){ mostrarErr("err2",err); }
     finally{ $("btnSave2").disabled=false; }
   });
-
-  // Eliminar solicitud
-  function resetDel(){ const b=$("btnDel"); b.textContent="Eliminar solicitud"; b.dataset.armed=""; }
-  $("btnDel").onclick=async()=>{
-    const b=$("btnDel");
-    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Seguro? Tocá de nuevo para eliminar"; return; }
-    try{
-      await api('/trabajos/'+state.rec.id,{method:'DELETE'});
-      state.dirty1=state.dirty2=false; dlg.close(); toast("Solicitud eliminada");
-    }catch(e){ mostrarErr("err1",e); }
-  };
 
   // ---- Presupuesto para el cliente (sin datos internos) ----
   $("btnPresCliente").onclick=async()=>{
@@ -745,7 +833,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const w = window.open("", "_blank");
     if(!w){ toast("El navegador bloqueó la ventana. Permití ventanas emergentes."); return; }
     try{
-      const p = await api(`/trabajos/${state.rec.id}/presupuesto-cliente`);
+      const p = await api(`/trabajos/${state.pres.id}/presupuesto-cliente`);
       const fila=(k,v)=>v!=null?`<tr><td>${k}</td><td class="n">${money.format(v)}</td></tr>`:"";
       w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Presupuesto N° ${p.numero} · Urbania 360</title>
 <style>body{font:15px/1.5 system-ui,sans-serif;color:#1B2529;max-width:720px;margin:32px auto;padding:0 20px}
@@ -766,7 +854,7 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
     }catch(e){ w.close(); toast(e.message||"No se pudo armar el presupuesto"); }
   };
 
-  // ---- Fotos ----
+  // ---- Fotos (área 2) ----
   function fotosErr(msg){ $("fotosErr").textContent=msg; $("fotosErr").hidden=!msg; }
   function renderFotos(){
     $("etapas").innerHTML = ETAPAS.map(([k,label])=>{
@@ -803,9 +891,9 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
 
   let uploadChain=Promise.resolve();
   function addFotos(etapa, files){
-    if(!files.length || !state.rec) return;
+    if(!files.length || !state.pres) return;
     fotosErr("");
-    const trabajoId = state.rec.id;
+    const trabajoId = state.pres.id;
     state.uploading[etapa]+=files.length; renderFotos();
     files.forEach(file=>{
       uploadChain = uploadChain.then(async()=>{
@@ -813,7 +901,7 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
           const blob = await shrink(file);
           if(blob.size > 20*1024*1024) throw {code:"too_large"};
           const res = await api(`/fotos?etapa=${etapa}&trabajo_id=${trabajoId}`, {method:'POST', body:blob, headers:{'Content-Type':blob.type||'image/jpeg'}});
-          if(state.rec && state.rec.id===trabajoId) state.fotos = [...state.fotos, {id:String(res.id), etapa:res.etapa, subida:res.subida}];
+          if(state.pres && state.pres.id===trabajoId) state.fotos = [...state.fotos, {id:String(res.id), etapa:res.etapa, subida:res.subida}];
         }catch(e){
           const c=e&&e.code;
           fotosErr(c==="unsupported_type" ? `“${file.name}” no es un formato compatible. Usá fotos JPG o PNG.`
@@ -821,7 +909,7 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
             : `No se pudo subir “${file.name}”. Probá de nuevo.`);
         }finally{
           state.uploading[etapa]=Math.max(0,state.uploading[etapa]-1);
-          if(dlg.open) renderFotos();
+          if(dlgPres.open) renderFotos();
         }
       });
     });
@@ -898,23 +986,25 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
 
   // ---- Filtros ----
   ["q","fOrigen","fPres","fTarea","fOrden"].forEach(id=>$(id).addEventListener("input",render));
-  $("btnNew").onclick=()=>openDlg(null);
+  $("btnNew").onclick=()=>openSol(null);
 
-  // ---- Exportar planilla (CSV que abre en Excel). "Referido por" solo si el usuario tiene permiso ----
+  // ---- Exportar planilla (CSV que abre en Excel) del área que se está viendo ----
   $("btnCsv").onclick=()=>{
-    const r=filtered();
-    const cols=[["N°",x=>x.id],["Fecha de ingreso",x=>fmtDate(x.fecha)],["Origen",x=>ORIGEN[x.origen]||""],["Cliente",x=>x.solicitante],
-      ["Teléfono",x=>x.cliente_telefono],["Email",x=>x.cliente_email],["Dirección",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],["Solicitud",x=>x.detalle]];
-    if(state.yo.ve_referido) cols.push(["Referido por (interno)",x=>x.referido_por]);
-    cols.push(["Mano de obra",x=>x.mano_obra??""],["Materiales",x=>x.materiales??""],["Otros costos",x=>x.otros_costos??""],["Presupuesto total",x=>x.presupuesto_total??""],
-      ["Forma de pago",x=>x.forma_pago],["Envío del presupuesto",x=>x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):""],["Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],
-      ["Estado de la tarea",x=>TAREA[x.estado]||""],["Responsable",x=>x.responsable],["Inicio previsto",x=>x.inicio_previsto?fmtDate(x.inicio_previsto):""],
-      ["Finalización",x=>x.finalizado_en?fmtDate(x.finalizado_en):""],["Fotos",x=>x.fotos.length]);
+    const r=filtered(), m=state.mod;
+    const cols = m===1
+      ? [["N°",x=>x.id],["Fecha de ingreso",x=>fmtDate(x.fecha)],["Origen",x=>ORIGEN[x.origen]||""],["Cliente",x=>x.solicitante],
+         ["Teléfono",x=>x.cliente_telefono],["Email",x=>x.cliente_email],["Dirección",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],["Solicitud",x=>x.detalle]]
+         .concat(state.yo.ve_referido ? [["Referido por (interno)",x=>x.referido_por]] : [])
+      : [["N°",x=>x.id],["Cliente",x=>x.solicitante],["Dirección",x=>x.lugar],["Tipo de trabajo",x=>x.tipo],
+         ["Mano de obra",x=>x.mano_obra??""],["Materiales",x=>x.materiales??""],["Otros costos",x=>x.otros_costos??""],["Presupuesto total",x=>x.presupuesto_total??""],
+         ["Forma de pago",x=>x.forma_pago],["Envío del presupuesto",x=>x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):""],["Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],
+         ["Estado de la tarea",x=>TAREA[x.estado]||""],["Responsable",x=>x.responsable],["Inicio previsto",x=>x.inicio_previsto?fmtDate(x.inicio_previsto):""],
+         ["Finalización",x=>x.finalizado_en?fmtDate(x.finalizado_en):""],["Fotos",x=>x.fotos.length]];
     const q=v=>{ v=String(v??""); return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
     const csv="﻿"+[cols.map(c=>q(c[0])).join(";"), ...r.map(x=>cols.map(c=>q(c[1](x))).join(";"))].join("\r\n");
     const a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
-    a.download=`urbania-360-solicitudes-${today()}.csv`;
+    a.download=`urbania-360-${m===1?"solicitudes":"presupuestos"}-${today()}.csv`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   };

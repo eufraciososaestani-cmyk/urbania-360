@@ -5,7 +5,9 @@ backend (Node/Express + PostgreSQL) + página web, con su propio login.
 
 ## Qué hace
 
-Cada solicitud tiene dos áreas separadas, cada una con su propio guardado:
+La app tiene dos áreas separadas, cada una con su propia pantalla, lista,
+indicadores y ficha. Desde una solicitud se pasa a su presupuesto (y
+vuelta) sin mezclar la información:
 
 **1 · Solicitud de pedido**
 - Fecha de ingreso, de dónde entra la consulta (WhatsApp, teléfono, web,
@@ -16,7 +18,7 @@ Cada solicitud tiene dos áreas separadas, cada una con su propio guardado:
   permiso; a los demás el servidor ni siquiera se lo envía. Nunca aparece
   en el presupuesto para el cliente.
 
-**2 · Presupuesto y trabajo** (se habilita una vez creada la solicitud)
+**2 · Presupuestos y trabajos** (el presupuesto se carga una vez creada la solicitud)
 - Mano de obra, materiales, otros costos y total (se calcula solo)
 - Forma de pago y fecha de envío del presupuesto
 - Estado del presupuesto: pendiente, en preparación, enviado, aceptado,
