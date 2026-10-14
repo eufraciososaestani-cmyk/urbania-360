@@ -237,6 +237,24 @@ async function presupuestoCliente(req, res) {
   }
 }
 
+// Borra el presupuesto y la gestión del trabajo (área 2) y deja intacta la
+// solicitud (área 1) y sus fotos, para poder volver a presupuestarla.
+async function eliminarPresupuesto(req, res) {
+  try {
+    const { rowCount } = await pool.query(
+      `UPDATE trabajos SET presupuesto_total = NULL, mano_obra = NULL, materiales = NULL, otros_costos = NULL,
+         forma_pago = NULL, presupuesto_ingreso = NULL, presupuesto_enviado = NULL, presupuesto_aceptado_en = NULL,
+         presupuesto_estado = 'pendiente', estado = 'pendiente', responsable = NULL,
+         inicio_previsto = NULL, fin_previsto = NULL, finalizado_en = NULL, observaciones_internas = NULL,
+         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL
+       WHERE id = $1`, [req.params.id]);
+    if (!rowCount) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    res.json(await obtenerTrabajo(req.usuario, req.params.id));
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar el presupuesto', detalle: err.message });
+  }
+}
+
 async function eliminar(req, res) {
   try {
     const { rowCount } = await pool.query('DELETE FROM trabajos WHERE id = $1', [req.params.id]);
@@ -292,6 +310,6 @@ async function eliminarFoto(req, res) {
 }
 
 module.exports = {
-  listar, crear, actualizarSolicitud, actualizarGestion, presupuestoCliente, eliminar,
+  listar, crear, actualizarSolicitud, actualizarGestion, presupuestoCliente, eliminar, eliminarPresupuesto,
   subirFoto, verFoto, eliminarFoto,
 };

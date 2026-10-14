@@ -686,6 +686,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
     <p class="err" id="err2" hidden></p>
     <div class="dlg-foot">
+      <div><button class="btn danger" type="button" id="btnDelPres">Eliminar presupuesto</button></div>
       <div class="right"><button class="btn primary" type="submit" id="btnSave2">Guardar presupuesto y trabajo</button></div>
     </div>
 
@@ -1036,7 +1037,20 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     fillPres(rec);
     dlgPres.showModal();
   }
+  // Eliminar presupuesto: borra solo el área 2; la solicitud queda para volver a presupuestar
+  function resetDelPres(){ const b=$("btnDelPres"); b.textContent="Eliminar presupuesto"; b.dataset.armed=""; }
+  $("btnDelPres").onclick=async()=>{
+    const b=$("btnDelPres");
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Seguro? La solicitud se conserva. Tocá de nuevo"; return; }
+    try{
+      const rec = await api(`/trabajos/${state.pres.id}/presupuesto`,{method:'DELETE'});
+      state.pres = {...rec, id:String(rec.id)};
+      fillPres(state.pres);
+      toast("Presupuesto eliminado. La solicitud sigue cargada.");
+    }catch(e){ mostrarErr("err2",e); }
+  };
   function fillPres(rec){
+    resetDelPres();
     setRadio("pres", rec.presupuesto_estado || "pendiente");
     setRadio("tarea", rec.estado || "pendiente");
     $("gMano").value = fmtMontoInput(rec.mano_obra);

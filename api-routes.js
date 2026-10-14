@@ -16,6 +16,7 @@ router.put('/trabajos/:id/solicitud', trabajos.actualizarSolicitud); // área 1
 router.put('/trabajos/:id/gestion', trabajos.actualizarGestion);     // área 2
 router.get('/trabajos/:id/presupuesto-cliente', trabajos.presupuestoCliente);
 router.delete('/trabajos/:id', trabajos.eliminar);
+router.delete('/trabajos/:id/presupuesto', trabajos.eliminarPresupuesto); // solo área 2
 
 router.post('/fotos', express.raw({ type: 'image/*', limit: '20mb' }), trabajos.subirFoto);
 router.delete('/fotos/:id', trabajos.eliminarFoto);
