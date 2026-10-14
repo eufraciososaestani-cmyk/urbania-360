@@ -32,7 +32,12 @@ const PORT = process.env.PORT || 3000;
       console.log(`Usuario listo: ${SEED_ADMIN_EMAIL}`);
     }
   } catch (err) {
-    console.error('Error preparando la base de datos:', err.message);
+    // Diagnóstico sin mostrar la contraseña: a qué host intenta conectarse y por qué falla
+    let destino = 'DATABASE_URL vacía';
+    try { if (process.env.DATABASE_URL) { const u = new URL(process.env.DATABASE_URL); destino = `${u.hostname}:${u.port || 5432}/${u.pathname.slice(1)}`; } }
+    catch (e) { destino = 'DATABASE_URL con formato inválido'; }
+    const causa = err.message || err.code || (err.errors && err.errors.map(e => e.code || e.message).join(', ')) || String(err);
+    console.error(`Error preparando la base de datos (${destino}): ${causa}`);
   }
   app.listen(PORT, () => console.log(`Urbania 360 corriendo en el puerto ${PORT}`));
 })();
