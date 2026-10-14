@@ -511,7 +511,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         </div>
         <select id="gResp" aria-label="Responsable"></select>
         <select id="gEstado" aria-label="Estado"></select>
-        <select id="gTipo" aria-label="Tipo de trabajo"></select>
+        <select id="gTipo" aria-label="Categoría o trabajo"></select>
         <input id="gDesde" type="date" aria-label="Desde">
         <input id="gHasta" type="date" aria-label="Hasta">
       </div>
@@ -606,7 +606,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="sec">Consulta</div>
     <div class="f"><label for="sFecha">Fecha de ingreso</label><input id="sFecha" type="date" required></div>
     <div class="f"><label for="sOrigen">De dónde entra la consulta</label><select id="sOrigen"></select></div>
-    <div class="f full"><label for="sTipo">Tipo de trabajo</label><input id="sTipo" type="text" list="dlTipo" placeholder="Elegí o escribí uno nuevo" required autocomplete="off"></div>
+    <div class="f full"><label for="sTipo">Categoría o trabajo</label><input id="sTipo" type="text" list="dlTipo" placeholder="Elegí una categoría o escribí un trabajo específico" required autocomplete="off"></div>
     <div class="f full"><label for="sDetalle">Solicitud de pedido</label><textarea id="sDetalle" placeholder="Qué solicita el cliente"></textarea></div>
 
     <div class="sec">Cliente / contacto</div>
@@ -647,6 +647,11 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="banner" id="presBanner"></div>
     <div class="presCrono" id="presCrono" aria-label="Cronología del trabajo"></div>
 
+    <div class="sec">Trabajo a presupuestar</div>
+    <div class="f full"><label for="pCat">Categoría o trabajo</label><input id="pCat" type="text" list="dlTipo" placeholder="Elegí una categoría o escribí un trabajo específico" autocomplete="off"></div>
+    <div class="f full"><label for="pDesc">Descripción / detalle del trabajo</label><textarea id="pDesc" rows="5" placeholder="Qué tareas se van a realizar. Ej.: Reemplazo de luminarias en espacios comunes del edificio, revisión de conexiones existentes y comprobación del funcionamiento de las luces instaladas."></textarea><span class="area-hint" id="pDescHint"></span></div>
+    <div class="f full"><label for="pMatDet">Materiales incluidos</label><textarea id="pMatDet" rows="3" placeholder="Uno por línea. Ej.: 12 luminarias LED 18 W"></textarea></div>
+
     <div class="sec">Presupuesto</div>
     <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
     <div class="f"><label for="gMano">Mano de obra</label><div class="money"><span>$</span><input id="gMano" type="text" inputmode="decimal" placeholder="0"></div></div>
@@ -657,7 +662,11 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="f"><label for="gAceptado">Fecha de aceptación</label><input id="gAceptado" type="date"></div>
     <div class="f"><label for="gPago">Forma de pago</label><input id="gPago" type="text" list="dlPago" autocomplete="off"></div>
     <div class="f"><label for="gEnviado">Fecha de envío al cliente</label><input id="gEnviado" type="date"></div>
-    <div class="f full"><button class="btn small" type="button" id="btnPresCliente" style="align-self:flex-start">Ver presupuesto para el cliente</button></div>
+    <div class="f"><label for="pValidez">Validez del presupuesto (días)</label><input id="pValidez" type="number" min="1" max="365" step="1" placeholder="15"></div>
+    <div class="f full"><label for="pCond">Condiciones / notas para el cliente</label><textarea id="pCond" rows="3" placeholder="Una por línea. Ej.: Los trabajos se coordinan con la administración del edificio."></textarea></div>
+    <div class="f full"><button class="btn" type="button" id="btnPresCliente" style="align-self:flex-start">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>
+      Ver presupuesto</button><span class="area-hint">Muestra el último presupuesto guardado, listo para imprimir o guardar en PDF. No incluye datos internos.</span></div>
 
     <div class="sec">Gestión de la tarea</div>
     <p class="aviso" id="avisoTarea" hidden>La tarea se puede asignar y ejecutar una vez que el presupuesto está <strong>aceptado</strong>.</p>
@@ -717,12 +726,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </div>
 </dialog>
 
-<datalist id="dlTipo">
-  <option value="Plomería"></option><option value="Electricidad"></option><option value="Gas"></option>
-  <option value="Pintura"></option><option value="Albañilería"></option><option value="Techos e impermeabilización"></option>
-  <option value="Herrería"></option><option value="Carpintería"></option><option value="Durlock / cielorrasos"></option>
-  <option value="Destapaciones"></option><option value="Aire acondicionado"></option><option value="Limpieza de obra"></option>
-</datalist>
+<datalist id="dlTipo"></datalist>
 <datalist id="dlPago">
   <option value="Efectivo"></option><option value="Transferencia"></option>
   <option value="50% anticipo y 50% al finalizar"></option><option value="Tarjeta de crédito"></option>
@@ -917,7 +921,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       return;
     }
     if(m===1){
-      $("list").innerHTML = `<div class="row head" role="presentation"><span>N°</span><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Tipo</span><span>Origen</span>${ref?"<span>Referido por</span>":""}</div>`
+      $("list").innerHTML = `<div class="row head" role="presentation"><span>N°</span><span>Ingreso</span><span>Cliente</span><span>Dirección / pedido</span><span>Categoría</span><span>Origen</span>${ref?"<span>Referido por</span>":""}</div>`
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
           <span class="c-num">${esc(x.id)}</span>
           <span class="c-date">${fmtDate(x.fecha)}</span>
@@ -942,9 +946,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     }
   }
 
+  // Categorías sugeridas; las que se escriban nuevas quedan disponibles para las próximas solicitudes
+  const CATEGORIAS=["Mantenimiento general","Electricidad e iluminación","Plomería y sanitarios","Pintura y reparaciones",
+    "Mantenimiento de espacios comunes","Mantenimiento de edificios y consorcios","Limpieza y conservación","Otros trabajos"];
   function refreshDatalists(){
     const uniq=k=>[...new Set(state.rows.map(x=>x[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
     const fill=(id,vals)=>$(id).innerHTML=vals.map(v=>`<option value="${esc(v)}"></option>`).join("");
+    fill("dlTipo", [...CATEGORIAS, ...uniq("tipo").filter(t=>!CATEGORIAS.includes(t))]);
     fill("dlCliente", uniq("solicitante")); fill("dlLugar", uniq("lugar")); fill("dlResp", uniq("responsable"));
     fill("dlReferido", state.yo && state.yo.ve_referido ? uniq("referido_por") : []);
   }
@@ -1046,6 +1054,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("gInicio").value = rec.inicio_previsto || "";
     $("gFin").value = rec.finalizado_en || "";
     $("gObs").value = rec.observaciones_internas || "";
+    $("pCat").value = rec.tipo || "";
+    $("pDesc").value = rec.descripcion_trabajo || rec.detalle || "";
+    $("pDescHint").textContent = !rec.descripcion_trabajo && rec.detalle ? "Se completó con lo que pidió el cliente: ajustalo con las tareas que se van a realizar." : "";
+    $("pMatDet").value = rec.materiales_detalle || "";
+    $("pCond").value = rec.condiciones || "";
+    $("pValidez").value = rec.validez_dias ?? "";
     state.dirty2=false; $("err2").hidden=true; fotosErr("");
     state.fotos = (rec.fotos||[]).map(f=>({...f, id:String(f.id)}));
     syncArea2(); renderFotos();
@@ -1112,7 +1126,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const body={...nums, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value,
       presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
-      inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim()};
+      inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
+      tipo:$("pCat").value.trim(), descripcion_trabajo:$("pDesc").value.trim(), materiales_detalle:$("pMatDet").value.trim(),
+      condiciones:$("pCond").value.trim(), validez_dias:$("pValidez").value};
     $("btnSave2").disabled=true;
     try{
       const rec = await api(`/trabajos/${state.pres.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
@@ -1123,29 +1139,99 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     finally{ $("btnSave2").disabled=false; }
   });
 
-  // ---- Presupuesto para el cliente (sin datos internos) ----
+  // ---- Presupuesto para el cliente: documento profesional (sin datos internos) ----
+  const LOGO_SVG = `<svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="#F5C542" stroke-width="5" stroke-dasharray="132 38" stroke-linecap="round" transform="rotate(-60 32 32)"/><path d="M19 35 32 23l13 12v12H19z" fill="#fff"/><rect x="29" y="38" width="6" height="9" fill="#1E5A73"/></svg>`;
+  function presupuestoHTML(p){
+    const e=p.empresa||{}, nl=t=>esc(t).replace(/\n/g,"<br>");
+    const lineas=t=>String(t||"").split(/\n+/).map(x=>x.replace(/^[-•*·]\s*/,"").trim()).filter(Boolean);
+    const fila=(k,v)=>v!=null?`<tr><td>${k}</td><td class="n">${money.format(v)}</td></tr>`:"";
+    const subtotal=[p.mano_obra,p.materiales,p.otros_costos].some(v=>v!=null);
+    const contacto=[e.telefono&&`Tel. ${esc(e.telefono)}`, e.email&&esc(e.email), e.web&&esc(e.web)].filter(Boolean).join(" · ");
+    const mats=lineas(p.materiales_detalle), conds=lineas(p.condiciones);
+    return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Presupuesto ${esc(p.numero)} · ${esc(e.nombre)}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+@page{size:A4;margin:14mm}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE7;color:#1B2529;font:14px/1.5 "Barlow",system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hoja{max-width:820px;margin:24px auto;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.12)}
+.cab{background:#1B2529;color:#fff;padding:26px 34px 22px;display:flex;justify-content:space-between;align-items:center;gap:20px;position:relative}
+.cab::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;background:repeating-linear-gradient(-45deg,#F5C542 0 12px,#1B2529 12px 24px)}
+.marca{display:flex;align-items:center;gap:14px}
+.marca b{display:block;font:700 34px/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.marca span{font-size:13px;color:#C9D3D6}
+.num{text-align:right}
+.num small{display:block;font:600 12px/1.2 "Barlow Condensed",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#F5C542}
+.num b{font:700 26px/1.1 "Barlow Condensed",sans-serif;letter-spacing:.03em}
+.cuerpo{padding:34px}
+.fechas{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #D5D9D2;margin-bottom:24px}
+.fechas div{padding:10px 14px;border-left:1px solid #D5D9D2}.fechas div:first-child{border-left:0}
+.k{display:block;font:600 11px/1.2 "Barlow Condensed",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#6A777B;margin-bottom:3px}
+.fechas b{font-size:16px}
+.partes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.caja{background:#F4F6F2;border-left:4px solid #1E5A73;padding:12px 16px}
+.caja b{font-size:16px}
+h2{font:700 18px/1.2 "Barlow Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:26px 0 8px;padding-bottom:6px;border-bottom:2px solid #1B2529}
+.cat{display:inline-block;background:#DCE9EE;color:#1E5A73;font-weight:600;padding:3px 10px;border-radius:999px;font-size:13px;margin-bottom:8px}
+ul{margin:6px 0 0;padding-left:20px}li{margin:2px 0}
+table{width:100%;border-collapse:collapse;margin-top:6px}
+td{padding:10px 0;border-bottom:1px solid #E1E5DF}
+.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.tot td{border:0;padding-top:14px}
+tr.tot td:first-child{font:700 20px "Barlow Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase}
+tr.tot td.n{font:700 26px "Barlow Condensed",sans-serif;color:#1E5A73}
+.pago{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:46px}
+.firmas div{border-top:1px solid #1B2529;padding-top:6px;text-align:center;font-size:12.5px;color:#4D5A5E}
+.pie{background:#F4F6F2;border-top:1px solid #D5D9D2;padding:14px 34px;font-size:12.5px;color:#4D5A5E;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}
+.acciones{max-width:820px;margin:0 auto 30px;display:flex;justify-content:flex-end;gap:8px;padding:0 4px}
+.acciones button{font:600 14px "Barlow",sans-serif;border:0;border-radius:6px;padding:10px 16px;cursor:pointer;background:#1E5A73;color:#fff}
+.acciones button.sec{background:#fff;color:#1B2529;border:1px solid #B9BFB5}
+@media (max-width:640px){.cuerpo{padding:20px}.cab{padding:20px;flex-direction:column;align-items:flex-start}.num{text-align:left}.fechas,.partes,.pago,.firmas{grid-template-columns:1fr}.fechas div{border-left:0;border-top:1px solid #D5D9D2}.fechas div:first-child{border-top:0}}
+@media print{body{background:#fff}.hoja{box-shadow:none;margin:0;max-width:none}.acciones{display:none}}
+</style></head><body>
+<div class="hoja">
+  <header class="cab">
+    <div class="marca">${LOGO_SVG}<div><b>${esc(e.nombre)}</b><span>${esc(e.lema)}</span></div></div>
+    <div class="num"><small>Presupuesto</small><b>N° ${esc(p.numero)}</b></div>
+  </header>
+  <div class="cuerpo">
+    <div class="fechas">
+      <div><span class="k">Fecha de emisión</span><b>${fmtDate(p.fecha_emision)}</b></div>
+      <div><span class="k">Válido hasta</span><b>${fmtDate(p.fecha_vencimiento)}</b></div>
+      <div><span class="k">Validez</span><b>${p.validez_dias} días</b></div>
+    </div>
+    <div class="partes">
+      <div class="caja"><span class="k">Cliente · consorcio · administrador</span><b>${esc(p.cliente)}</b>${p.cliente_telefono||p.cliente_email?`<div>${[p.cliente_telefono,p.cliente_email].filter(Boolean).map(esc).join(" · ")}</div>`:""}</div>
+      <div class="caja"><span class="k">Dirección de la propiedad</span><b>${esc(p.lugar)}</b></div>
+    </div>
+    <h2>Trabajo a realizar</h2>
+    <span class="cat">${esc(p.categoria)}</span>
+    ${p.descripcion?`<p>${nl(p.descripcion)}</p>`:`<p style="color:#6A777B">Sin descripción cargada.</p>`}
+    ${mats.length?`<h2>Materiales incluidos</h2><ul>${mats.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>`:""}
+    <h2>Detalle de costos</h2>
+    <table>${fila("Mano de obra",p.mano_obra)}${fila("Materiales",p.materiales)}${fila("Otros costos",p.otros_costos)}
+      <tr class="tot"><td>Total${subtotal?"":" del trabajo"}</td><td class="n">${p.presupuesto_total!=null?money.format(p.presupuesto_total):"A definir"}</td></tr></table>
+    <div class="pago">
+      <div class="caja"><span class="k">Forma de pago</span><b>${p.forma_pago?esc(p.forma_pago):"A convenir"}</b></div>
+      <div class="caja"><span class="k">Vencimiento del presupuesto</span><b>${fmtDate(p.fecha_vencimiento)}</b></div>
+    </div>
+    ${conds.length?`<h2>Condiciones</h2><ul>${conds.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>`:""}
+    <div class="firmas"><div>Por ${esc(e.nombre)}</div><div>Conformidad del cliente — firma y aclaración</div></div>
+  </div>
+  <footer class="pie"><span><b>${esc(e.nombre)}</b>${e.direccion?` · ${esc(e.direccion)}`:""}${e.cuit?` · CUIT ${esc(e.cuit)}`:""}</span><span>${contacto}</span></footer>
+</div>
+<div class="acciones"><button class="sec" onclick="window.close()">Cerrar</button><button class="print" onclick="print()">Imprimir / guardar PDF</button></div>
+</body></html>`;
+  }
   $("btnPresCliente").onclick=async()=>{
     if(state.dirty2 && !confirm("Hay cambios sin guardar en el presupuesto. El documento va a mostrar lo último guardado. ¿Continuar?")) return;
     const w = window.open("", "_blank");
     if(!w){ toast("El navegador bloqueó la ventana. Permití ventanas emergentes."); return; }
     try{
       const p = await api(`/trabajos/${state.pres.id}/presupuesto-cliente`);
-      const fila=(k,v)=>v!=null?`<tr><td>${k}</td><td class="n">${money.format(v)}</td></tr>`:"";
-      w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Presupuesto N° ${p.numero} · Urbania 360</title>
-<style>body{font:15px/1.5 system-ui,sans-serif;color:#1B2529;max-width:720px;margin:32px auto;padding:0 20px}
-h1{font-size:28px;margin:0;letter-spacing:.02em;text-transform:uppercase}.muted{color:#5E6A6E}
-.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1B2529;padding-bottom:12px;margin-bottom:20px}
-dl{display:grid;grid-template-columns:160px 1fr;gap:6px 12px;margin:0 0 20px}dt{color:#5E6A6E}dd{margin:0}
-table{width:100%;border-collapse:collapse;margin:8px 0 20px}td{padding:8px 0;border-bottom:1px solid #D5D9D2}.n{text-align:right;font-variant-numeric:tabular-nums}
-tr.t td{font-weight:700;font-size:18px;border-bottom:0;border-top:2px solid #1B2529}
-.print{margin-top:24px}@media print{.print{display:none}}</style></head><body>
-<div class="head"><div><h1>Urbania 360</h1><div class="muted">Presupuesto</div></div><div class="muted">N° ${p.numero}<br>${fmtDate(p.presupuesto_enviado||today())}</div></div>
-<dl><dt>Cliente</dt><dd>${esc(p.cliente)}</dd><dt>Dirección</dt><dd>${esc(p.lugar)}</dd><dt>Trabajo</dt><dd>${esc(p.tipo)}</dd>
-${p.detalle?`<dt>Detalle</dt><dd>${esc(p.detalle).replace(/\n/g,"<br>")}</dd>`:""}</dl>
-<table>${fila("Mano de obra",p.mano_obra)}${fila("Materiales",p.materiales)}${fila("Otros costos",p.otros_costos)}
-<tr class="t"><td>Total</td><td class="n">${p.presupuesto_total!=null?money.format(p.presupuesto_total):"A definir"}</td></tr></table>
-${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
-<button class="print" onclick="print()">Imprimir / guardar PDF</button></body></html>`);
+      w.document.write(presupuestoHTML(p));
       w.document.close();
     }catch(e){ w.close(); toast(e.message||"No se pudo armar el presupuesto"); }
   };
@@ -1541,7 +1627,7 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
       ["Solicitud", [
         ["id","ID de solicitud",x=>Number(x.id)],["fecha","Fecha de ingreso de solicitud",x=>d(x.fecha)],["cliente","Cliente",x=>x.solicitante],
         ["tel","Teléfono",x=>x.cliente_telefono],["email","Email",x=>x.cliente_email],["lugar","Dirección",x=>x.lugar],
-        ["tipo","Tipo de trabajo",x=>x.tipo],["detalle","Detalle de la solicitud",x=>x.detalle],["origen","Origen de la consulta",x=>ORIGEN[x.origen]||""],
+        ["tipo","Categoría o trabajo",x=>x.tipo],["detalle","Detalle de la solicitud",x=>x.detalle],["origen","Origen de la consulta",x=>ORIGEN[x.origen]||""],
       ].concat(state.yo && state.yo.ve_referido ? [["referido","Referido por (interno)",x=>x.referido_por]] : [])],
       ["Presupuesto", [
         ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
@@ -1552,7 +1638,7 @@ ${p.forma_pago?`<p><strong>Forma de pago:</strong> ${esc(p.forma_pago)}</p>`:""}
         ["ejec","Fecha de ejecución",x=>d(x.inicio_previsto)],["resp","Responsable del trabajo",x=>x.responsable],["t_est","Estado de la tarea",x=>TAREA[x.estado]||""],
         ["fprev","Fecha prevista de finalización",x=>d(x.fin_previsto)],["freal","Fecha real de final de obra",x=>d(x.finalizado_en)],
         ["desvio","Desvío (días)",x=>{ const v=desvio(x); return v ? {num: v.tipo==="antes"?-v.dias:v.dias} : null; }],
-        ["dur","Duración (días)",x=>n(duracion(x))],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>x.fotos.length],
+        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>x.fotos.length],
       ]],
     ];
     return grupos;

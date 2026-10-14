@@ -34,6 +34,20 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
 - **Presupuesto para el cliente**: documento imprimible (o PDF) con solo
   los datos para el cliente
 
+- **Categoría o trabajo**: categorías sugeridas (mantenimiento general,
+  electricidad e iluminación, plomería y sanitarios, pintura y
+  reparaciones, espacios comunes, edificios y consorcios, limpieza y
+  conservación, otros) o un trabajo escrito a mano; las nuevas quedan
+  disponibles para las próximas solicitudes
+- **Descripción / detalle del trabajo**, materiales incluidos, validez en
+  días y condiciones para el cliente
+- **Ver presupuesto**: documento con logo y marca de Urbania 360, número
+  único (URB-año-número), fecha de emisión y vencimiento, cliente,
+  dirección, categoría, descripción, materiales, costos, total, forma de
+  pago, condiciones y firmas; listo para imprimir o guardar en PDF. Los
+  datos de contacto del pie salen de `EMPRESA_TELEFONO`, `EMPRESA_EMAIL`,
+  `EMPRESA_DIRECCION`, `EMPRESA_CUIT` y `EMPRESA_WEB`
+
 **3 · Cronología**: para cada solicitud, ingreso → presupuesto →
 aceptación → ejecución → final de obra, con los días entre etapas y el
 desvío previsto/real. Filtros: en curso, finalizados, atrasados, sin
