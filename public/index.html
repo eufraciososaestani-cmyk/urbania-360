@@ -654,6 +654,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
     <div class="sec">Presupuesto</div>
     <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
+    <div class="f full" id="boxRechazo" hidden><label for="pMotivo">Motivo del rechazo <span style="text-transform:none;letter-spacing:0;color:var(--ink-3)">· dato interno, no sale en el presupuesto</span></label>
+      <input id="pMotivo" type="text" list="dlMotivo" autocomplete="off" placeholder="Elegí un motivo o escribilo"></div>
     <div class="f"><label for="gMano">Mano de obra</label><div class="money"><span>$</span><input id="gMano" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gMat">Materiales</label><div class="money"><span>$</span><input id="gMat" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gOtros">Otros costos</label><div class="money"><span>$</span><input id="gOtros" type="text" inputmode="decimal" placeholder="0"></div></div>
@@ -728,6 +730,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 </dialog>
 
 <datalist id="dlTipo"></datalist>
+<datalist id="dlMotivo">
+  <option value="Precio elevado"></option><option value="Eligió otro proveedor"></option><option value="Decidió no hacer el trabajo"></option>
+  <option value="Lo postergó"></option><option value="Plazos de ejecución"></option><option value="Forma de pago"></option><option value="No respondió"></option>
+</datalist>
 <datalist id="dlPago">
   <option value="Efectivo"></option><option value="Transferencia"></option>
   <option value="50% anticipo y 50% al finalizar"></option><option value="Tarjeta de crédito"></option>
@@ -1073,6 +1079,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("pDescHint").textContent = !rec.descripcion_trabajo && rec.detalle ? "Se completó con lo que pidió el cliente: ajustalo con las tareas que se van a realizar." : "";
     $("pMatDet").value = rec.materiales_detalle || "";
     $("pCond").value = rec.condiciones || "";
+    $("pMotivo").value = rec.motivo_rechazo || "";
     $("pValidez").value = rec.validez_dias ?? "";
     state.dirty2=false; $("err2").hidden=true; fotosErr("");
     state.fotos = (rec.fotos||[]).map(f=>({...f, id:String(f.id)}));
@@ -1106,6 +1113,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   $("segPres").addEventListener("change",()=>{ if(getRadio("pres")==="aceptado" && !$("gAceptado").value){ $("gAceptado").value=today(); syncArea2(); } });
   $("segTarea").addEventListener("change",()=>{ if(getRadio("tarea")==="finalizada" && !$("gFin").value){ $("gFin").value=today(); syncArea2(); } });
   $("segPres").addEventListener("change",syncArea2);
+  $("pMotivo").addEventListener("input",syncArea2);
   $("segTarea").addEventListener("change",syncArea2);
 
   function syncArea2(){
@@ -1116,11 +1124,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const total=parseMonto($("gTotal").value);
     const b=$("presBanner");
     b.className=`banner pr-${p}`;
-    b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span></span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}</span>`;
+    b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span>${p==="rechazado"&&$("pMotivo").value.trim()?`<br><span style="font-weight:500;font-size:14px">Motivo: ${esc($("pMotivo").value.trim())}</span>`:""}</span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}</span>`;
     // Sin presupuesto aceptado solo se permite Pendiente o Cancelada
     document.querySelectorAll('input[name="tarea"]').forEach(i=>{ i.disabled = !aceptado && !TAREA_SIN_ACEPTAR.includes(i.value); });
     if(!aceptado && !TAREA_SIN_ACEPTAR.includes(getRadio("tarea"))) setRadio("tarea","pendiente");
     $("avisoTarea").hidden = aceptado;
+    $("boxRechazo").hidden = p!=="rechazado";
     // Cronología y desvío con lo que está cargado en el formulario
     if(state.pres){
       const v={...state.pres, presupuesto_estado:p, estado:getRadio("tarea")||"pendiente", presupuesto_ingreso:$("gIngreso").value||null,
@@ -1142,7 +1151,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
       tipo:$("pCat").value.trim(), descripcion_trabajo:$("pDesc").value.trim(), materiales_detalle:$("pMatDet").value.trim(),
-      condiciones:$("pCond").value.trim(), validez_dias:$("pValidez").value};
+      condiciones:$("pCond").value.trim(), validez_dias:$("pValidez").value,
+      motivo_rechazo: getRadio("pres")==="rechazado" ? $("pMotivo").value.trim() : ""};
     $("btnSave2").disabled=true;
     try{
       const rec = await api(`/trabajos/${state.pres.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
@@ -1525,7 +1535,7 @@ tr.tot td.n{font:700 26px "Barlow Condensed",sans-serif;color:#1E5A73}
     return [
       {k:"Ingreso de solicitud", f:x.fecha},
       {k:"Ingreso del presupuesto", f:x.presupuesto_ingreso},
-      {k: rech ? "Presupuesto rechazado" : "Aceptación", f: rech ? null : x.presupuesto_aceptado_en, rech},
+      {k: rech ? "Presupuesto rechazado" : "Aceptación", f: rech ? null : x.presupuesto_aceptado_en, rech, motivo: rech ? x.motivo_rechazo : null},
       {k:"Ejecución de la tarea", f:x.inicio_previsto, cancel: x.estado==="cancelada"},
       {k:"Final de obra", f:x.finalizado_en, prev:x.fin_previsto},
     ];
@@ -1548,7 +1558,7 @@ tr.tot td.n{font:700 26px "Barlow Condensed",sans-serif;color:#1E5A73}
         ${i>0?`<span class="lnk">${ant!==null&&ant>=0?`<b>${ant} d</b>`:""}</span>`:""}
         <span class="pt"></span>
         <span class="pk">${esc(p.k)}</span>
-        <span class="pf">${p.rech?"Rechazado":p.f?fmtDate(p.f)+(fut?" (programada)":""):"—"}</span>${extra}
+        <span class="pf">${p.rech?(p.motivo?`Rechazado: ${esc(p.motivo)}`:"Rechazado"):p.f?fmtDate(p.f)+(fut?" (programada)":""):"—"}</span>${extra}
       </li>`;
     }).join("")}</ol>`;
   }
@@ -1646,7 +1656,7 @@ tr.tot td.n{font:700 26px "Barlow Condensed",sans-serif;color:#1E5A73}
       ["Presupuesto", [
         ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
         ["total","Presupuesto total",x=>n(x.presupuesto_total)],["mano","Mano de obra",x=>n(x.mano_obra)],["mat","Materiales",x=>n(x.materiales)],["otros","Otros costos",x=>n(x.otros_costos)],
-        ["pago","Forma de pago",x=>x.forma_pago],["p_est","Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],
+        ["pago","Forma de pago",x=>x.forma_pago],["p_est","Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],["motivo","Motivo del rechazo",x=>x.motivo_rechazo],
       ]],
       ["Trabajo", [
         ["ejec","Fecha de ejecución",x=>d(x.inicio_previsto)],["resp","Responsable del trabajo",x=>x.responsable],["t_est","Estado de la tarea",x=>TAREA[x.estado]||""],

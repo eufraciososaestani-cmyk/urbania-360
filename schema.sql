@@ -82,6 +82,7 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS descripcion_trabajo    TEXT;    --
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS materiales_detalle     TEXT;    -- materiales incluidos
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS condiciones            TEXT;    -- condiciones / notas para el cliente
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS validez_dias           INTEGER; -- validez del presupuesto
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS motivo_rechazo         TEXT;    -- INTERNO: por qué se rechazó el presupuesto
 -- inicio_previsto = fecha de ejecución de la tarea · finalizado_en = fecha real de final de obra
 
 -- Fotos de cada trabajo (antes / durante / después), guardadas en la base

@@ -27,7 +27,7 @@ const COLUMNAS_GESTION = [
   't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
   't.presupuesto_estado', 't.estado', 't.responsable',
   fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
-  't.descripcion_trabajo', 't.materiales_detalle', 't.condiciones', 't.validez_dias',
+  't.descripcion_trabajo', 't.materiales_detalle', 't.condiciones', 't.validez_dias', 't.motivo_rechazo',
   't.observaciones_internas', 't.creado_en', 't.actualizado_en',
 ];
 const COLUMNA_FOTOS = `COALESCE(
@@ -98,6 +98,7 @@ function validarGestion(body) {
     materiales_detalle: texto(body.materiales_detalle),
     condiciones: texto(body.condiciones),
     validez_dias: numero(body.validez_dias),
+    motivo_rechazo: texto(body.motivo_rechazo),
   };
   // La categoría también se puede ajustar desde el presupuesto
   const tipo = texto(body.tipo);
@@ -246,7 +247,7 @@ async function eliminarPresupuesto(req, res) {
          forma_pago = NULL, presupuesto_ingreso = NULL, presupuesto_enviado = NULL, presupuesto_aceptado_en = NULL,
          presupuesto_estado = 'pendiente', estado = 'pendiente', responsable = NULL,
          inicio_previsto = NULL, fin_previsto = NULL, finalizado_en = NULL, observaciones_internas = NULL,
-         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL
+         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL
        WHERE id = $1`, [req.params.id]);
     if (!rowCount) return res.status(404).json({ error: 'Solicitud no encontrada' });
     res.json(await obtenerTrabajo(req.usuario, req.params.id));
