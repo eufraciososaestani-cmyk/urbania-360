@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Presupuesto · Urbania 360</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<script src="/presupuesto-doc.js"></script>
+<style>
+:root{--violeta:#2D0069;--naranja:#E48100;--tinta:#1F1830;--gris:#6B6478;--linea:#E3DEEA}
+*{box-sizing:border-box}
+body{margin:0;background:#EEEAF4;color:var(--tinta);font:15px/1.5 "Montserrat",system-ui,sans-serif;padding:24px 12px 48px}
+.estado{max-width:820px;margin:0 auto 16px;padding:14px 18px;border-radius:8px;font-weight:600}
+.estado.ok{background:#E3F4EA;color:#1E6B40;border:1.5px solid #1E6B40}
+.estado.no{background:#FBE6E3;color:#A33A2C;border:1.5px solid #A33A2C}
+.estado.aviso{background:#FDF1E2;color:#8A4D00;border:1.5px solid #E48100}
+.responder{max-width:820px;margin:18px auto 0;background:#fff;border-radius:8px;padding:22px 26px;box-shadow:0 6px 24px rgba(45,0,105,.08);border-top:4px solid var(--naranja)}
+.responder h2{margin:0 0 6px;color:var(--violeta);font-size:19px}
+.responder p{margin:0 0 14px;color:var(--gris)}
+.responder label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin:12px 0 5px}
+.responder input,.responder textarea{width:100%;padding:11px 12px;border:1px solid #CFC6DD;border-radius:6px;font:inherit}
+.responder textarea{min-height:80px;resize:vertical}
+.botones{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.btn{font:700 15px "Montserrat",system-ui,sans-serif;border-radius:6px;padding:12px 20px;cursor:pointer;border:2px solid transparent}
+.btn.si{background:var(--naranja);color:#fff}
+.btn.no{background:#fff;color:#A33A2C;border-color:#A33A2C}
+.btn.sec{background:#fff;color:var(--violeta);border-color:#CFC6DD}
+.btn:disabled{opacity:.6;cursor:default}
+.err{color:#A33A2C;font-weight:600;margin-top:10px}
+.acciones{max-width:820px;margin:14px auto 0;display:flex;justify-content:flex-end}
+.cargando{text-align:center;color:var(--gris);padding:60px 0}
+:focus-visible{outline:3px solid var(--naranja);outline-offset:2px}
+@media print{body{background:#fff;padding:0}.responder,.acciones,.estado{display:none}}
+</style>
+</head>
+<body>
+<div id="estado"></div>
+<div id="doc"><p class="cargando">Cargando presupuesto…</p></div>
+<div id="responder"></div>
+<div class="acciones" id="acciones" hidden><button class="btn sec" type="button" onclick="print()">Imprimir / guardar PDF</button></div>
+
+<script>
+(function(){
+  const P = window.U360Presupuesto, esc = P.esc;
+  const token = location.pathname.split("/").filter(Boolean).pop();
+  const $ = id => document.getElementById(id);
+  const st = document.createElement("style"); st.textContent = P.ESTILOS; document.head.appendChild(st);
+
+  async function cargar(){
+    try{
+      const r = await fetch(`/api/publico/presupuesto/${encodeURIComponent(token)}`);
+      const p = await r.json();
+      if(!r.ok) throw new Error(p.error || "No se pudo cargar el presupuesto");
+      document.title = `Presupuesto ${p.numero} · ${p.empresa.nombre}`;
+      $("doc").innerHTML = P.cuerpo(p, "/img/logo-urbania-360.png");
+      $("acciones").hidden = false;
+      mostrarEstado(p);
+    }catch(e){
+      $("doc").innerHTML = `<div class="estado no">${esc(e.message)}</div>`;
+    }
+  }
+
+  function mostrarEstado(p){
+    $("responder").innerHTML = "";
+    if(p.presupuesto_estado === "aceptado"){
+      $("estado").innerHTML = `<div class="estado ok">✓ Presupuesto aceptado${p.respuesta_cliente?` · ${esc(p.respuesta_cliente)}`:""}. ¡Gracias! Nos vamos a comunicar para coordinar el trabajo.</div>`;
+      return;
+    }
+    if(p.presupuesto_estado === "rechazado"){
+      $("estado").innerHTML = `<div class="estado no">Este presupuesto fue rechazado${p.respuesta_cliente?` · ${esc(p.respuesta_cliente)}`:""}. Si querés revisarlo, contactanos.</div>`;
+      return;
+    }
+    if(p.vencido){
+      $("estado").innerHTML = `<div class="estado aviso">Este presupuesto venció el ${P.fmtDate(p.fecha_vencimiento)}. Contactanos y te lo actualizamos.</div>`;
+      return;
+    }
+    $("estado").innerHTML = "";
+    $("responder").innerHTML = `<section class="responder" aria-labelledby="tResp">
+      <h2 id="tResp">¿Querés avanzar con este trabajo?</h2>
+      <p>Respondé desde acá y le llega al instante a ${esc(p.empresa.nombre)}. Válido hasta el ${P.fmtDate(p.fecha_vencimiento)}.</p>
+      <label for="rNombre">Tu nombre y apellido</label>
+      <input id="rNombre" autocomplete="name" placeholder="Nombre y apellido de quien responde">
+      <div id="boxMotivo" hidden><label for="rMotivo">Motivo (opcional)</label><textarea id="rMotivo" placeholder="Contanos por qué, así podemos mejorar la propuesta"></textarea></div>
+      <div class="botones">
+        <button class="btn si" type="button" id="bAceptar">Aceptar presupuesto</button>
+        <button class="btn no" type="button" id="bRechazar">Rechazar</button>
+      </div>
+      <p class="err" id="rErr" hidden></p>
+    </section>`;
+    $("bAceptar").onclick = () => responder("aceptar");
+    $("bRechazar").onclick = () => {
+      if($("boxMotivo").hidden){ $("boxMotivo").hidden=false; $("bRechazar").textContent="Confirmar rechazo"; $("rMotivo").focus(); return; }
+      responder("rechazar");
+    };
+  }
+
+  async function responder(accion){
+    const nombre = $("rNombre").value.trim();
+    if(!nombre){ $("rErr").textContent="Ingresá tu nombre para registrar la respuesta."; $("rErr").hidden=false; $("rNombre").focus(); return; }
+    $("bAceptar").disabled = $("bRechazar").disabled = true;
+    try{
+      const r = await fetch(`/api/publico/presupuesto/${encodeURIComponent(token)}/respuesta`, {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({accion, nombre, motivo: $("rMotivo") ? $("rMotivo").value : ""})});
+      const d = await r.json();
+      if(!r.ok) throw new Error(d.error || "No se pudo registrar la respuesta");
+      await cargar();
+      scrollTo({top:0, behavior:"smooth"});
+    }catch(e){
+      $("rErr").textContent = e.message; $("rErr").hidden=false;
+      $("bAceptar").disabled = $("bRechazar").disabled = false;
+    }
+  }
+
+  cargar();
+})();
+</script>
+</body>
+</html>

@@ -48,6 +48,16 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   datos de contacto del pie salen de `EMPRESA_TELEFONO`, `EMPRESA_EMAIL`,
   `EMPRESA_DIRECCION`, `EMPRESA_CUIT` y `EMPRESA_WEB`
 
+- **Enviar al cliente**: cada presupuesto tiene un link propio
+  (`/p/<código>`) con el documento y botones para **aceptar** o
+  **rechazar** (con motivo). Se envía por **email** (necesita las
+  variables `SMTP_*`) o por **WhatsApp** (abre el mensaje listo con el
+  link). Al enviarlo queda como "Enviado" con la fecha; cuando el cliente
+  responde, el estado, la fecha de aceptación o el motivo del rechazo se
+  actualizan solos y la respuesta queda registrada en la ficha.
+- Logo de Urbania 360 en la app, el ingreso, el ícono del navegador, el
+  presupuesto y los emails (`public/img`).
+
 **3 · Cronología**: para cada solicitud, ingreso → presupuesto →
 aceptación → ejecución → final de obra, con los días entre etapas y el
 desvío previsto/real. Filtros: en curso, finalizados, atrasados, sin

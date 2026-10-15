@@ -27,7 +27,7 @@ const COLUMNAS_GESTION = [
   't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
   't.presupuesto_estado', 't.estado', 't.responsable',
   fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
-  't.descripcion_trabajo', 't.materiales_detalle', 't.condiciones', 't.validez_dias', 't.motivo_rechazo',
+  't.descripcion_trabajo', 't.materiales_detalle', 't.condiciones', 't.validez_dias', 't.motivo_rechazo', 't.presupuesto_token', 't.respuesta_cliente',
   't.observaciones_internas', 't.creado_en', 't.actualizado_en',
 ];
 const COLUMNA_FOTOS = `COALESCE(
@@ -204,34 +204,42 @@ async function actualizarGestion(req, res) {
 // Datos para el presupuesto que se entrega al cliente. Lista cerrada de
 // campos: nunca incluye referido_por, observaciones internas ni responsable.
 const VALIDEZ_DEFECTO = 15;
+// Arma los datos del presupuesto para el cliente buscando por id o por el
+// token del link público. Devuelve null si no existe.
+async function datosPresupuesto(campo, valor) {
+  const { rows } = await pool.query(
+    `SELECT t.id, TO_CHAR(t.fecha, 'YYYY-MM-DD') AS fecha_solicitud, t.solicitante AS cliente,
+            t.cliente_telefono, t.cliente_email, t.lugar, t.tipo AS categoria,
+            COALESCE(NULLIF(t.descripcion_trabajo, ''), t.detalle) AS descripcion,
+            t.materiales_detalle, t.condiciones, t.forma_pago, t.presupuesto_estado,
+            t.mano_obra::float8 AS mano_obra, t.materiales::float8 AS materiales,
+            t.otros_costos::float8 AS otros_costos, t.presupuesto_total::float8 AS presupuesto_total,
+            TO_CHAR(COALESCE(t.presupuesto_enviado, t.presupuesto_ingreso, CURRENT_DATE), 'YYYY-MM-DD') AS fecha_emision,
+            COALESCE(t.validez_dias, $2) AS validez_dias, t.respuesta_cliente
+       FROM trabajos t WHERE t.${campo === 'token' ? 'presupuesto_token' : 'id'} = $1`, [valor, VALIDEZ_DEFECTO]);
+  if (!rows.length) return null;
+  const p = rows[0];
+  const emision = new Date(p.fecha_emision + 'T12:00:00Z');
+  emision.setUTCDate(emision.getUTCDate() + p.validez_dias);
+  p.fecha_vencimiento = emision.toISOString().slice(0, 10);
+  p.numero = `URB-${p.fecha_emision.slice(0, 4)}-${String(p.id).padStart(4, '0')}`;
+  // Datos de la empresa para el encabezado y el pie (variables de entorno opcionales)
+  p.empresa = {
+    nombre: process.env.EMPRESA_NOMBRE || 'Urbania 360',
+    lema: process.env.EMPRESA_LEMA || 'Gestión y mantenimiento integral',
+    telefono: process.env.EMPRESA_TELEFONO || '',
+    email: process.env.EMPRESA_EMAIL || '',
+    direccion: process.env.EMPRESA_DIRECCION || '',
+    cuit: process.env.EMPRESA_CUIT || '',
+    web: process.env.EMPRESA_WEB || '',
+  };
+  return p;
+}
+
 async function presupuestoCliente(req, res) {
   try {
-    const { rows } = await pool.query(
-      `SELECT t.id, TO_CHAR(t.fecha, 'YYYY-MM-DD') AS fecha_solicitud, t.solicitante AS cliente,
-              t.cliente_telefono, t.cliente_email, t.lugar, t.tipo AS categoria,
-              COALESCE(NULLIF(t.descripcion_trabajo, ''), t.detalle) AS descripcion,
-              t.materiales_detalle, t.condiciones, t.forma_pago,
-              t.mano_obra::float8 AS mano_obra, t.materiales::float8 AS materiales,
-              t.otros_costos::float8 AS otros_costos, t.presupuesto_total::float8 AS presupuesto_total,
-              TO_CHAR(COALESCE(t.presupuesto_enviado, t.presupuesto_ingreso, CURRENT_DATE), 'YYYY-MM-DD') AS fecha_emision,
-              COALESCE(t.validez_dias, $2) AS validez_dias
-         FROM trabajos t WHERE t.id = $1`, [req.params.id, VALIDEZ_DEFECTO]);
-    if (!rows.length) return res.status(404).json({ error: 'Solicitud no encontrada' });
-    const p = rows[0];
-    const emision = new Date(p.fecha_emision + 'T12:00:00Z');
-    emision.setUTCDate(emision.getUTCDate() + p.validez_dias);
-    p.fecha_vencimiento = emision.toISOString().slice(0, 10);
-    p.numero = `URB-${p.fecha_emision.slice(0, 4)}-${String(p.id).padStart(4, '0')}`;
-    // Datos de la empresa para el encabezado y el pie (variables de entorno opcionales)
-    p.empresa = {
-      nombre: process.env.EMPRESA_NOMBRE || 'Urbania 360',
-      lema: process.env.EMPRESA_LEMA || 'Mantenimiento integral de edificios y consorcios',
-      telefono: process.env.EMPRESA_TELEFONO || '',
-      email: process.env.EMPRESA_EMAIL || '',
-      direccion: process.env.EMPRESA_DIRECCION || '',
-      cuit: process.env.EMPRESA_CUIT || '',
-      web: process.env.EMPRESA_WEB || '',
-    };
+    const p = await datosPresupuesto('id', req.params.id);
+    if (!p) return res.status(404).json({ error: 'Solicitud no encontrada' });
     res.json(p);
   } catch (err) {
     res.status(500).json({ error: 'Error al armar el presupuesto', detalle: err.message });
@@ -247,7 +255,8 @@ async function eliminarPresupuesto(req, res) {
          forma_pago = NULL, presupuesto_ingreso = NULL, presupuesto_enviado = NULL, presupuesto_aceptado_en = NULL,
          presupuesto_estado = 'pendiente', estado = 'pendiente', responsable = NULL,
          inicio_previsto = NULL, fin_previsto = NULL, finalizado_en = NULL, observaciones_internas = NULL,
-         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL
+         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL,
+         presupuesto_token = NULL, respuesta_cliente = NULL
        WHERE id = $1`, [req.params.id]);
     if (!rowCount) return res.status(404).json({ error: 'Solicitud no encontrada' });
     res.json(await obtenerTrabajo(req.usuario, req.params.id));
@@ -312,5 +321,5 @@ async function eliminarFoto(req, res) {
 
 module.exports = {
   listar, crear, actualizarSolicitud, actualizarGestion, presupuestoCliente, eliminar, eliminarPresupuesto,
-  subirFoto, verFoto, eliminarFoto,
+  subirFoto, verFoto, eliminarFoto, datosPresupuesto, obtenerTrabajo, hoyISO,
 };
