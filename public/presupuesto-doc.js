@@ -78,14 +78,14 @@
     ${mats.length?`<h2>Materiales incluidos</h2><ul>${mats.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>`:""}
     <h2>Detalle de costos</h2>
     <table>${fila("Mano de obra",p.mano_obra)}${fila("Materiales",p.materiales)}${fila("Otros costos",p.otros_costos)}
-      <tr class="sub"><td>Subtotal del trabajo</td><td class="n">${subtotal!=null?money.format(subtotal):"A definir"}</td></tr></table>
-    ${extras.length?`<h2>Agregados extras</h2>
+      <tr class="sub"><td>Presupuesto original</td><td class="n">${subtotal!=null?money.format(subtotal):"A definir"}</td></tr></table>
+    ${extras.length?`<h2>Agregados extras al presupuesto original</h2>
     <table>${extras.map(x=>`<tr><td>${esc(x.descripcion)}</td><td class="n">${money.format(x.importe)}</td></tr>`).join("")}
       <tr class="sub"><td>Subtotal agregados extras</td><td class="n">${money.format(extrasTotal)}</td></tr></table>`:""}
     <h2>Resumen del presupuesto</h2>
     <table class="resumen">
-      <tr><td>Subtotal del trabajo</td><td class="n">${subtotal!=null?money.format(subtotal):"—"}</td></tr>
-      ${extras.length?`<tr><td>Agregados extras</td><td class="n">${money.format(extrasTotal)}</td></tr>`:""}
+      <tr><td>Presupuesto original</td><td class="n">${subtotal!=null?money.format(subtotal):"—"}</td></tr>
+      ${extras.length?`<tr><td>Agregados extras al presupuesto original</td><td class="n">${money.format(extrasTotal)}</td></tr>`:""}
       <tr class="tot"><td>Total general</td><td class="n">${p.presupuesto_total!=null?money.format(p.presupuesto_total):"A definir"}</td></tr></table>
     <div class="pago">
       <div class="caja"><span class="k">Forma de pago</span><b>${p.forma_pago?esc(p.forma_pago):"A convenir"}</b></div>
