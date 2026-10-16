@@ -76,6 +76,20 @@ button,input,select,textarea{font:inherit;color:inherit}
 .canal input{padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface-2);width:100%}
 .btn.wa{background:#1F8F4E;border-color:#1F8F4E;color:#fff}
 .btn.mail{background:#2D0069;border-color:#2D0069;color:#fff}
+.extras{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.extra{display:grid;grid-template-columns:minmax(0,1fr) 170px auto;gap:8px;align-items:center}
+.extra input{padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);width:100%}
+.extra .money input{padding-left:26px}
+.extra .quitar{border:0;background:transparent;color:var(--no);cursor:pointer;font-size:20px;line-height:1;padding:4px 8px;border-radius:6px}
+.extras-vacio{margin:0;font-size:13.5px;color:var(--ink-3)}
+.sumatoria{grid-column:1/-1;background:var(--surface);border:1.5px solid var(--a2);border-radius:10px;padding:6px 18px}
+.sumatoria .ln{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.sumatoria .ln span:last-child{font-family:var(--f-mono)}
+.sumatoria .ln.sub{font-weight:600}
+.sumatoria .ln.ind{padding-left:14px;color:var(--ink-2);font-size:14px}
+.sumatoria .ln.total{border-bottom:0;padding:12px 0 8px;font:700 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.sumatoria .ln.total span:last-child{font-family:var(--f-display);font-size:26px;color:var(--a2)}
+@media (max-width:640px){ .extra{grid-template-columns:1fr auto} .extra .money{grid-column:1} }
 .respuesta-cli{grid-column:1/-1;margin:0;padding:10px 14px;border-radius:8px;font-weight:600;font-size:14px;background:var(--a3-soft);color:var(--ink)}
 @media (max-width:640px){ .envio-canales{grid-template-columns:1fr} .brand-logo{height:44px} }
 .eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
@@ -680,7 +694,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="f"><label for="gMano">Mano de obra</label><div class="money"><span>$</span><input id="gMano" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gMat">Materiales</label><div class="money"><span>$</span><input id="gMat" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gOtros">Otros costos</label><div class="money"><span>$</span><input id="gOtros" type="text" inputmode="decimal" placeholder="0"></div></div>
-    <div class="f"><label for="gTotal">Presupuesto total</label><div class="money total"><span>$</span><input id="gTotal" type="text" inputmode="decimal" placeholder="Se calcula solo"></div></div>
+    <div class="f"><label for="gTotal">Subtotal del trabajo</label><div class="money total"><span>$</span><input id="gTotal" type="text" inputmode="decimal" placeholder="Se calcula solo"></div></div>
+
+    <div class="sec">Agregados extras</div>
+    <p class="area-hint">Trabajos o materiales adicionales que van aparte del trabajo principal. Se muestran separados en el presupuesto y se suman al total general.</p>
+    <div class="extras" id="extrasList"></div>
+    <div class="f full"><button class="btn small" type="button" id="btnAddExtra" style="align-self:flex-start">+ Agregar extra</button></div>
+
+    <div class="sec">Sumatoria del presupuesto</div>
+    <div class="sumatoria" id="sumatoria" aria-live="polite"></div>
+
     <div class="f"><label for="gIngreso">Fecha de ingreso del presupuesto</label><input id="gIngreso" type="date"></div>
     <div class="f"><label for="gAceptado">Fecha de aceptación</label><input id="gAceptado" type="date"></div>
     <div class="f"><label for="gPago">Forma de pago</label><input id="gPago" type="text" list="dlPago" autocomplete="off"></div>
@@ -816,7 +839,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const money = new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0});
   const numFmt = new Intl.NumberFormat("es-AR");
   const state = {rows:[], yo:null, mod:1, quick:{1:0, 2:0}, sol:null, pres:null, fotos:[], uploading:{antes:0,durante:0,despues:0},
-    dirty1:false, dirty2:false, totalManual:false, token:localStorage.getItem('urbania_token')};
+    dirty1:false, dirty2:false, totalManual:false, extras:[], token:localStorage.getItem('urbania_token')};
 
   function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function fmtDate(iso){ if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; }
@@ -1118,9 +1141,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("gMano").value = fmtMontoInput(rec.mano_obra);
     $("gMat").value = fmtMontoInput(rec.materiales);
     $("gOtros").value = fmtMontoInput(rec.otros_costos);
-    $("gTotal").value = fmtMontoInput(rec.presupuesto_total);
+    const subtotal = rec.subtotal_trabajo ?? (rec.extras_total==null ? rec.presupuesto_total : null);
+    $("gTotal").value = fmtMontoInput(subtotal);
     const suma = sumaPartes();
-    state.totalManual = rec.presupuesto_total!=null && (suma===null || Math.abs(suma-rec.presupuesto_total)>0.005);
+    state.totalManual = subtotal!=null && (suma===null || Math.abs(suma-subtotal)>0.005);
+    state.extras = (Array.isArray(rec.extras)?rec.extras:[]).map(x=>({descripcion:x.descripcion, importe:Number(x.importe)}));
+    renderExtras(); renderSumatoria();
     $("gPago").value = rec.forma_pago || "";
     $("gEnviado").value = rec.presupuesto_enviado || "";
     $("gIngreso").value = rec.presupuesto_ingreso || "";
@@ -1154,6 +1180,41 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   $("area2").addEventListener("input",e=>{ if(!e.target.closest(".etapas")) state.dirty2=true; });
   $("presIrSol").onclick=()=>{ const rec=state.pres; if(rec && closePres()) { setMod(1); openSol(porId(rec.id)||rec); } };
 
+  // ---- Agregados extras y sumatoria del presupuesto ----
+  function renderExtras(){
+    const l=$("extrasList");
+    l.innerHTML = state.extras.length ? state.extras.map((x,i)=>`<div class="extra" data-i="${i}">
+        <input type="text" data-k="descripcion" value="${esc(x.descripcion)}" placeholder="Descripción del extra" aria-label="Descripción del extra ${i+1}">
+        <div class="money"><span>$</span><input type="text" inputmode="decimal" data-k="importe" value="${x.importe==null||x.importe===""?"":esc(typeof x.importe==="number"?numFmt.format(x.importe):x.importe)}" placeholder="0" aria-label="Importe del extra ${i+1}"></div>
+        <button class="quitar" type="button" aria-label="Quitar extra ${i+1}" title="Quitar">×</button></div>`).join("")
+      : `<p class="extras-vacio">No hay agregados extras.</p>`;
+    l.querySelectorAll(".extra").forEach(row=>{
+      const i=+row.dataset.i;
+      row.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ state.extras[i][inp.dataset.k]=inp.value; renderSumatoria(); }));
+      row.querySelector(".quitar").onclick=()=>{ state.extras.splice(i,1); state.dirty2=true; renderExtras(); renderSumatoria(); };
+    });
+  }
+  $("btnAddExtra").onclick=()=>{ state.extras.push({descripcion:"",importe:""}); state.dirty2=true; renderExtras(); renderSumatoria();
+    const ins=$("extrasList").querySelectorAll('input[data-k="descripcion"]'); if(ins.length) ins[ins.length-1].focus(); };
+  function extrasLimpios(){ return state.extras.map(x=>({descripcion:String(x.descripcion||"").trim(), importe: typeof x.importe==="number" ? x.importe : parseMonto(x.importe)}))
+    .filter(x=>x.descripcion || x.importe!==null); }
+  function totales(){
+    const sub=parseMonto($("gTotal").value), ex=extrasLimpios(), exTot=ex.reduce((a,x)=>a+(Number.isFinite(x.importe)?x.importe:0),0);
+    const subOk = sub!==null && !Number.isNaN(sub) ? sub : null;
+    return {sub:subOk, ex, exTot, total: subOk===null && !ex.length ? null : (subOk||0)+exTot};
+  }
+  function renderSumatoria(){
+    const t=totales(), m=v=>v==null?"—":money.format(v), part=id=>{ const v=parseMonto($(id).value); return v===null||Number.isNaN(v)?null:v; };
+    $("sumatoria").innerHTML = `
+      <div class="ln ind"><span>Mano de obra</span><span>${m(part("gMano"))}</span></div>
+      <div class="ln ind"><span>Materiales</span><span>${m(part("gMat"))}</span></div>
+      <div class="ln ind"><span>Otros costos</span><span>${m(part("gOtros"))}</span></div>
+      <div class="ln sub"><span>Subtotal del trabajo</span><span>${m(t.sub)}</span></div>
+      <div class="ln sub"><span>Agregados extras${t.ex.length?` (${t.ex.length})`:""}</span><span>${m(t.ex.length?t.exTot:0)}</span></div>
+      <div class="ln total"><span>Total general</span><span>${m(t.total)}</span></div>`;
+    syncArea2();
+  }
+
   function sumaPartes(){
     const ps=[$("gMano").value,$("gMat").value,$("gOtros").value].map(parseMonto).filter(v=>v!==null && !Number.isNaN(v));
     return ps.length ? ps.reduce((a,b)=>a+b,0) : null;
@@ -1162,7 +1223,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     if(!state.totalManual){ const s=sumaPartes(); $("gTotal").value = s===null ? "" : numFmt.format(s); }
     syncArea2();
   }));
-  $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; syncArea2(); });
+  $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; renderSumatoria(); });
+  ["gMano","gMat","gOtros"].forEach(id=>$(id).addEventListener("input",renderSumatoria));
   $("gEnviado").addEventListener("input",syncArea2);
   ["gIngreso","gAceptado","gInicio","gFinPrev","gFin"].forEach(id=>$(id).addEventListener("input",syncArea2));
   // Fechas que se completan solas (se pueden corregir a mano)
@@ -1178,7 +1240,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const icon = aceptado ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>'
       : p==="rechazado" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>'
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>';
-    const total=parseMonto($("gTotal").value);
+    const total=totales().total;
     const b=$("presBanner");
     b.className=`banner pr-${p}`;
     b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span>${p==="rechazado"&&$("pMotivo").value.trim()?`<br><span style="font-weight:500;font-size:14px">Motivo: ${esc($("pMotivo").value.trim())}</span>`:""}</span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}</span>`;
@@ -1201,9 +1263,11 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
   $("area2").addEventListener("submit",async e=>{
     e.preventDefault(); $("err2").hidden=true;
-    const nums={mano_obra:parseMonto($("gMano").value), materiales:parseMonto($("gMat").value), otros_costos:parseMonto($("gOtros").value), presupuesto_total:parseMonto($("gTotal").value)};
+    const nums={mano_obra:parseMonto($("gMano").value), materiales:parseMonto($("gMat").value), otros_costos:parseMonto($("gOtros").value), subtotal_trabajo:parseMonto($("gTotal").value)};
     if(Object.values(nums).some(Number.isNaN)){ mostrarErr("err2",{message:"Los importes tienen que ser números, por ejemplo 150000 o 150.000."}); return; }
-    const body={...nums, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value,
+    const ex=extrasLimpios();
+    if(ex.some(x=>x.importe===null||Number.isNaN(x.importe)||!x.descripcion)){ mostrarErr("err2",{message:"Completá la descripción y el importe de cada agregado extra (o quitalo)."}); return; }
+    const body={...nums, extras:ex, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value,
       presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
@@ -1676,7 +1740,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       ].concat(state.yo && state.yo.ve_referido ? [["referido","Referido por (interno)",x=>x.referido_por]] : [])],
       ["Presupuesto", [
         ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
-        ["total","Presupuesto total",x=>n(x.presupuesto_total)],["mano","Mano de obra",x=>n(x.mano_obra)],["mat","Materiales",x=>n(x.materiales)],["otros","Otros costos",x=>n(x.otros_costos)],
+        ["subtotal","Subtotal del trabajo",x=>n(x.subtotal_trabajo)],["extras","Agregados extras",x=>n(x.extras_total)],
+        ["extras_det","Detalle de extras",x=>(x.extras||[]).map(e=>`${e.descripcion}: ${money.format(e.importe)}`).join(" | ")],["total","Presupuesto total (general)",x=>n(x.presupuesto_total)],["mano","Mano de obra",x=>n(x.mano_obra)],["mat","Materiales",x=>n(x.materiales)],["otros","Otros costos",x=>n(x.otros_costos)],
         ["pago","Forma de pago",x=>x.forma_pago],["p_est","Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],["motivo","Motivo del rechazo",x=>x.motivo_rechazo],
       ]],
       ["Trabajo", [

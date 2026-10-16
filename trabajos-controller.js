@@ -27,6 +27,7 @@ const COLUMNAS_GESTION = [
   't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
   't.presupuesto_estado', 't.estado', 't.responsable',
   fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
+  numCol('subtotal_trabajo'), numCol('extras_total'), `COALESCE(t.extras, '[]'::jsonb) AS extras`,
   't.descripcion_trabajo', 't.materiales_detalle', 't.condiciones', 't.validez_dias', 't.motivo_rechazo', 't.presupuesto_token', 't.respuesta_cliente',
   't.observaciones_internas', 't.creado_en', 't.actualizado_en',
 ];
@@ -82,7 +83,7 @@ function validarGestion(body) {
     mano_obra: numero(body.mano_obra),
     materiales: numero(body.materiales),
     otros_costos: numero(body.otros_costos),
-    presupuesto_total: numero(body.presupuesto_total),
+    subtotal_trabajo: numero(body.subtotal_trabajo),
     forma_pago: texto(body.forma_pago),
     presupuesto_ingreso: fecha(body.presupuesto_ingreso),
     presupuesto_enviado: fecha(body.presupuesto_enviado),
@@ -106,12 +107,24 @@ function validarGestion(body) {
   if (d.validez_dias !== null && !(Number.isInteger(d.validez_dias) && d.validez_dias >= 1 && d.validez_dias <= 365)) {
     return { error: 'La validez del presupuesto tiene que ser un número de días entre 1 y 365' };
   }
-  for (const k of ['mano_obra', 'materiales', 'otros_costos', 'presupuesto_total']) {
+  for (const k of ['mano_obra', 'materiales', 'otros_costos', 'subtotal_trabajo']) {
     if (Number.isNaN(d[k])) return { error: 'Los importes tienen que ser números' };
   }
-  // Si no se cargó el total pero sí el detalle, el total es la suma
+  // Sumatoria: subtotal del trabajo (si no se cargó a mano, es la suma de sus partes)
   const partes = [d.mano_obra, d.materiales, d.otros_costos].filter(v => v !== null);
-  if (d.presupuesto_total === null && partes.length) d.presupuesto_total = partes.reduce((a, b) => a + b, 0);
+  if (d.subtotal_trabajo === null && partes.length) d.subtotal_trabajo = partes.reduce((a, b) => a + b, 0);
+  // Agregados extras: van aparte y se suman al total general
+  const extras = [];
+  for (const x of (Array.isArray(body.extras) ? body.extras : []).slice(0, 50)) {
+    const descripcion = texto(x && x.descripcion), importe = numero(x && x.importe);
+    if (!descripcion && importe === null) continue;
+    if (!descripcion) return { error: 'Cada agregado extra necesita una descripción' };
+    if (importe === null || Number.isNaN(importe) || importe < 0) return { error: `El importe del extra "${descripcion}" tiene que ser un número` };
+    extras.push({ descripcion: descripcion.slice(0, 200), importe });
+  }
+  d.extras = JSON.stringify(extras);
+  d.extras_total = extras.reduce((a, x) => a + x.importe, 0);
+  d.presupuesto_total = d.subtotal_trabajo === null && !extras.length ? null : (d.subtotal_trabajo || 0) + d.extras_total;
   if (!PRESUPUESTO_ESTADOS.includes(d.presupuesto_estado)) return { error: 'Estado del presupuesto inválido' };
   if (!TAREA_ESTADOS.includes(d.estado)) return { error: 'Estado de la tarea inválido' };
   if (d.presupuesto_estado !== 'aceptado' && !TAREA_SIN_ACEPTAR.includes(d.estado)) {
@@ -214,6 +227,7 @@ async function datosPresupuesto(campo, valor) {
             t.materiales_detalle, t.condiciones, t.forma_pago, t.presupuesto_estado,
             t.mano_obra::float8 AS mano_obra, t.materiales::float8 AS materiales,
             t.otros_costos::float8 AS otros_costos, t.presupuesto_total::float8 AS presupuesto_total,
+            t.subtotal_trabajo::float8 AS subtotal_trabajo, t.extras_total::float8 AS extras_total, COALESCE(t.extras, '[]'::jsonb) AS extras,
             TO_CHAR(COALESCE(t.presupuesto_enviado, t.presupuesto_ingreso, CURRENT_DATE), 'YYYY-MM-DD') AS fecha_emision,
             COALESCE(t.validez_dias, $2) AS validez_dias, t.respuesta_cliente
        FROM trabajos t WHERE t.${campo === 'token' ? 'presupuesto_token' : 'id'} = $1`, [valor, VALIDEZ_DEFECTO]);
@@ -256,6 +270,7 @@ async function eliminarPresupuesto(req, res) {
          presupuesto_estado = 'pendiente', estado = 'pendiente', responsable = NULL,
          inicio_previsto = NULL, fin_previsto = NULL, finalizado_en = NULL, observaciones_internas = NULL,
          descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL,
+         subtotal_trabajo = NULL, extras = NULL, extras_total = NULL,
          presupuesto_token = NULL, respuesta_cliente = NULL
        WHERE id = $1`, [req.params.id]);
     if (!rowCount) return res.status(404).json({ error: 'Solicitud no encontrada' });

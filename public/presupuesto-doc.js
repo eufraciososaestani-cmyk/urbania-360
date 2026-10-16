@@ -35,6 +35,9 @@
 .u360-doc td{padding:10px 0;border-bottom:1px solid var(--linea)}
 .u360-doc .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .u360-doc tr.tot td{border:0;padding-top:14px}
+.u360-doc tr.sub td{font-weight:700;border-bottom:2px solid var(--linea)}
+.u360-doc table.resumen{background:var(--naranja-suave);border-radius:6px}
+.u360-doc table.resumen td{padding:10px 16px}
 .u360-doc tr.tot td:first-child{font-size:17px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--violeta)}
 .u360-doc tr.tot td.n{font-size:26px;font-weight:800;color:var(--naranja)}
 .u360-doc .pago{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
@@ -51,6 +54,9 @@
     const fila=(k,v)=>v!=null?`<tr><td>${k}</td><td class="n">${money.format(v)}</td></tr>`:"";
     const contacto=[e.telefono&&`Tel. ${esc(e.telefono)}`, e.email&&esc(e.email), e.web&&esc(e.web)].filter(Boolean).join(" · ");
     const mats=lineas(p.materiales_detalle), conds=lineas(p.condiciones);
+    const extras=(Array.isArray(p.extras)?p.extras:[]).map(x=>({descripcion:x.descripcion, importe:Number(x.importe)||0}));
+    const extrasTotal=extras.reduce((t,x)=>t+x.importe,0);
+    const subtotal = p.subtotal_trabajo!=null ? p.subtotal_trabajo : (extras.length ? null : p.presupuesto_total);
     return `<div class="u360-doc"><div class="hoja">
   <header class="cab">
     <img src="${esc(logoUrl)}" alt="${esc(e.nombre||"Urbania 360")} · ${esc(e.lema||"")}">
@@ -72,7 +78,15 @@
     ${mats.length?`<h2>Materiales incluidos</h2><ul>${mats.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>`:""}
     <h2>Detalle de costos</h2>
     <table>${fila("Mano de obra",p.mano_obra)}${fila("Materiales",p.materiales)}${fila("Otros costos",p.otros_costos)}
-      <tr class="tot"><td>Total</td><td class="n">${p.presupuesto_total!=null?money.format(p.presupuesto_total):"A definir"}</td></tr></table>
+      <tr class="sub"><td>Subtotal del trabajo</td><td class="n">${subtotal!=null?money.format(subtotal):"A definir"}</td></tr></table>
+    ${extras.length?`<h2>Agregados extras</h2>
+    <table>${extras.map(x=>`<tr><td>${esc(x.descripcion)}</td><td class="n">${money.format(x.importe)}</td></tr>`).join("")}
+      <tr class="sub"><td>Subtotal agregados extras</td><td class="n">${money.format(extrasTotal)}</td></tr></table>`:""}
+    <h2>Resumen del presupuesto</h2>
+    <table class="resumen">
+      <tr><td>Subtotal del trabajo</td><td class="n">${subtotal!=null?money.format(subtotal):"—"}</td></tr>
+      ${extras.length?`<tr><td>Agregados extras</td><td class="n">${money.format(extrasTotal)}</td></tr>`:""}
+      <tr class="tot"><td>Total general</td><td class="n">${p.presupuesto_total!=null?money.format(p.presupuesto_total):"A definir"}</td></tr></table>
     <div class="pago">
       <div class="caja"><span class="k">Forma de pago</span><b>${p.forma_pago?esc(p.forma_pago):"A convenir"}</b></div>
       <div class="caja"><span class="k">Vencimiento del presupuesto</span><b>${fmtDate(p.fecha_vencimiento)}</b></div>

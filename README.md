@@ -48,6 +48,11 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   datos de contacto del pie salen de `EMPRESA_TELEFONO`, `EMPRESA_EMAIL`,
   `EMPRESA_DIRECCION`, `EMPRESA_CUIT` y `EMPRESA_WEB`
 
+- **Agregados extras** aparte (descripción e importe, los que hagan falta)
+  y **sumatoria del presupuesto** en vivo: mano de obra + materiales +
+  otros = subtotal del trabajo; + agregados extras = **total general**.
+  El documento del cliente muestra los extras en su propio cuadro y un
+  resumen con el total general.
 - **Enviar al cliente**: cada presupuesto tiene un link propio
   (`/p/<código>`) con el documento y botones para **aceptar** o
   **rechazar** (con motivo). Se envía por **email** (necesita las

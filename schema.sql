@@ -86,6 +86,13 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS motivo_rechazo         TEXT;    --
 -- Envío al cliente: link público y respuesta online
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_token      VARCHAR(64) UNIQUE; -- link público del presupuesto
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS respuesta_cliente      TEXT;    -- registro de aceptación/rechazo online
+-- Sumatoria: subtotal del trabajo + agregados extras = presupuesto_total (total general)
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS subtotal_trabajo       NUMERIC(14,2); -- mano de obra + materiales + otros
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS extras                 JSONB;         -- [{descripcion, importe}]
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS extras_total           NUMERIC(14,2);
+-- Presupuestos anteriores a los extras: su total pasa a ser el subtotal del trabajo
+UPDATE trabajos SET subtotal_trabajo = presupuesto_total, extras = '[]'::jsonb, extras_total = 0
+ WHERE extras_total IS NULL AND presupuesto_total IS NOT NULL;
 -- inicio_previsto = fecha de ejecución de la tarea · finalizado_en = fecha real de final de obra
 
 -- Fotos de cada trabajo (antes / durante / después), guardadas en la base
