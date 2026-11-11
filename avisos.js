@@ -17,16 +17,18 @@ function telefonoWhatsApp(tel) {
 }
 
 function mensajeUrgente(t, base) {
+  const trabajo = [t.tipo, t.detalle].filter(Boolean).join(' – ');
   return [
-    `🔴 SOLICITUD URGENTE · Urbania 360`,
-    `N° ${t.id} · ${t.solicitante}`,
-    `Dirección: ${t.lugar}`,
-    `Trabajo: ${t.tipo}`,
-    t.detalle ? `Pedido: ${t.detalle}` : null,
-    t.cliente_telefono ? `Tel. cliente: ${t.cliente_telefono}` : null,
-    `Ingreso: ${fmtDate(t.fecha)}`,
-    base ? `Ver en la app: ${base}` : null,
-  ].filter(Boolean).join('\n');
+    `🔴 *SOLICITUD URGENTE* · Urbania 360`,
+    ``,
+    `*Nombre:* ${t.solicitante}`,
+    `*Fecha:* ${fmtDate(t.fecha)}`,
+    `*Trabajo a realizar:* ${trabajo}`,
+    `*Dirección:* ${t.lugar}`,
+    t.cliente_telefono ? `*Teléfono:* ${t.cliente_telefono}` : null,
+    `*Solicitud N°:* ${t.id}`,
+    base ? `\nVer en la app: ${base}` : null,
+  ].filter(v => v !== null).join('\n');
 }
 
 async function avisarUrgente(t, base) {

@@ -1141,7 +1141,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("avisoEstado").innerHTML = a.automatico
       ? `<strong>Listo: se avisó automáticamente por WhatsApp a ${esc(a.destinatario)}.</strong> Si querés, mandalo también al grupo de Urbania.`
       : (a.error ? `${esc(a.error)}. ` : "") + "Mandá este aviso por WhatsApp: se abre con el mensaje listo, solo tocás enviar.";
-    $("avisoMsg").textContent = a.mensaje;
+    $("avisoMsg").textContent = a.mensaje.replace(/\*/g,""); // en WhatsApp los * son negrita
     const btns=[];
     if(a.whatsapp_url && !a.automatico) btns.push(`<a class="btn wa" href="${esc(a.whatsapp_url)}" target="_blank" rel="noopener">${WA} Enviar a ${esc(a.destinatario)}</a>`);
     btns.push(`<a class="btn ${a.whatsapp_url && !a.automatico ? "" : "wa"}" href="https://wa.me/?text=${encodeURIComponent(a.mensaje)}" target="_blank" rel="noopener">${WA} Enviar al grupo de Urbania</a>`);
