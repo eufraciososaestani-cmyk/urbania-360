@@ -26,7 +26,7 @@ const COLUMNAS_SOLICITUD = [
 ];
 const COLUMNAS_GESTION = [
   numCol('presupuesto_total'), numCol('mano_obra'), numCol('materiales'), numCol('otros_costos'),
-  't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_preparacion_en'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
+  't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_preparacion_en'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'), fechaCol('presupuesto_rechazado_en'),
   't.presupuesto_estado', 't.estado', 't.responsable',
   fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
   numCol('subtotal_trabajo'), numCol('extras_total'), `COALESCE(t.extras, '[]'::jsonb) AS extras`,
@@ -111,6 +111,7 @@ function validarGestion(body) {
     condiciones: texto(body.condiciones),
     validez_dias: numero(body.validez_dias),
     motivo_rechazo: texto(body.motivo_rechazo),
+    presupuesto_rechazado_en: fecha(body.presupuesto_rechazado_en),
   };
   // La categoría también se puede ajustar desde el presupuesto
   const tipo = texto(body.tipo);
@@ -140,6 +141,7 @@ function validarGestion(body) {
   if (!TAREA_ESTADOS.includes(d.estado)) return { error: 'Estado de la tarea inválido' };
   // Presupuesto rechazado: la tarea pasa sola a cancelada
   if (d.presupuesto_estado === 'rechazado') d.estado = 'cancelada';
+  else d.presupuesto_rechazado_en = null;
   if (d.presupuesto_estado !== 'aceptado' && !TAREA_SIN_ACEPTAR.includes(d.estado)) {
     return { error: 'La tarea solo se puede asignar o ejecutar con el presupuesto aceptado' };
   }
@@ -155,6 +157,7 @@ function validarGestion(body) {
   if (d.presupuesto_estado === 'en_preparacion' && !d.presupuesto_preparacion_en) d.presupuesto_preparacion_en = hoy;
   if (d.presupuesto_estado === 'enviado' && !d.presupuesto_enviado) d.presupuesto_enviado = hoy;
   if (d.presupuesto_estado === 'aceptado' && !d.presupuesto_aceptado_en) d.presupuesto_aceptado_en = hoy;
+  if (d.presupuesto_estado === 'rechazado' && !d.presupuesto_rechazado_en) d.presupuesto_rechazado_en = hoy;
   if (d.estado === 'finalizada' && !d.finalizado_en) d.finalizado_en = hoy;
   return { datos: d };
 }
@@ -290,7 +293,7 @@ async function eliminarPresupuesto(req, res) {
          forma_pago = NULL, presupuesto_ingreso = NULL, presupuesto_preparacion_en = NULL, presupuesto_enviado = NULL, presupuesto_aceptado_en = NULL,
          presupuesto_estado = 'pendiente', estado = 'pendiente', responsable = NULL,
          inicio_previsto = NULL, fin_previsto = NULL, finalizado_en = NULL, observaciones_internas = NULL,
-         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL,
+         descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL, presupuesto_rechazado_en = NULL,
          subtotal_trabajo = NULL, extras = NULL, extras_total = NULL,
          presupuesto_token = NULL, respuesta_cliente = NULL
        WHERE id = $1`, [req.params.id]);

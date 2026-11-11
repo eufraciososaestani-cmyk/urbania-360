@@ -159,9 +159,9 @@ router.post('/api/publico/presupuesto/:token/respuesta', async (req, res) => {
          WHERE presupuesto_token = $1`, [req.params.token, hoy, registro]);
     } else {
       await pool.query(
-        `UPDATE trabajos SET presupuesto_estado = 'rechazado', estado = 'cancelada', respuesta_cliente = $2,
+        `UPDATE trabajos SET presupuesto_estado = 'rechazado', estado = 'cancelada', respuesta_cliente = $2, presupuesto_rechazado_en = $4,
            motivo_rechazo = COALESCE(NULLIF($3, ''), motivo_rechazo)
-         WHERE presupuesto_token = $1`, [req.params.token, registro, motivo ? `${motivo} (indicado por el cliente)` : '']);
+         WHERE presupuesto_token = $1`, [req.params.token, registro, motivo ? `${motivo} (indicado por el cliente)` : '', hoy]);
     }
     res.json({ ok: true, estado: accion === 'aceptar' ? 'aceptado' : 'rechazado' });
   } catch (err) {

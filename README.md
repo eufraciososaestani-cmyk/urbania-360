@@ -67,7 +67,8 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   Urbania; con `AVISO_CALLMEBOT_APIKEY` el aviso a Diego sale solo.
 - **Automatismos del presupuesto**: al pasar a "En preparación" o a
   "Enviado" se registra la fecha del día (si no estaba cargada), y un
-  presupuesto **rechazado** deja la tarea en **Cancelada**.
+  presupuesto **rechazado** registra la fecha de rechazo y deja la tarea
+  en **Cancelada**.
 - Logo de Urbania 360 en la app, el ingreso, el ícono del navegador, el
   presupuesto y los emails (`public/img`).
 

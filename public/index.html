@@ -706,6 +706,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
     <div class="sec">Presupuesto</div>
     <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
+    <div class="f" id="boxRechFecha" hidden><label for="gRechazado">Fecha de rechazo</label><input id="gRechazado" type="date"></div>
     <div class="f full" id="boxRechazo" hidden><label for="pMotivo">Motivo del rechazo <span style="text-transform:none;letter-spacing:0;color:var(--ink-3)">· dato interno, no sale en el presupuesto</span></label>
       <input id="pMotivo" type="text" list="dlMotivo" autocomplete="off" placeholder="Elegí un motivo o escribilo"></div>
     <div class="f"><label for="gMano">Mano de obra</label><div class="money"><span>$</span><input id="gMano" type="text" inputmode="decimal" placeholder="0"></div></div>
@@ -1228,6 +1229,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("pMatDet").value = rec.materiales_detalle || "";
     $("pCond").value = rec.condiciones || "";
     $("pMotivo").value = rec.motivo_rechazo || "";
+    $("gRechazado").value = rec.presupuesto_rechazado_en || "";
     $("respCli").hidden = !rec.respuesta_cliente; $("respCli").textContent = rec.respuesta_cliente ? `Respuesta del cliente: ${rec.respuesta_cliente}` : "";
     $("pValidez").value = rec.validez_dias ?? "";
     state.dirty2=false; $("err2").hidden=true; fotosErr("");
@@ -1293,6 +1295,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   ["gMano","gMat","gOtros"].forEach(id=>$(id).addEventListener("input",renderSumatoria));
   $("gEnviado").addEventListener("input",syncArea2);
   $("gPrep").addEventListener("input",syncArea2);
+  $("gRechazado").addEventListener("input",syncArea2);
   ["gIngreso","gAceptado","gInicio","gFinPrev","gFin"].forEach(id=>$(id).addEventListener("input",syncArea2));
   // Fechas que se completan solas (se pueden corregir a mano)
   ["gMano","gMat","gOtros","gTotal"].forEach(id=>$(id).addEventListener("input",()=>{ if(!$("gIngreso").value && $(id).value.trim()){ $("gIngreso").value=today(); syncArea2(); } }));
@@ -1302,7 +1305,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     if(p==="en_preparacion" && !$("gPrep").value) $("gPrep").value=today();
     if(p==="enviado" && !$("gEnviado").value) $("gEnviado").value=today();
     if(p==="aceptado" && !$("gAceptado").value) $("gAceptado").value=today();
-    if(p==="rechazado") setRadio("tarea","cancelada");
+    if(p==="rechazado"){ setRadio("tarea","cancelada"); if(!$("gRechazado").value) $("gRechazado").value=today(); }
   });
   $("segTarea").addEventListener("change",()=>{ if(getRadio("tarea")==="finalizada" && !$("gFin").value){ $("gFin").value=today(); syncArea2(); } });
   $("segPres").addEventListener("change",syncArea2);
@@ -1317,16 +1320,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const total=totales().total;
     const b=$("presBanner");
     b.className=`banner pr-${p}`;
-    b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span>${p==="rechazado"&&$("pMotivo").value.trim()?`<br><span style="font-weight:500;font-size:14px">Motivo: ${esc($("pMotivo").value.trim())}</span>`:""}</span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}</span>`;
+    b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span>${p==="rechazado"&&$("pMotivo").value.trim()?`<br><span style="font-weight:500;font-size:14px">Motivo: ${esc($("pMotivo").value.trim())}</span>`:""}</span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}${p==="rechazado"&&$("gRechazado").value?`<br>Rechazado el ${fmtDate($("gRechazado").value)}`:""}</span>`;
     // Sin presupuesto aceptado solo se permite Pendiente o Cancelada
     document.querySelectorAll('input[name="tarea"]').forEach(i=>{ i.disabled = !aceptado && !TAREA_SIN_ACEPTAR.includes(i.value); });
     if(!aceptado && !TAREA_SIN_ACEPTAR.includes(getRadio("tarea"))) setRadio("tarea","pendiente");
     $("avisoTarea").hidden = aceptado;
-    $("boxRechazo").hidden = p!=="rechazado";
+    $("boxRechazo").hidden = $("boxRechFecha").hidden = p!=="rechazado";
     // Cronología y desvío con lo que está cargado en el formulario
     if(state.pres){
       const v={...state.pres, presupuesto_estado:p, estado:getRadio("tarea")||"pendiente", presupuesto_ingreso:$("gIngreso").value||null,
-        presupuesto_preparacion_en:$("gPrep").value||null, presupuesto_enviado:$("gEnviado").value||null, presupuesto_aceptado_en:$("gAceptado").value||null, inicio_previsto:$("gInicio").value||null, fin_previsto:$("gFinPrev").value||null, finalizado_en:$("gFin").value||null};
+        presupuesto_preparacion_en:$("gPrep").value||null, presupuesto_enviado:$("gEnviado").value||null, presupuesto_rechazado_en:$("gRechazado").value||null, presupuesto_aceptado_en:$("gAceptado").value||null, inicio_previsto:$("gInicio").value||null, fin_previsto:$("gFinPrev").value||null, finalizado_en:$("gFin").value||null};
       $("presCrono").innerHTML = cronoHTML(v);
       const dv=desvio(v);
       $("gDesvio").innerHTML = dv ? `<span class="dv dv-${dv.tipo}">${esc(dv.txt)}</span>` : (v.fin_previsto ? "Sin final de obra todavía" : "Cargá la fecha prevista para comparar");
@@ -1347,7 +1350,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
       tipo:$("pCat").value.trim(), descripcion_trabajo:$("pDesc").value.trim(), materiales_detalle:$("pMatDet").value.trim(),
       condiciones:$("pCond").value.trim(), validez_dias:$("pValidez").value,
-      motivo_rechazo: getRadio("pres")==="rechazado" ? $("pMotivo").value.trim() : ""};
+      motivo_rechazo: getRadio("pres")==="rechazado" ? $("pMotivo").value.trim() : "",
+      presupuesto_rechazado_en: getRadio("pres")==="rechazado" ? $("gRechazado").value : ""};
     $("btnSave2").disabled=true;
     try{
       const rec = await api(`/trabajos/${state.pres.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
@@ -1707,7 +1711,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       {k:"Ingreso del presupuesto", f:x.presupuesto_ingreso},
       {k:"En preparación", f:x.presupuesto_preparacion_en},
       {k:"Envío al cliente", f:x.presupuesto_enviado},
-      {k: rech ? "Presupuesto rechazado" : "Aceptación", f: rech ? null : x.presupuesto_aceptado_en, rech, motivo: rech ? x.motivo_rechazo : null},
+      {k: rech ? "Presupuesto rechazado" : "Aceptación", f: rech ? x.presupuesto_rechazado_en : x.presupuesto_aceptado_en, rech, motivo: rech ? x.motivo_rechazo : null},
       {k:"Ejecución de la tarea", f:x.inicio_previsto, cancel: x.estado==="cancelada"},
       {k:"Final de obra", f:x.finalizado_en, prev:x.fin_previsto, fin:true},
     ];
@@ -1730,7 +1734,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ${i>0?`<span class="lnk">${ant!==null&&ant>=0?`<b>${ant} d</b>`:""}</span>`:""}
         <span class="pt"></span>
         <span class="pk">${esc(p.k)}</span>
-        <span class="pf">${p.rech?(p.motivo?`Rechazado: ${esc(p.motivo)}`:"Rechazado"):p.f?fmtDate(p.f)+(fut?" (programada)":""):"—"}</span>${extra}
+        <span class="pf">${p.rech?(p.f?fmtDate(p.f)+"<br>":"")+(p.motivo?`Motivo: ${esc(p.motivo)}`:"Rechazado"):p.f?fmtDate(p.f)+(fut?" (programada)":""):"—"}</span>${extra}
       </li>`;
     }).join("")}</ol>`;
   }
@@ -1828,7 +1832,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ["urgencia","Urgencia",x=>URG[x.urgencia]||""],
       ].concat(state.yo && state.yo.ve_referido ? [["referido","Referido por (interno)",x=>x.referido_por]] : [])],
       ["Presupuesto", [
-        ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_prep","Fecha en preparación",x=>d(x.presupuesto_preparacion_en)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
+        ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_prep","Fecha en preparación",x=>d(x.presupuesto_preparacion_en)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],["p_rech","Fecha de rechazo",x=>d(x.presupuesto_rechazado_en)],
         ["subtotal","Presupuesto original",x=>n(x.subtotal_trabajo)],["extras","Agregados extras al presupuesto original",x=>n(x.extras_total)],
         ["extras_det","Detalle de extras",x=>(x.extras||[]).map(e=>`${e.descripcion}: ${money.format(e.importe)}`).join(" | ")],["total","Presupuesto total (general)",x=>n(x.presupuesto_total)],["mano","Mano de obra",x=>n(x.mano_obra)],["mat","Materiales",x=>n(x.materiales)],["otros","Otros costos",x=>n(x.otros_costos)],
         ["pago","Forma de pago",x=>x.forma_pago],["p_est","Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],["motivo","Motivo del rechazo",x=>x.motivo_rechazo],
