@@ -59,6 +59,7 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS origen             VARCHAR(30);   
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS cliente_telefono   VARCHAR(60);
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS cliente_email      VARCHAR(150);
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS referido_por       VARCHAR(200);  -- INTERNO: solo usuarios con ve_referido
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS urgencia           VARCHAR(10) NOT NULL DEFAULT 'media'; -- alta, media, baja
 
 -- ÁREA 2 · PRESUPUESTO Y TRABAJO
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_total   NUMERIC(14,2);
@@ -77,6 +78,7 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS observaciones_internas TEXT;
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_ingreso    DATE;   -- ingreso del presupuesto
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_aceptado_en DATE;  -- aceptación del presupuesto
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS fin_previsto           DATE;   -- fecha prevista de finalización
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_preparacion_en DATE; -- paso a "en preparación"
 -- Presupuesto para el cliente
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS descripcion_trabajo    TEXT;    -- descripción / detalle del trabajo (va al presupuesto)
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS materiales_detalle     TEXT;    -- materiales incluidos
@@ -93,6 +95,8 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS extras_total           NUMERIC(14,
 -- Presupuestos anteriores a los extras: su total pasa a ser el subtotal del trabajo
 UPDATE trabajos SET subtotal_trabajo = presupuesto_total, extras = '[]'::jsonb, extras_total = 0
  WHERE extras_total IS NULL AND presupuesto_total IS NOT NULL;
+-- Un presupuesto rechazado deja la tarea cancelada
+UPDATE trabajos SET estado = 'cancelada' WHERE presupuesto_estado = 'rechazado' AND estado <> 'cancelada';
 -- inicio_previsto = fecha de ejecución de la tarea · finalizado_en = fecha real de final de obra
 
 -- Fotos de cada trabajo (antes / durante / después), guardadas en la base

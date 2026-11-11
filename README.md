@@ -60,11 +60,19 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   link). Al enviarlo queda como "Enviado" con la fecha; cuando el cliente
   responde, el estado, la fecha de aceptación o el motivo del rechazo se
   actualizan solos y la respuesta queda registrada en la ficha.
+- **Urgencia** de cada solicitud (alta, media, baja), con filtro, orden
+  "más urgentes primero" y la columna en Excel. Al guardar una solicitud
+  en **alta** (nueva o que pasa a alta) se avisa por WhatsApp: se abre el
+  mensaje listo para Diego (`AVISO_URGENTE_TELEFONO`) o para el grupo de
+  Urbania; con `AVISO_CALLMEBOT_APIKEY` el aviso a Diego sale solo.
+- **Automatismos del presupuesto**: al pasar a "En preparación" o a
+  "Enviado" se registra la fecha del día (si no estaba cargada), y un
+  presupuesto **rechazado** deja la tarea en **Cancelada**.
 - Logo de Urbania 360 en la app, el ingreso, el ícono del navegador, el
   presupuesto y los emails (`public/img`).
 
-**3 · Cronología**: para cada solicitud, ingreso → presupuesto →
-aceptación → ejecución → final de obra, con los días entre etapas y el
+**3 · Cronología**: para cada solicitud, ingreso → presupuesto → en
+preparación → envío → aceptación → ejecución → final de obra, con los días entre etapas y el
 desvío previsto/real. Filtros: en curso, finalizados, atrasados, sin
 presupuesto aceptado.
 

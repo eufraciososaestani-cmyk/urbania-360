@@ -75,6 +75,11 @@ button,input,select,textarea{font:inherit;color:inherit}
 .canal h3 svg{width:20px;height:20px}
 .canal input{padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface-2);width:100%}
 .btn.wa{background:#1F8F4E;border-color:#1F8F4E;color:#fff}
+#dlgAviso .area{grid-template-columns:1fr}
+.aviso-msg{white-space:pre-wrap;font-size:13.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;margin:0}
+.aviso-btns{display:flex;flex-wrap:wrap;gap:8px}
+.aviso-btns .btn{text-decoration:none}
+.aviso-btns a.btn:not(.wa){color:var(--ink)}
 .btn.mail{background:#2D0069;border-color:#2D0069;color:#fff}
 .extras{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
 .extra{display:grid;grid-template-columns:minmax(0,1fr) 170px auto;gap:8px;align-items:center}
@@ -158,6 +163,10 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 .ta-en_proceso{color:var(--exec);background:var(--exec-bg)}
 .pr-aceptado,.ta-finalizada{color:var(--done);background:var(--done-bg)}
 .pr-rechazado,.ta-cancelada{color:var(--no);background:var(--no-bg)}
+.ur-alta{color:var(--no);background:var(--no-bg)}
+.ur-media{color:var(--pend);background:var(--pend-bg)}
+.ur-baja{color:var(--ink-3);background:var(--surface-2)}
+.pill.ur{font-size:11px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 .pill.pr-aceptado::before{content:"✓";width:auto;height:auto;background:none;font-size:12px}
 .pill.pr-rechazado::before{content:"✕";width:auto;height:auto;background:none;font-size:11px}
 .foto-count{display:inline-flex;align-items:center;gap:4px;font:500 11.5px var(--f-mono);color:var(--ink-3);margin-left:6px;vertical-align:1px}
@@ -234,7 +243,7 @@ body[data-mod="2"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a2
 .ci-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start}
 .ci-head b{font-weight:600}
 .ci-pills{display:flex;gap:6px;flex-wrap:wrap}
-.crono{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}
+.crono{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
 .paso{position:relative;display:flex;flex-direction:column;gap:2px;padding:0 8px 0 0;min-width:0}
 .paso .pt{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);position:relative;z-index:1;margin-bottom:6px}
 .paso .lnk{position:absolute;top:6px;left:calc(-100% + 16px);width:calc(100% - 18px);height:2px;background:var(--line-strong);display:flex;justify-content:center}
@@ -360,7 +369,9 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 .seg label.o-en_preparacion{--c:var(--prep);--b:var(--prep-bg)}
 .seg label.o-enviado,.seg label.o-asignada,.seg label.o-en_proceso{--c:var(--exec);--b:var(--exec-bg)}
 .seg label.o-aceptado,.seg label.o-finalizada{--c:var(--done);--b:var(--done-bg)}
-.seg label.o-rechazado,.seg label.o-cancelada{--c:var(--no);--b:var(--no-bg)}
+.seg label.o-rechazado,.seg label.o-cancelada,.seg label.o-alta{--c:var(--no);--b:var(--no-bg)}
+.seg label.o-media{--c:var(--pend);--b:var(--pend-bg)}
+.seg label.o-baja{--c:var(--ink-2);--b:var(--surface-2)}
 .seg input:checked + label{color:var(--c);background:var(--b);border-color:var(--c)}
 .seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
 .seg input:disabled + label{opacity:.4;cursor:not-allowed}
@@ -499,11 +510,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         <input id="q" type="search" aria-label="Buscar">
       </div>
       <select id="fOrigen" aria-label="Origen de la consulta"></select>
+      <select id="fUrg" aria-label="Urgencia"></select>
       <select id="fPres" aria-label="Estado del presupuesto"></select>
       <select id="fTarea" aria-label="Estado de la tarea"></select>
       <select id="fOrden" aria-label="Ordenar">
         <option value="fecha_desc">Más recientes</option>
         <option value="fecha_asc">Más antiguas</option>
+        <option value="urgencia">Más urgentes primero</option>
         <option value="monto_desc">Mayor presupuesto</option>
       </select>
       <span class="count" id="count"></span>
@@ -643,6 +656,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="sec">Consulta</div>
     <div class="f"><label for="sFecha">Fecha de ingreso</label><input id="sFecha" type="date" required></div>
     <div class="f"><label for="sOrigen">De dónde entra la consulta</label><select id="sOrigen"></select></div>
+    <div class="f full"><span class="lbl" id="lblUrg">Urgencia</span><div class="seg" role="radiogroup" aria-labelledby="lblUrg" id="segUrg"></div>
+      <span class="area-hint" id="urgHint"></span></div>
     <div class="f full"><label for="sTipo">Categoría o trabajo</label><input id="sTipo" type="text" list="dlTipo" placeholder="Elegí una categoría o escribí un trabajo específico" required autocomplete="off"></div>
     <div class="f full"><label for="sDetalle">Solicitud de pedido</label><textarea id="sDetalle" placeholder="Qué solicita el cliente"></textarea></div>
 
@@ -707,6 +722,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="sumatoria" id="sumatoria" aria-live="polite"></div>
 
     <div class="f"><label for="gIngreso">Fecha de ingreso del presupuesto</label><input id="gIngreso" type="date"></div>
+    <div class="f"><label for="gPrep">Fecha en preparación</label><input id="gPrep" type="date"></div>
     <div class="f"><label for="gAceptado">Fecha de aceptación</label><input id="gAceptado" type="date"></div>
     <div class="f"><label for="gPago">Forma de pago</label><input id="gPago" type="text" list="dlPago" autocomplete="off"></div>
     <div class="f"><label for="gEnviado">Fecha de envío al cliente</label><input id="gEnviado" type="date"></div>
@@ -803,6 +819,20 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </div>
 </dialog>
 
+<dialog id="dlgAviso" aria-labelledby="avisoTitle">
+  <div class="dlg-head m1" style="padding-bottom:14px">
+    <div class="dlg-title">
+      <div><span class="mod-tag m1">Urgencia alta</span><h2 id="avisoTitle">Avisar al equipo</h2></div>
+      <button class="x" type="button" id="avisoClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
+  <div class="area">
+    <p class="area-hint" id="avisoEstado"></p>
+    <pre class="aviso-msg" id="avisoMsg"></pre>
+    <div class="aviso-btns" id="avisoBtns"></div>
+  </div>
+</dialog>
+
 <dialog id="lightbox" aria-label="Foto ampliada">
   <div class="lb-body">
     <div class="lb-bar"><span id="lbCap"></span><div class="lb-nav"><button type="button" id="lbPrev">‹ Anterior</button><button type="button" id="lbNext">Siguiente ›</button><button type="button" id="lbClose">Cerrar</button></div></div>
@@ -835,6 +865,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const PRES = {pendiente:"Pendiente", en_preparacion:"En preparación", enviado:"Enviado", aceptado:"Aceptado", rechazado:"Rechazado"};
   const TAREA = {pendiente:"Pendiente", asignada:"Asignada", en_proceso:"En proceso", finalizada:"Finalizada", cancelada:"Cancelada"};
   const TAREA_SIN_ACEPTAR = ["pendiente","cancelada"];
+  const URG = {alta:"Alta", media:"Media", baja:"Baja"};
+  const urgPill = x => x.urgencia && x.urgencia!=="media" ? `<span class="pill ur ur-${esc(x.urgencia)}">${x.urgencia==="alta"?"Urgente":"Baja"}</span>` : "";
   const ETAPAS = [["antes","Antes"],["durante","Durante"],["despues","Después / Finalizado"]];
   const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
   const $ = id => document.getElementById(id);
@@ -858,10 +890,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const porId = id => state.rows.find(x=>x.id===String(id));
 
   options($("fOrigen"), ORIGEN, "Todo origen");
+  options($("fUrg"), URG, "Toda urgencia");
   options($("fPres"), PRES, "Todo presupuesto");
   options($("fTarea"), TAREA, "Toda tarea");
   options($("sOrigen"), ORIGEN, "Sin especificar");
   seg($("segPres"), "pres", PRES);
+  seg($("segUrg"), "urg", URG);
   seg($("segTarea"), "tarea", TAREA);
 
   // ---- API ----
@@ -926,6 +960,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     1: [
       {k:"Solicitudes", s:()=>"Historial completo", f:()=>true},
       {k:"Últimos 7 días", s:()=>"Consultas nuevas", f:x=>diasDesde(x.fecha)<=7, c:"var(--a1)"},
+      {k:"Urgentes", s:r=>`${r.filter(x=>x.urgencia==="alta"&&["pendiente","en_preparacion"].includes(x.presupuesto_estado)).length} sin presupuestar`, f:x=>x.urgencia==="alta", c:"var(--no)"},
       {k:"Sin presupuestar", s:()=>"Pendiente o en preparación", f:x=>["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
       {k:"Por recomendación", s:()=>"Origen: recomendación", f:x=>x.origen==="recomendacion", c:"var(--ink-3)"},
     ],
@@ -950,7 +985,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("cronologia").hidden = m!==3; $("gantt").hidden = m!==4; $("exportar").hidden = m!==5; $("analisis").hidden = m!==6;
     $("fOrigen").hidden = m!==1;
     $("fPres").hidden = $("fTarea").hidden = m!==2;
-    $("fOrden").options[2].hidden = m!==2;
+    $("fOrden").querySelector('[value="monto_desc"]').hidden = m!==2;
     if(m!==2 && $("fOrden").value==="monto_desc") $("fOrden").value="fecha_desc";
     $("q").placeholder = m===1 ? "Buscar por cliente, teléfono, dirección, tipo o pedido…" : "Buscar por cliente, dirección, responsable o forma de pago…";
     $("btnNew").hidden = m!==1;
@@ -964,6 +999,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const m=state.mod, q=$("q").value.trim().toLowerCase(), ord=$("fOrden").value, tile=TILES[m][state.quick[m]];
     const r=state.rows.filter(x=>{
       if(tile && !tile.f(x)) return false;
+      if($("fUrg").value && (x.urgencia||"media")!==$("fUrg").value) return false;
       if(m===1){
         if($("fOrigen").value && x.origen!==$("fOrigen").value) return false;
         if(q && ![x.solicitante,x.cliente_telefono,x.cliente_email,x.lugar,x.tipo,x.detalle,x.referido_por].join(" ").toLowerCase().includes(q)) return false;
@@ -976,6 +1012,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     });
     r.sort((a,b)=>{
       if(ord==="monto_desc") return (b.presupuesto_total||0)-(a.presupuesto_total||0);
+      const NIV={alta:0,media:1,baja:2};
+      if(ord==="urgencia" && NIV[a.urgencia||"media"]!==NIV[b.urgencia||"media"]) return NIV[a.urgencia||"media"]-NIV[b.urgencia||"media"];
       const c=(a.fecha||"").localeCompare(b.fecha||"") || String(a.creado_en||"").localeCompare(String(b.creado_en||""));
       return ord==="fecha_asc"?c:-c;
     });
@@ -1013,7 +1051,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
           <span class="c-num">${esc(x.id)}</span>
           <span class="c-date">${fmtDate(x.fecha)}</span>
-          <span class="c-who">${esc(x.solicitante)}${x.cliente_telefono?`<span class="c-sub">${esc(x.cliente_telefono)}</span>`:""}</span>
+          <span class="c-who">${esc(x.solicitante)}${urgPill(x)}${x.cliente_telefono?`<span class="c-sub">${esc(x.cliente_telefono)}</span>`:""}</span>
           <span class="c-where">${esc(x.lugar)}${x.detalle?`<span class="c-sub">${esc(x.detalle)}</span>`:""}</span>
           <span class="c-origen">${esc(x.tipo)}</span>
           <span class="c-origen">${esc(ORIGEN[x.origen]||"—")}</span>
@@ -1023,7 +1061,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     }else{
       $("list").innerHTML = `<div class="row head" role="presentation"><span>Solicitud</span><span>Presupuesto</span><span>Estado</span><span>Enviado</span><span>Responsable</span><span>Tarea</span></div>`
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
-          <span class="c-who"><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}<span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span></span>
+          <span class="c-who"><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}${urgPill(x)}<span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span></span>
           <span class="c-money">${x.presupuesto_total!=null?money.format(x.presupuesto_total):"—"}</span>
           <span class="c-pres"><span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span></span>
           <span class="c-date">${x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):"—"}</span>
@@ -1062,6 +1100,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     state.sol = rec || null;
     $("sFecha").value = rec?.fecha || today();
     $("sOrigen").value = rec?.origen || "";
+    setRadio("urg", rec?.urgencia || "media"); syncUrg();
     $("sTipo").value = rec?.tipo || "";
     $("sDetalle").value = rec?.detalle || "";
     $("sCliente").value = rec?.solicitante || "";
@@ -1082,6 +1121,29 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   dlgSol.addEventListener("close",()=>{ state.sol=null; cargar(); });
   $("solClose").onclick=closeSol;
   $("area1").addEventListener("input",()=>state.dirty1=true);
+  // ---- Urgencia alta: aviso por WhatsApp ----
+  function syncUrg(){
+    const alta = getRadio("urg")==="alta";
+    $("urgHint").textContent = alta ? "Al guardar se avisa por WhatsApp al equipo de Urbania." : "";
+  }
+  $("segUrg").addEventListener("change",syncUrg);
+  const dlgAviso=$("dlgAviso");
+  function mostrarAviso(a){
+    const WA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>';
+    $("avisoEstado").innerHTML = a.automatico
+      ? `<strong>Listo: se avisó automáticamente por WhatsApp a ${esc(a.destinatario)}.</strong> Si querés, mandalo también al grupo de Urbania.`
+      : (a.error ? `${esc(a.error)}. ` : "") + "Mandá este aviso por WhatsApp: se abre con el mensaje listo, solo tocás enviar.";
+    $("avisoMsg").textContent = a.mensaje;
+    const btns=[];
+    if(a.whatsapp_url && !a.automatico) btns.push(`<a class="btn wa" href="${esc(a.whatsapp_url)}" target="_blank" rel="noopener">${WA} Enviar a ${esc(a.destinatario)}</a>`);
+    btns.push(`<a class="btn ${a.whatsapp_url && !a.automatico ? "" : "wa"}" href="https://wa.me/?text=${encodeURIComponent(a.mensaje)}" target="_blank" rel="noopener">${WA} Enviar al grupo de Urbania</a>`);
+    btns.push(`<button class="btn" type="button" id="avisoCopiar">Copiar mensaje</button>`);
+    $("avisoBtns").innerHTML = btns.join("");
+    $("avisoCopiar").onclick=async()=>{ try{ await navigator.clipboard.writeText(a.mensaje); toast("Mensaje copiado"); }catch(e){ toast("No se pudo copiar"); } };
+    dlgAviso.showModal();
+  }
+  $("avisoClose").onclick=()=>dlgAviso.close();
+
   $("solIrPres").onclick=()=>{ const rec=state.sol; if(rec && closeSol()) { setMod(2); openPres(porId(rec.id)||rec); } };
 
   $("area1").addEventListener("submit",async e=>{
@@ -1089,7 +1151,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const body={
       fecha:$("sFecha").value, origen:$("sOrigen").value, tipo:$("sTipo").value.trim(), detalle:$("sDetalle").value.trim(),
       solicitante:$("sCliente").value.trim(), cliente_telefono:$("sTel").value.trim(), cliente_email:$("sEmail").value.trim(),
-      lugar:$("sLugar").value.trim(),
+      lugar:$("sLugar").value.trim(), urgencia:getRadio("urg")||"media",
     };
     if(state.yo.ve_referido) body.referido_por=$("sReferido").value.trim();
     const miss=[]; if(!body.fecha) miss.push("fecha de ingreso"); if(!body.tipo) miss.push("tipo de trabajo"); if(!body.solicitante) miss.push("cliente"); if(!body.lugar) miss.push("dirección del trabajo");
@@ -1102,6 +1164,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       state.sol = {...rec, id:String(rec.id)};
       state.dirty1=false; setSolHeader();
       toast(nuevo ? "Solicitud creada. Ya podés cargar su presupuesto en el área 2." : "Solicitud guardada");
+      if(rec.aviso_urgente) mostrarAviso(rec.aviso_urgente);
     }catch(err){ mostrarErr("err1",err); }
     finally{ $("btnSave1").disabled=false; }
   });
@@ -1152,6 +1215,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("gPago").value = rec.forma_pago || "";
     $("gEnviado").value = rec.presupuesto_enviado || "";
     $("gIngreso").value = rec.presupuesto_ingreso || "";
+    $("gPrep").value = rec.presupuesto_preparacion_en || "";
     $("gAceptado").value = rec.presupuesto_aceptado_en || "";
     $("gFinPrev").value = rec.fin_previsto || "";
     $("gResp").value = rec.responsable || "";
@@ -1228,10 +1292,18 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   $("gTotal").addEventListener("input",()=>{ state.totalManual = $("gTotal").value.trim()!==""; renderSumatoria(); });
   ["gMano","gMat","gOtros"].forEach(id=>$(id).addEventListener("input",renderSumatoria));
   $("gEnviado").addEventListener("input",syncArea2);
+  $("gPrep").addEventListener("input",syncArea2);
   ["gIngreso","gAceptado","gInicio","gFinPrev","gFin"].forEach(id=>$(id).addEventListener("input",syncArea2));
   // Fechas que se completan solas (se pueden corregir a mano)
   ["gMano","gMat","gOtros","gTotal"].forEach(id=>$(id).addEventListener("input",()=>{ if(!$("gIngreso").value && $(id).value.trim()){ $("gIngreso").value=today(); syncArea2(); } }));
-  $("segPres").addEventListener("change",()=>{ if(getRadio("pres")==="aceptado" && !$("gAceptado").value){ $("gAceptado").value=today(); syncArea2(); } });
+  // Fechas que se completan solas al cambiar el estado; rechazado cancela la tarea
+  $("segPres").addEventListener("change",()=>{
+    const p=getRadio("pres");
+    if(p==="en_preparacion" && !$("gPrep").value) $("gPrep").value=today();
+    if(p==="enviado" && !$("gEnviado").value) $("gEnviado").value=today();
+    if(p==="aceptado" && !$("gAceptado").value) $("gAceptado").value=today();
+    if(p==="rechazado") setRadio("tarea","cancelada");
+  });
   $("segTarea").addEventListener("change",()=>{ if(getRadio("tarea")==="finalizada" && !$("gFin").value){ $("gFin").value=today(); syncArea2(); } });
   $("segPres").addEventListener("change",syncArea2);
   $("pMotivo").addEventListener("input",syncArea2);
@@ -1254,7 +1326,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     // Cronología y desvío con lo que está cargado en el formulario
     if(state.pres){
       const v={...state.pres, presupuesto_estado:p, estado:getRadio("tarea")||"pendiente", presupuesto_ingreso:$("gIngreso").value||null,
-        presupuesto_aceptado_en:$("gAceptado").value||null, inicio_previsto:$("gInicio").value||null, fin_previsto:$("gFinPrev").value||null, finalizado_en:$("gFin").value||null};
+        presupuesto_preparacion_en:$("gPrep").value||null, presupuesto_enviado:$("gEnviado").value||null, presupuesto_aceptado_en:$("gAceptado").value||null, inicio_previsto:$("gInicio").value||null, fin_previsto:$("gFinPrev").value||null, finalizado_en:$("gFin").value||null};
       $("presCrono").innerHTML = cronoHTML(v);
       const dv=desvio(v);
       $("gDesvio").innerHTML = dv ? `<span class="dv dv-${dv.tipo}">${esc(dv.txt)}</span>` : (v.fin_previsto ? "Sin final de obra todavía" : "Cargá la fecha prevista para comparar");
@@ -1269,7 +1341,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     if(Object.values(nums).some(Number.isNaN)){ mostrarErr("err2",{message:"Los importes tienen que ser números, por ejemplo 150000 o 150.000."}); return; }
     const ex=extrasLimpios();
     if(ex.some(x=>x.importe===null||Number.isNaN(x.importe)||!x.descripcion)){ mostrarErr("err2",{message:"Completá la descripción y el importe de cada agregado extra (o quitalo)."}); return; }
-    const body={...nums, extras:ex, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value,
+    const body={...nums, extras:ex, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value, presupuesto_preparacion_en:$("gPrep").value,
       presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
@@ -1633,9 +1705,11 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     return [
       {k:"Ingreso de solicitud", f:x.fecha},
       {k:"Ingreso del presupuesto", f:x.presupuesto_ingreso},
+      {k:"En preparación", f:x.presupuesto_preparacion_en},
+      {k:"Envío al cliente", f:x.presupuesto_enviado},
       {k: rech ? "Presupuesto rechazado" : "Aceptación", f: rech ? null : x.presupuesto_aceptado_en, rech, motivo: rech ? x.motivo_rechazo : null},
       {k:"Ejecución de la tarea", f:x.inicio_previsto, cancel: x.estado==="cancelada"},
-      {k:"Final de obra", f:x.finalizado_en, prev:x.fin_previsto},
+      {k:"Final de obra", f:x.finalizado_en, prev:x.fin_previsto, fin:true},
     ];
   }
   function cronoHTML(x){
@@ -1644,10 +1718,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     return `<ol class="crono">${pasos.map((p,i)=>{
       if(p.rech) corte=true;
       const fut = p.f && p.f>hoy;
-      const cls = p.rech ? "no" : (corte && i>2) ? "off" : p.f ? (fut?"prog":"ok") : "pend";
+      const cls = p.rech ? "no" : (corte && !p.rech) ? "off" : p.f ? (fut?"prog":"ok") : "pend";
       const ant = i>0 && pasos[i-1].f && p.f ? diasEntre(pasos[i-1].f, p.f) : null;
       let extra = "";
-      if(i===4){
+      if(p.fin){
         if(p.prev) extra += `<small>Previsto: ${fmtDate(p.prev)}</small>`;
         const dv=desvio(x);
         if(dv) extra += `<span class="dv dv-${dv.tipo}">${dv.tipo==="a_tiempo"?"A tiempo":dv.tipo==="antes"?`−${dv.dias} d`:`+${dv.dias} d`}</span>`;
@@ -1751,9 +1825,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ["id","ID de solicitud",x=>Number(x.id)],["fecha","Fecha de ingreso de solicitud",x=>d(x.fecha)],["cliente","Cliente",x=>x.solicitante],
         ["tel","Teléfono",x=>x.cliente_telefono],["email","Email",x=>x.cliente_email],["lugar","Dirección",x=>x.lugar],
         ["tipo","Categoría o trabajo",x=>x.tipo],["detalle","Detalle de la solicitud",x=>x.detalle],["origen","Origen de la consulta",x=>ORIGEN[x.origen]||""],
+        ["urgencia","Urgencia",x=>URG[x.urgencia]||""],
       ].concat(state.yo && state.yo.ve_referido ? [["referido","Referido por (interno)",x=>x.referido_por]] : [])],
       ["Presupuesto", [
-        ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
+        ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_prep","Fecha en preparación",x=>d(x.presupuesto_preparacion_en)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],
         ["subtotal","Presupuesto original",x=>n(x.subtotal_trabajo)],["extras","Agregados extras al presupuesto original",x=>n(x.extras_total)],
         ["extras_det","Detalle de extras",x=>(x.extras||[]).map(e=>`${e.descripcion}: ${money.format(e.importe)}`).join(" | ")],["total","Presupuesto total (general)",x=>n(x.presupuesto_total)],["mano","Mano de obra",x=>n(x.mano_obra)],["mat","Materiales",x=>n(x.materiales)],["otros","Otros costos",x=>n(x.otros_costos)],
         ["pago","Forma de pago",x=>x.forma_pago],["p_est","Estado del presupuesto",x=>PRES[x.presupuesto_estado]||""],["motivo","Motivo del rechazo",x=>x.motivo_rechazo],
@@ -1767,7 +1842,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     ];
     return grupos;
   }
-  const colsElegidas = new Set(["id","fecha","cliente","tel","email","origen","referido","p_ing","total","mano","mat","pago","p_est","ejec","resp","t_est","fprev","freal","obs"]);
+  const colsElegidas = new Set(["id","fecha","cliente","tel","email","origen","urgencia","referido","p_ing","total","mano","mat","pago","p_est","ejec","resp","t_est","fprev","freal","obs"]);
   function renderExportCols(){
     $("eCols").innerHTML = columnasExport().map(([g,cols])=>`<fieldset class="exp-grupo"><legend>${g} <button type="button" class="link-mod m1" data-todas="${g}">todas</button> · <button type="button" class="link-mod m1" data-ninguna="${g}">ninguna</button></legend>
       ${cols.map(([k,l])=>`<label class="chk"><input type="checkbox" data-col="${k}"${colsElegidas.has(k)?" checked":""}> ${esc(l)}</label>`).join("")}</fieldset>`).join("");
@@ -1828,7 +1903,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   };
 
   // ---- Filtros ----
-  ["q","fOrigen","fPres","fTarea","fOrden"].forEach(id=>$(id).addEventListener("input",render));
+  ["q","fOrigen","fUrg","fPres","fTarea","fOrden"].forEach(id=>$(id).addEventListener("input",render));
   $("btnNew").onclick=()=>openSol(null);
 
 

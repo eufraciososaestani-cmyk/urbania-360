@@ -3,7 +3,8 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const pool = require('./db');
 const { requireAuth } = require('./auth');
-const { datosPresupuesto, obtenerTrabajo, hoyISO } = require('./trabajos-controller');
+const { datosPresupuesto, obtenerTrabajo, hoyISO, baseUrl } = require('./trabajos-controller');
+const { telefonoWhatsApp } = require('./avisos');
 
 // Envío del presupuesto al cliente:
 //  - cada presupuesto tiene un link público con un token imposible de adivinar
@@ -21,23 +22,6 @@ function transporte() {
     secure: port === 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
-}
-
-// URL base de la app para armar el link (APP_URL o la del pedido)
-function baseUrl(req) {
-  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/+$/, '');
-  return `${req.protocol}://${req.get('host')}`;
-}
-
-// Teléfono a formato internacional para WhatsApp (Argentina por defecto)
-function telefonoWhatsApp(tel) {
-  let d = String(tel || '').replace(/\D/g, '');
-  if (!d) return '';
-  if (d.startsWith('00')) d = d.slice(2);
-  if (d.startsWith('54')) return d.startsWith('549') ? d : '549' + d.slice(2);
-  if (d.startsWith('0')) d = d.slice(1);
-  d = d.replace(/^(\d{2,4})15(\d{6,8})$/, '$1$2'); // quita el "15" de celulares
-  return '549' + d;
 }
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -74,7 +58,10 @@ Válido hasta el ${fmtDate(p.fecha_vencimiento)}</td></tr></table>
 const router = express.Router();
 
 // ---- Configuración (para saber si el email está habilitado) ----
-router.get('/api/config', requireAuth, (req, res) => res.json({ email_habilitado: emailConfigurado() }));
+router.get('/api/config', requireAuth, (req, res) => res.json({
+  email_habilitado: emailConfigurado(),
+  aviso_urgente_nombre: process.env.AVISO_URGENTE_TELEFONO ? (process.env.AVISO_URGENTE_NOMBRE || 'el responsable') : '',
+}));
 
 // ---- Enviar al cliente (usuario logueado) ----
 router.post('/api/trabajos/:id/enviar', requireAuth, async (req, res) => {
@@ -172,7 +159,7 @@ router.post('/api/publico/presupuesto/:token/respuesta', async (req, res) => {
          WHERE presupuesto_token = $1`, [req.params.token, hoy, registro]);
     } else {
       await pool.query(
-        `UPDATE trabajos SET presupuesto_estado = 'rechazado', respuesta_cliente = $2,
+        `UPDATE trabajos SET presupuesto_estado = 'rechazado', estado = 'cancelada', respuesta_cliente = $2,
            motivo_rechazo = COALESCE(NULLIF($3, ''), motivo_rechazo)
          WHERE presupuesto_token = $1`, [req.params.token, registro, motivo ? `${motivo} (indicado por el cliente)` : '']);
     }
@@ -182,4 +169,4 @@ router.post('/api/publico/presupuesto/:token/respuesta', async (req, res) => {
   }
 });
 
-module.exports = { router, telefonoWhatsApp };
+module.exports = { router };

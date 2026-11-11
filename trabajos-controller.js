@@ -1,4 +1,5 @@
 const pool = require('./db');
+const avisos = require('./avisos');
 
 // Gestión de solicitudes y trabajos. Cada registro tiene dos áreas que se
 // guardan por separado:
@@ -9,6 +10,7 @@ const pool = require('./db');
 
 const ORIGENES = ['whatsapp', 'telefono', 'web', 'redes', 'recomendacion', 'otro'];
 const PRESUPUESTO_ESTADOS = ['pendiente', 'en_preparacion', 'enviado', 'aceptado', 'rechazado'];
+const URGENCIAS = ['alta', 'media', 'baja'];
 const TAREA_ESTADOS = ['pendiente', 'asignada', 'en_proceso', 'finalizada', 'cancelada'];
 // Estados de la tarea que se pueden usar sin presupuesto aceptado
 const TAREA_SIN_ACEPTAR = ['pendiente', 'cancelada'];
@@ -20,11 +22,11 @@ const numCol = c => `t.${c}::float8 AS ${c}`;
 
 const COLUMNAS_SOLICITUD = [
   't.id', fechaCol('fecha'), 't.solicitante', 't.cliente_telefono', 't.cliente_email',
-  't.lugar', 't.tipo', 't.detalle', 't.origen',
+  't.lugar', 't.tipo', 't.detalle', 't.origen', 't.urgencia',
 ];
 const COLUMNAS_GESTION = [
   numCol('presupuesto_total'), numCol('mano_obra'), numCol('materiales'), numCol('otros_costos'),
-  't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
+  't.forma_pago', fechaCol('presupuesto_ingreso'), fechaCol('presupuesto_preparacion_en'), fechaCol('presupuesto_enviado'), fechaCol('presupuesto_aceptado_en'),
   't.presupuesto_estado', 't.estado', 't.responsable',
   fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
   numCol('subtotal_trabajo'), numCol('extras_total'), `COALESCE(t.extras, '[]'::jsonb) AS extras`,
@@ -62,6 +64,7 @@ function validarSolicitud(body) {
     tipo: texto(body.tipo),
     detalle: texto(body.detalle),
     origen: texto(body.origen),
+    urgencia: texto(body.urgencia) || 'media',
   };
   const faltan = [];
   if (!d.fecha) faltan.push('fecha de ingreso');
@@ -70,7 +73,14 @@ function validarSolicitud(body) {
   if (!d.tipo) faltan.push('tipo de trabajo');
   if (faltan.length) return { error: 'Falta completar: ' + faltan.join(', ') };
   if (d.origen && !ORIGENES.includes(d.origen)) return { error: 'Origen de la consulta inválido' };
+  if (!URGENCIAS.includes(d.urgencia)) return { error: 'Nivel de urgencia inválido' };
   return { datos: d };
+}
+
+// URL base de la app para los links (APP_URL o la del pedido)
+function baseUrl(req) {
+  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/+$/, '');
+  return `${req.protocol}://${req.get('host')}`;
 }
 
 // Fecha de hoy en Argentina (el servidor puede estar en UTC)
@@ -86,6 +96,7 @@ function validarGestion(body) {
     subtotal_trabajo: numero(body.subtotal_trabajo),
     forma_pago: texto(body.forma_pago),
     presupuesto_ingreso: fecha(body.presupuesto_ingreso),
+    presupuesto_preparacion_en: fecha(body.presupuesto_preparacion_en),
     presupuesto_enviado: fecha(body.presupuesto_enviado),
     presupuesto_aceptado_en: fecha(body.presupuesto_aceptado_en),
     presupuesto_estado: body.presupuesto_estado || 'pendiente',
@@ -127,6 +138,8 @@ function validarGestion(body) {
   d.presupuesto_total = d.subtotal_trabajo === null && !extras.length ? null : (d.subtotal_trabajo || 0) + d.extras_total;
   if (!PRESUPUESTO_ESTADOS.includes(d.presupuesto_estado)) return { error: 'Estado del presupuesto inválido' };
   if (!TAREA_ESTADOS.includes(d.estado)) return { error: 'Estado de la tarea inválido' };
+  // Presupuesto rechazado: la tarea pasa sola a cancelada
+  if (d.presupuesto_estado === 'rechazado') d.estado = 'cancelada';
   if (d.presupuesto_estado !== 'aceptado' && !TAREA_SIN_ACEPTAR.includes(d.estado)) {
     return { error: 'La tarea solo se puede asignar o ejecutar con el presupuesto aceptado' };
   }
@@ -139,6 +152,8 @@ function validarGestion(body) {
   // Fechas de la cronología que se registran solas si no se cargaron a mano
   const hoy = hoyISO();
   if (!d.presupuesto_ingreso && (partes.length || d.presupuesto_total !== null)) d.presupuesto_ingreso = hoy;
+  if (d.presupuesto_estado === 'en_preparacion' && !d.presupuesto_preparacion_en) d.presupuesto_preparacion_en = hoy;
+  if (d.presupuesto_estado === 'enviado' && !d.presupuesto_enviado) d.presupuesto_enviado = hoy;
   if (d.presupuesto_estado === 'aceptado' && !d.presupuesto_aceptado_en) d.presupuesto_aceptado_en = hoy;
   if (d.estado === 'finalizada' && !d.finalizado_en) d.finalizado_en = hoy;
   return { datos: d };
@@ -182,7 +197,9 @@ async function crear(req, res) {
       `INSERT INTO trabajos (${claves.join(', ')}) VALUES (${claves.map((_, i) => '$' + (i + 1)).join(', ')}) RETURNING id`,
       claves.map(k => datos[k])
     );
-    res.status(201).json(await obtenerTrabajo(req.usuario, rows[0].id));
+    const trabajo = await obtenerTrabajo(req.usuario, rows[0].id);
+    if (trabajo.urgencia === 'alta') trabajo.aviso_urgente = await avisos.avisarUrgente(trabajo, baseUrl(req));
+    res.status(201).json(trabajo);
   } catch (err) {
     res.status(500).json({ error: 'Error al crear la solicitud', detalle: err.message });
   }
@@ -195,8 +212,12 @@ async function actualizarSolicitud(req, res) {
   if (req.usuario.ve_referido) datos.referido_por = texto(req.body.referido_por);
 
   try {
-    if (!(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
-    res.json(await obtenerTrabajo(req.usuario, req.params.id));
+    const antes = await pool.query('SELECT urgencia FROM trabajos WHERE id = $1', [req.params.id]);
+    if (!antes.rows.length || !(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const trabajo = await obtenerTrabajo(req.usuario, req.params.id);
+    // Avisa solo cuando pasa a urgencia alta, no en cada guardado
+    if (trabajo.urgencia === 'alta' && antes.rows[0].urgencia !== 'alta') trabajo.aviso_urgente = await avisos.avisarUrgente(trabajo, baseUrl(req));
+    res.json(trabajo);
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar la solicitud', detalle: err.message });
   }
@@ -266,7 +287,7 @@ async function eliminarPresupuesto(req, res) {
   try {
     const { rowCount } = await pool.query(
       `UPDATE trabajos SET presupuesto_total = NULL, mano_obra = NULL, materiales = NULL, otros_costos = NULL,
-         forma_pago = NULL, presupuesto_ingreso = NULL, presupuesto_enviado = NULL, presupuesto_aceptado_en = NULL,
+         forma_pago = NULL, presupuesto_ingreso = NULL, presupuesto_preparacion_en = NULL, presupuesto_enviado = NULL, presupuesto_aceptado_en = NULL,
          presupuesto_estado = 'pendiente', estado = 'pendiente', responsable = NULL,
          inicio_previsto = NULL, fin_previsto = NULL, finalizado_en = NULL, observaciones_internas = NULL,
          descripcion_trabajo = NULL, materiales_detalle = NULL, condiciones = NULL, validez_dias = NULL, motivo_rechazo = NULL,
@@ -336,5 +357,5 @@ async function eliminarFoto(req, res) {
 
 module.exports = {
   listar, crear, actualizarSolicitud, actualizarGestion, presupuestoCliente, eliminar, eliminarPresupuesto,
-  subirFoto, verFoto, eliminarFoto, datosPresupuesto, obtenerTrabajo, hoyISO,
+  subirFoto, verFoto, eliminarFoto, datosPresupuesto, obtenerTrabajo, hoyISO, baseUrl,
 };
