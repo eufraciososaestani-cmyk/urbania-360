@@ -409,6 +409,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb .del{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(16,24,27,.72);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1}
 .thumb .del[data-armed="1"]{background:var(--no);width:auto;padding:0 7px;border-radius:11px;font:600 11px var(--f-body)}
+.thumb.pdf{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--surface-2);border:1px solid var(--line);color:var(--no);cursor:pointer;padding:4px}
+.thumb.pdf svg{width:24px;height:24px}
+.thumb.pdf span{font:500 10px var(--f-mono);color:var(--ink-2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.etapa.facturas{grid-column:1/-1}
 .thumb.loading{display:flex;align-items:center;justify-content:center;font:500 11px var(--f-mono);color:var(--ink-3);cursor:default}
 .add-fotos{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .add-foto{display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line-strong);border-radius:6px;padding:8px;font:600 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--accent);cursor:pointer;position:relative}
@@ -760,7 +764,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       <div class="right"><button class="btn primary" type="submit" id="btnSave2">Guardar presupuesto y trabajo</button></div>
     </div>
 
-    <div class="sec">Fotos del trabajo</div>
+    <div class="sec">Fotos del trabajo y facturas de materiales</div>
     <p class="area-hint">Podés cargar todas las fotos que quieras en cada etapa, sin límite: elegí varias juntas de la galería o sacalas con la cámara. Se guardan al instante.</p>
     <div class="etapas" id="etapas"></div>
     <p class="err" id="fotosErr" hidden></p>
@@ -868,12 +872,15 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const TAREA_SIN_ACEPTAR = ["pendiente","cancelada"];
   const URG = {alta:"Alta", media:"Media", baja:"Baja"};
   const urgPill = x => x.urgencia && x.urgencia!=="media" ? `<span class="pill ur ur-${esc(x.urgencia)}">${x.urgencia==="alta"?"Urgente":"Baja"}</span>` : "";
-  const ETAPAS = [["antes","Antes"],["durante","Durante"],["despues","Después / Finalizado"]];
+  const ETAPAS = [["antes","Antes"],["durante","Durante"],["despues","Después / Finalizado"],["facturas","Facturas de materiales"]];
+  const nFotos = x => x.fotos.filter(f=>f.etapa!=="facturas").length;
+  const esPDF = f => f.mime==="application/pdf";
+  const PDF_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/></svg>';
   const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
   const $ = id => document.getElementById(id);
   const money = new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0});
   const numFmt = new Intl.NumberFormat("es-AR");
-  const state = {rows:[], yo:null, mod:1, quick:{1:0, 2:0}, sol:null, pres:null, fotos:[], uploading:{antes:0,durante:0,despues:0},
+  const state = {rows:[], yo:null, mod:1, quick:{1:0, 2:0}, sol:null, pres:null, fotos:[], uploading:{antes:0,durante:0,despues:0,facturas:0},
     dirty1:false, dirty2:false, totalManual:false, extras:[], token:localStorage.getItem('urbania_token')};
 
   function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -1062,7 +1069,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     }else{
       $("list").innerHTML = `<div class="row head" role="presentation"><span>Solicitud</span><span>Presupuesto</span><span>Estado</span><span>Enviado</span><span>Responsable</span><span>Tarea</span></div>`
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
-          <span class="c-who"><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}${urgPill(x)}<span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${x.fotos.length?`<span class="foto-count" title="Fotos cargadas">${CAM}${x.fotos.length}</span>`:""}</span></span>
+          <span class="c-who"><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}${urgPill(x)}<span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${nFotos(x)?`<span class="foto-count" title="Fotos cargadas">${CAM}${nFotos(x)}</span>`:""}</span></span>
           <span class="c-money">${x.presupuesto_total!=null?money.format(x.presupuesto_total):"—"}</span>
           <span class="c-pres"><span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span></span>
           <span class="c-date">${x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):"—"}</span>
@@ -1428,12 +1435,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function renderFotos(){
     $("etapas").innerHTML = ETAPAS.map(([k,label])=>{
       const fs=state.fotos.filter(f=>f.etapa===k), n=state.uploading[k]||0;
-      const thumbs = fs.map(f=>`<div class="thumb" role="button" tabindex="0" data-view="${esc(f.id)}"><img src="${fotoUrl(f.id)}" alt="Foto ${esc(label.toLowerCase())}" loading="lazy"><button type="button" class="del" data-del="${esc(f.id)}" aria-label="Quitar foto">×</button></div>`).join("")
+      const fac = k==="facturas";
+      const thumbs = fs.map(f=>esPDF(f)
+          ? `<div class="thumb pdf" role="button" tabindex="0" data-pdf="${esc(f.id)}" title="${esc(f.nombre||"Factura PDF")}">${PDF_ICO}<span>${esc(f.nombre||"PDF")}</span><button type="button" class="del" data-del="${esc(f.id)}" aria-label="Quitar archivo">×</button></div>`
+          : `<div class="thumb" role="button" tabindex="0" data-view="${esc(f.id)}"><img src="${fotoUrl(f.id)}" alt="${fac?"Factura":"Foto "+esc(label.toLowerCase())}" loading="lazy"><button type="button" class="del" data-del="${esc(f.id)}" aria-label="Quitar ${fac?"archivo":"foto"}">×</button></div>`).join("")
         + (n ? `<div class="thumb loading">Subiendo<br>${state.subidas[k].hechas+1} de ${state.subidas[k].total}</div>` : "");
-      return `<div class="etapa"><h3>${label}<small>${fs.length||""}</small></h3>
-        ${(fs.length||n)?`<div class="thumbs">${thumbs}</div>`:`<span class="no-fotos">Sin fotos</span>`}
+      return `<div class="etapa${fac?" facturas":""}"><h3>${label}<small>${fs.length||""}</small></h3>
+        ${fac?`<span class="no-fotos">Fotos o PDF de las facturas de compra de materiales. Uso interno.</span>`:""}
+        ${(fs.length||n)?`<div class="thumbs">${thumbs}</div>`:`<span class="no-fotos">${fac?"Sin facturas":"Sin fotos"}</span>`}
         <div class="add-fotos">
-          <label class="add-foto">${CAM.replace('<svg','<svg width="16" height="16"')} Elegir fotos<input type="file" accept="image/*" multiple data-etapa="${k}"></label>
+          <label class="add-foto">${(fac?PDF_ICO:CAM).replace('<svg','<svg width="16" height="16"')} ${fac?"Elegir archivos":"Elegir fotos"}<input type="file" accept="${fac?"image/*,application/pdf":"image/*"}" multiple data-etapa="${k}"></label>
           <label class="add-foto">${CAM.replace('<svg','<svg width="16" height="16"')} Sacar foto<input type="file" accept="image/*" capture="environment" data-etapa="${k}"></label>
         </div>
       </div>`;
@@ -1441,6 +1452,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("etapas").querySelectorAll("input[type=file]").forEach(inp=>inp.onchange=()=>{ const files=[...inp.files]; inp.value=""; addFotos(inp.dataset.etapa, files); });
     $("etapas").querySelectorAll("[data-view]").forEach(t=>{
       const open=e=>{ if(e.target.closest(".del")) return; openLb(t.dataset.view); };
+      t.onclick=open; t.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(e);} };
+    });
+    $("etapas").querySelectorAll("[data-pdf]").forEach(t=>{
+      const open=e=>{ if(e.target.closest(".del")) return; window.open(fotoUrl(t.dataset.pdf), "_blank"); };
       t.onclick=open; t.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(e);} };
     });
     $("etapas").querySelectorAll("[data-del]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); delFoto(b); });
@@ -1463,7 +1478,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
   // Cola de subida sin límite de cantidad: hasta 3 fotos en paralelo, con contador por etapa
   const cola=[]; let activos=0; const PARALELO=3;
-  state.subidas={antes:{hechas:0,total:0},durante:{hechas:0,total:0},despues:{hechas:0,total:0}};
+  state.subidas={antes:{hechas:0,total:0},durante:{hechas:0,total:0},despues:{hechas:0,total:0},facturas:{hechas:0,total:0}};
   function addFotos(etapa, files){
     if(!files.length || !state.pres) return;
     fotosErr("");
@@ -1479,13 +1494,14 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }
   async function subirUna({etapa, file, trabajoId}){
         try{
-          const blob = await shrink(file);
+          const pdf = etapa==="facturas" && (file.type==="application/pdf" || /\.pdf$/i.test(file.name));
+          const blob = pdf ? file : await shrink(file);
           if(blob.size > 50*1024*1024) throw {code:"too_large"};
-          const res = await api(`/fotos?etapa=${etapa}&trabajo_id=${trabajoId}`, {method:'POST', body:blob, headers:{'Content-Type':blob.type||'image/jpeg'}});
-          if(state.pres && state.pres.id===trabajoId) state.fotos = [...state.fotos, {id:String(res.id), etapa:res.etapa, subida:res.subida}];
+          const res = await api(`/fotos?etapa=${etapa}&trabajo_id=${trabajoId}&nombre=${encodeURIComponent(file.name||"")}`, {method:'POST', body:blob, headers:{'Content-Type':pdf?'application/pdf':(blob.type||'image/jpeg')}});
+          if(state.pres && state.pres.id===trabajoId) state.fotos = [...state.fotos, {id:String(res.id), etapa:res.etapa, subida:res.subida, mime:res.mime, nombre:res.nombre}];
         }catch(e){
           const c=e&&e.code;
-          fotosErr(c==="unsupported_type" ? `“${file.name}” no es un formato compatible. Usá fotos JPG o PNG.`
+          fotosErr(c==="unsupported_type" ? `“${file.name}” no es un formato compatible. Usá fotos JPG o PNG${etapa==="facturas"?", o PDF":""}.`
             : c==="too_large" ? `“${file.name}” es demasiado pesada (máx. 50 MB).`
             : `No se pudo subir “${file.name}”. Probá de nuevo.`);
         }finally{
@@ -1506,7 +1522,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   // Visor de fotos
   const lb=$("lightbox"); let lbIdx=0, lbList=[];
   function openLb(id){
-    lbList = ETAPAS.flatMap(([k])=>state.fotos.filter(f=>f.etapa===k));
+    lbList = ETAPAS.flatMap(([k])=>state.fotos.filter(f=>f.etapa===k && !esPDF(f)));
     lbIdx = Math.max(0, lbList.findIndex(f=>f.id===id));
     showLb(); lb.showModal();
   }
@@ -1841,7 +1857,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ["ejec","Fecha de ejecución",x=>d(x.inicio_previsto)],["resp","Responsable del trabajo",x=>x.responsable],["t_est","Estado de la tarea",x=>TAREA[x.estado]||""],
         ["fprev","Fecha prevista de finalización",x=>d(x.fin_previsto)],["freal","Fecha real de final de obra",x=>d(x.finalizado_en)],
         ["desvio","Desvío (días)",x=>{ const v=desvio(x); return v ? {num: v.tipo==="antes"?-v.dias:v.dias} : null; }],
-        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>x.fotos.length],
+        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>nFotos(x)],["facturas","Facturas de materiales cargadas",x=>x.fotos.length-nFotos(x)],
       ]],
     ];
     return grupos;

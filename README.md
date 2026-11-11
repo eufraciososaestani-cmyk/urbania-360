@@ -69,6 +69,9 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   "Enviado" se registra la fecha del día (si no estaba cargada), y un
   presupuesto **rechazado** registra la fecha de rechazo y deja la tarea
   en **Cancelada**.
+- **Facturas de materiales**: junto a las fotos (antes / durante /
+  después) hay un apartado para cargar las facturas de compra de
+  materiales, como foto o PDF, sin límite. Es de uso interno.
 - Logo de Urbania 360 en la app, el ingreso, el ícono del navegador, el
   presupuesto y los emails (`public/img`).
 

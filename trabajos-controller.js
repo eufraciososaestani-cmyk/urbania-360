@@ -14,7 +14,7 @@ const URGENCIAS = ['alta', 'media', 'baja'];
 const TAREA_ESTADOS = ['pendiente', 'asignada', 'en_proceso', 'finalizada', 'cancelada'];
 // Estados de la tarea que se pueden usar sin presupuesto aceptado
 const TAREA_SIN_ACEPTAR = ['pendiente', 'cancelada'];
-const ETAPAS = ['antes', 'durante', 'despues'];
+const ETAPAS = ['antes', 'durante', 'despues', 'facturas']; // facturas = facturas de materiales
 const MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 const fechaCol = c => `TO_CHAR(t.${c}, 'YYYY-MM-DD') AS ${c}`;
@@ -34,7 +34,7 @@ const COLUMNAS_GESTION = [
   't.observaciones_internas', 't.creado_en', 't.actualizado_en',
 ];
 const COLUMNA_FOTOS = `COALESCE(
-    (SELECT json_agg(json_build_object('id', f.id, 'etapa', f.etapa, 'subida', f.subida_en) ORDER BY f.subida_en)
+    (SELECT json_agg(json_build_object('id', f.id, 'etapa', f.etapa, 'subida', f.subida_en, 'mime', f.mime, 'nombre', f.nombre) ORDER BY f.subida_en)
        FROM fotos f WHERE f.trabajo_id = t.id),
     '[]'::json) AS fotos`;
 
@@ -321,14 +321,17 @@ async function subirFoto(req, res) {
   const mime = (req.headers['content-type'] || '').split(';')[0].trim();
   if (!ETAPAS.includes(etapa)) return res.status(400).json({ error: 'Etapa inválida' });
   if (!Number.isInteger(trabajoId)) return res.status(400).json({ error: 'Falta la solicitud a la que pertenece la foto' });
-  if (!MIMES.includes(mime)) return res.status(400).json({ error: 'Formato no compatible. Usá fotos JPG o PNG.', code: 'unsupported_type' });
+  // Las facturas de materiales también se pueden subir en PDF
+  const permitidos = etapa === 'facturas' ? [...MIMES, 'application/pdf'] : MIMES;
+  if (!permitidos.includes(mime)) return res.status(400).json({ error: 'Formato no compatible. Usá fotos JPG o PNG.', code: 'unsupported_type' });
+  const nombre = texto(req.query.nombre);
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'La foto llegó vacía' });
 
   try {
     const { rows } = await pool.query(
-      `INSERT INTO fotos (trabajo_id, etapa, mime, datos) VALUES ($1,$2,$3,$4)
-       RETURNING id, etapa, subida_en AS subida`,
-      [trabajoId, etapa, mime, req.body]
+      `INSERT INTO fotos (trabajo_id, etapa, mime, datos, nombre) VALUES ($1,$2,$3,$4,$5)
+       RETURNING id, etapa, subida_en AS subida, mime, nombre`,
+      [trabajoId, etapa, mime, req.body, nombre && nombre.slice(0, 200)]
     );
     res.status(201).json(rows[0]);
   } catch (err) {

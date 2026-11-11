@@ -104,11 +104,14 @@ UPDATE trabajos SET estado = 'cancelada' WHERE presupuesto_estado = 'rechazado' 
 CREATE TABLE IF NOT EXISTS fotos (
     id              SERIAL PRIMARY KEY,
     trabajo_id      INTEGER REFERENCES trabajos(id) ON DELETE CASCADE,
-    etapa           VARCHAR(20) NOT NULL,            -- antes, durante, despues
+    etapa           VARCHAR(20) NOT NULL,            -- antes, durante, despues, facturas
     mime            VARCHAR(50) NOT NULL DEFAULT 'image/jpeg',
     datos           BYTEA NOT NULL,
     subida_en       TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+-- Nombre original del archivo (facturas en PDF)
+ALTER TABLE fotos ADD COLUMN IF NOT EXISTS nombre VARCHAR(200);
 
 CREATE INDEX IF NOT EXISTS idx_trabajos_fecha ON trabajos(fecha);
 CREATE INDEX IF NOT EXISTS idx_fotos_trabajo ON fotos(trabajo_id);
