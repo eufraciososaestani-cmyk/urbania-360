@@ -82,7 +82,7 @@ body{margin:0;background:#EEEAF4;color:var(--tinta);font:15px/1.5 "Montserrat",s
       <p>Respondé desde acá y le llega al instante a ${esc(p.empresa.nombre)}. Válido hasta el ${P.fmtDate(p.fecha_vencimiento)}.</p>
       <label for="rNombre">Tu nombre y apellido</label>
       <input id="rNombre" autocomplete="name" placeholder="Nombre y apellido de quien responde">
-      <div id="boxMotivo" hidden><label for="rMotivo">Motivo (opcional)</label><textarea id="rMotivo" placeholder="Contanos por qué, así podemos mejorar la propuesta"></textarea></div>
+      <div id="boxMotivo" hidden><label for="rMotivo">Motivo del rechazo (obligatorio)</label><textarea id="rMotivo" required placeholder="Contanos por qué, así podemos mejorar la propuesta"></textarea></div>
       <div class="botones">
         <button class="btn si" type="button" id="bAceptar">Aceptar presupuesto</button>
         <button class="btn no" type="button" id="bRechazar">Rechazar</button>
@@ -99,6 +99,7 @@ body{margin:0;background:#EEEAF4;color:var(--tinta);font:15px/1.5 "Montserrat",s
   async function responder(accion){
     const nombre = $("rNombre").value.trim();
     if(!nombre){ $("rErr").textContent="Ingresá tu nombre para registrar la respuesta."; $("rErr").hidden=false; $("rNombre").focus(); return; }
+    if(accion==="rechazar" && !$("rMotivo").value.trim()){ $("rErr").textContent="Contanos el motivo del rechazo para poder registrarlo."; $("rErr").hidden=false; $("rMotivo").focus(); return; }
     $("bAceptar").disabled = $("bRechazar").disabled = true;
     try{
       const r = await fetch(`/api/publico/presupuesto/${encodeURIComponent(token)}/respuesta`, {method:"POST", headers:{"Content-Type":"application/json"},

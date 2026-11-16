@@ -140,6 +140,7 @@ function validarGestion(body) {
   d.presupuesto_total = d.subtotal_trabajo === null && !extras.length ? null : (d.subtotal_trabajo || 0) + d.extras_total;
   if (!PRESUPUESTO_ESTADOS.includes(d.presupuesto_estado)) return { error: 'Estado del presupuesto inválido' };
   if (!TAREA_ESTADOS.includes(d.estado)) return { error: 'Estado de la tarea inválido' };
+  if (d.presupuesto_estado === 'rechazado' && !d.motivo_rechazo) return { error: 'Indicá el motivo del rechazo del presupuesto' };
   // Presupuesto rechazado: la tarea pasa sola a cancelada
   if (d.presupuesto_estado === 'rechazado') d.estado = 'cancelada';
   else d.presupuesto_rechazado_en = null;

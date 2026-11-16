@@ -736,7 +736,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="sec">Presupuesto</div>
     <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
     <div class="f" id="boxRechFecha" hidden><label for="gRechazado">Fecha de rechazo</label><input id="gRechazado" type="date"></div>
-    <div class="f full" id="boxRechazo" hidden><label for="pMotivo">Motivo del rechazo <span style="text-transform:none;letter-spacing:0;color:var(--ink-3)">· dato interno, no sale en el presupuesto</span></label>
+    <div class="f full" id="boxRechazo" hidden><label for="pMotivo">Motivo del rechazo <span style="color:var(--no)">*</span> <span style="text-transform:none;letter-spacing:0;color:var(--ink-3)">· obligatorio · dato interno, no sale en el presupuesto</span></label>
       <input id="pMotivo" type="text" list="dlMotivo" autocomplete="off" placeholder="Elegí un motivo o escribilo"></div>
     <div class="f"><label for="gMano">Mano de obra</label><div class="money"><span>$</span><input id="gMano" type="text" inputmode="decimal" placeholder="0"></div></div>
     <div class="f"><label for="gMat">Materiales</label><div class="money"><span>$</span><input id="gMat" type="text" inputmode="decimal" placeholder="0"></div></div>
@@ -1470,6 +1470,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const nums={mano_obra:parseMonto($("gMano").value), materiales:parseMonto($("gMat").value), otros_costos:parseMonto($("gOtros").value), subtotal_trabajo:parseMonto($("gTotal").value)};
     if(Object.values(nums).some(Number.isNaN)){ mostrarErr("err2",{message:"Los importes tienen que ser números, por ejemplo 150000 o 150.000."}); return; }
     const ex=extrasLimpios();
+    if(getRadio("pres")==="rechazado" && !$("pMotivo").value.trim()){ mostrarErr("err2",{message:"Indicá el motivo del rechazo del presupuesto."}); $("pMotivo").focus(); return; }
     if(ex.some(x=>x.importe===null||Number.isNaN(x.importe)||!x.descripcion)){ mostrarErr("err2",{message:"Completá la descripción y el importe de cada agregado extra (o quitalo)."}); return; }
     const body={...nums, extras:ex, forma_pago:$("gPago").value.trim(), presupuesto_enviado:$("gEnviado").value, presupuesto_preparacion_en:$("gPrep").value,
       presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,

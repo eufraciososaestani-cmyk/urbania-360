@@ -140,6 +140,7 @@ router.post('/api/publico/presupuesto/:token/respuesta', async (req, res) => {
     const motivo = String(req.body.motivo || '').trim().slice(0, 500);
     if (!['aceptar', 'rechazar'].includes(accion)) return res.status(400).json({ error: 'Respuesta inválida' });
     if (!nombre) return res.status(400).json({ error: 'Ingresá tu nombre' });
+    if (accion === 'rechazar' && !motivo) return res.status(400).json({ error: 'Contanos el motivo del rechazo' });
     const hoy = hoyISO();
     const registro = `${accion === 'aceptar' ? 'Aceptado' : 'Rechazado'} online por ${nombre} el ${fmtDate(hoy)}`;
     if (accion === 'aceptar') {
