@@ -137,6 +137,7 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     mensaje     TEXT,
     creada_en   TIMESTAMP NOT NULL DEFAULT NOW()
 );
+ALTER TABLE notificaciones ADD COLUMN IF NOT EXISTS whatsapp TEXT;  -- mensaje listo para mandar por WhatsApp
 CREATE INDEX IF NOT EXISTS idx_notificaciones_creada ON notificaciones(creada_en);
 -- Hasta cuándo vio las notificaciones cada usuario (lo posterior es "no leído")
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS notif_vistas_en TIMESTAMP NOT NULL DEFAULT NOW();

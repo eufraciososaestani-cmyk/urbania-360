@@ -87,6 +87,15 @@ async function gruposDisponibles() {
   return (await res.json()).filter(c => c.type === 'group' || String(c.id).endsWith('@g.us')).map(c => ({ id: c.id, nombre: c.name || c.contactName || '' }));
 }
 
+// Datos para el botón "Enviar a <teléfono>" con el mensaje listo
+function botonWhatsApp(mensaje) {
+  const tel = telefonoWhatsApp(process.env.AVISO_URGENTE_TELEFONO);
+  return {
+    destinatario: process.env.AVISO_URGENTE_NOMBRE || (tel ? telefonoLegible(process.env.AVISO_URGENTE_TELEFONO) : ''),
+    whatsapp_url: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}` : null,
+  };
+}
+
 async function avisarUrgente(t, base) {
   const mensaje = mensajeUrgente(t, base);
   const tel = telefonoWhatsApp(process.env.AVISO_URGENTE_TELEFONO);
@@ -106,4 +115,4 @@ async function avisarUrgente(t, base) {
   return r;
 }
 
-module.exports = { avisarUrgente, enviarWhatsAppAuto, enviarAlGrupo, gruposDisponibles, grupoConfigurado, telefonoWhatsApp };
+module.exports = { avisarUrgente, botonWhatsApp, whatsappAutomatico, enviarWhatsAppAuto, enviarAlGrupo, gruposDisponibles, grupoConfigurado, telefonoWhatsApp };

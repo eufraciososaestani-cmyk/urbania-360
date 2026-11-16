@@ -2,7 +2,7 @@ const express = require('express');
 const webpush = require('web-push');
 const pool = require('./db');
 const { requireAuth, requireAdmin } = require('./auth');
-const { enviarWhatsAppAuto, enviarAlGrupo, gruposDisponibles } = require('./avisos');
+const { enviarWhatsAppAuto, enviarAlGrupo, gruposDisponibles, botonWhatsApp, whatsappAutomatico } = require('./avisos');
 const { emailConfigurado, transporte } = require('./correo');
 
 // Notificaciones para el equipo (por ahora: el cliente aceptó o rechazó el
@@ -65,13 +65,14 @@ async function enviarEmail(titulo, texto) {
 }
 
 async function notificar({ trabajoId, tipo, titulo, mensaje, whatsapp, base }) {
-  await pool.query('INSERT INTO notificaciones (trabajo_id, tipo, titulo, mensaje) VALUES ($1,$2,$3,$4)', [trabajoId, tipo, titulo, mensaje]);
-  await Promise.all([
+  await pool.query('INSERT INTO notificaciones (trabajo_id, tipo, titulo, mensaje, whatsapp) VALUES ($1,$2,$3,$4,$5)', [trabajoId, tipo, titulo, mensaje, whatsapp]);
+  const [, persona, grupo] = await Promise.all([
     enviarPush({ titulo, mensaje, url: `/?trabajo=${trabajoId}`, tag: `trabajo-${trabajoId}` }).catch(err => console.error('Push:', err.message)),
     enviarWhatsAppAuto(whatsapp),
     enviarAlGrupo(whatsapp),
     enviarEmail(titulo, whatsapp.replace(/\*/g, '')),
   ]);
+  return { mensaje: whatsapp, automatico: persona === true, grupo_automatico: grupo === true, ...botonWhatsApp(whatsapp) };
 }
 
 // El cliente respondió desde el link público
@@ -102,11 +103,12 @@ const router = express.Router();
 router.get('/api/notificaciones', requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT n.id, n.trabajo_id, n.tipo, n.titulo, n.mensaje, n.creada_en,
+      `SELECT n.id, n.trabajo_id, n.tipo, n.titulo, n.mensaje, n.whatsapp, n.creada_en,
               n.creada_en > u.notif_vistas_en AS nueva
          FROM notificaciones n, usuarios u WHERE u.id = $1
         ORDER BY n.creada_en DESC LIMIT 40`, [req.usuario.id]);
-    res.json({ items: rows, no_leidas: rows.filter(r => r.nueva).length, push_clave: clavePublica });
+    for (const r of rows) { r.whatsapp_url = r.whatsapp ? botonWhatsApp(r.whatsapp).whatsapp_url : null; delete r.whatsapp; }
+    res.json({ items: rows, aviso_destinatario: botonWhatsApp('').destinatario, aviso_automatico: whatsappAutomatico(), no_leidas: rows.filter(r => r.nueva).length, push_clave: clavePublica });
   } catch (err) {
     res.status(500).json({ error: 'Error al leer las notificaciones' });
   }

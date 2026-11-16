@@ -234,13 +234,16 @@ async function actualizarGestion(req, res) {
   try {
     const antes = await pool.query('SELECT presupuesto_estado FROM trabajos WHERE id = $1', [req.params.id]);
     if (!antes.rows.length || !(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
-    res.json(await obtenerTrabajo(req.usuario, req.params.id));
-    // Presupuesto que pasa a aceptado desde la app: mismo aviso que cuando acepta el cliente
+    const trabajo = await obtenerTrabajo(req.usuario, req.params.id);
+    // Presupuesto que pasa a aceptado desde la app: mismo aviso que cuando acepta el cliente,
+    // y la app muestra el botón para mandarlo por WhatsApp
     if (datos.presupuesto_estado === 'aceptado' && antes.rows[0].presupuesto_estado !== 'aceptado') {
-      datosPresupuesto('id', req.params.id)
-        .then(p => notificaciones.respuestaCliente(p, 'aceptar', `${req.usuario.nombre} (en la app)`, '', baseUrl(req)))
-        .catch(err => console.error('Aviso de presupuesto aceptado:', err.message));
+      try {
+        const p = await datosPresupuesto('id', req.params.id);
+        trabajo.aviso_aceptado = await notificaciones.respuestaCliente(p, 'aceptar', `${req.usuario.nombre} (en la app)`, '', baseUrl(req));
+      } catch (err) { console.error('Aviso de presupuesto aceptado:', err.message); }
     }
+    res.json(trabajo);
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar el presupuesto', detalle: err.message });
   }

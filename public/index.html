@@ -112,6 +112,8 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 .notifs{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
 .notif{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 12px;cursor:pointer;font:inherit;color:inherit}
 .notif:hover{background:var(--surface-2)}
+.notif-w{display:flex;flex-direction:column;gap:4px}
+.notif-w .btn.wa{align-self:flex-end;text-decoration:none;color:#fff}
 .notif.nueva{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
 .notif .ico{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
 .notif .ico.aceptado{color:var(--done);background:var(--done-bg)}
@@ -850,7 +852,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 <dialog id="dlgAviso" aria-labelledby="avisoTitle">
   <div class="dlg-head m1" style="padding-bottom:14px">
     <div class="dlg-title">
-      <div><span class="mod-tag m1">Urgencia alta</span><h2 id="avisoTitle">Avisar al equipo</h2></div>
+      <div><span class="mod-tag m1" id="avisoTag">Urgencia alta</span><h2 id="avisoTitle">Avisar al equipo</h2></div>
       <button class="x" type="button" id="avisoClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
   </div>
@@ -995,7 +997,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     try{
       const r=await api('/notificaciones');
       const nuevas = !primera && state.notif.ultimo ? r.items.filter(n=>n.nueva && n.id>state.notif.ultimo) : [];
-      state.notif={items:r.items, no_leidas:r.no_leidas, ultimo:r.items.length?r.items[0].id:state.notif.ultimo, clave:r.push_clave};
+      state.notif={items:r.items, no_leidas:r.no_leidas, ultimo:r.items.length?r.items[0].id:state.notif.ultimo, clave:r.push_clave, destinatario:r.aviso_destinatario, automatico:r.aviso_automatico};
       $("notifBadge").hidden=!r.no_leidas; $("notifBadge").textContent=r.no_leidas>9?"9+":r.no_leidas;
       if(nuevas.length){ toast(nuevas[0].titulo); if(nuevas.some(n=>n.tipo==="aceptado")) cargar(); }
       if(dlgNotif.open) renderNotif();
@@ -1008,14 +1010,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }
   function renderNotif(){
     const it=state.notif.items;
-    $("notifList").innerHTML = it.length ? it.map(n=>`<button type="button" class="notif${n.nueva?" nueva":""}" data-t="${esc(n.trabajo_id)}">
+    const dest=state.notif.destinatario, auto=state.notif.automatico;
+    $("notifList").innerHTML = it.length ? it.map(n=>`<div class="notif-w"><button type="button" class="notif${n.nueva?" nueva":""}" data-t="${esc(n.trabajo_id)}">
         <span class="ico ${esc(n.tipo)}">${n.tipo==="aceptado"?"✓":"✕"}</span>
         <span><b>${esc(n.titulo.replace(/^[✅❌]\s*/,""))}</b><span class="msg">${esc(n.mensaje||"")}</span><time>${esc(haceCuanto(n.creada_en))}</time></span>
-      </button>`).join("")
+      </button>${n.tipo==="aceptado"&&n.whatsapp_url&&!auto?`<a class="btn small wa" href="${esc(n.whatsapp_url)}" target="_blank" rel="noopener">Enviar a ${esc(dest)} por WhatsApp</a>`:""}</div>`).join("")
       : `<p class="area-hint">Todavía no hay avisos. Cuando un cliente acepte o rechace un presupuesto desde el link, aparece acá.</p>`;
     $("notifList").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ dlgNotif.close(); const r=porId(b.dataset.t); if(r){ setMod(2); openPres(r); } });
   }
   $("btnNotif").onclick=async()=>{
+    await cargarNotif(true);
     renderNotif(); renderPushBox(); dlgNotif.showModal();
     if(state.notif.no_leidas){ try{ await api('/notificaciones/vistas',{method:'POST'}); }catch(e){} $("notifBadge").hidden=true; state.notif.no_leidas=0; }
   };
@@ -1250,7 +1254,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }
   $("segUrg").addEventListener("change",syncUrg);
   const dlgAviso=$("dlgAviso");
-  function mostrarAviso(a){
+  function mostrarAviso(a, tag){
+    $("avisoTag").textContent = tag || "Urgencia alta";
     const WA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>';
     const ok=[a.grupo_automatico?"al grupo de Urbania":null, a.automatico?esc(a.destinatario):null].filter(Boolean);
     $("avisoEstado").innerHTML = ok.length
@@ -1480,6 +1485,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       state.pres = {...rec, id:String(rec.id)};
       fillPres(state.pres);
       toast("Presupuesto y trabajo guardados");
+      if(rec.aviso_aceptado) mostrarAviso(rec.aviso_aceptado, "Presupuesto aceptado");
     }catch(err){ mostrarErr("err2",err); }
     finally{ $("btnSave2").disabled=false; }
   });
