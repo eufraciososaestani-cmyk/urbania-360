@@ -119,6 +119,24 @@ router.post('/api/notificaciones/vistas', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// Borrar una notificación o todas
+router.delete('/api/notificaciones/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM notificaciones WHERE id = $1', [Number(req.params.id) || 0]);
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).json({ error: 'No se pudo borrar la notificación' });
+  }
+});
+router.delete('/api/notificaciones', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM notificaciones');
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).json({ error: 'No se pudieron borrar las notificaciones' });
+  }
+});
+
 // Alta y baja de un dispositivo para las notificaciones push
 router.post('/api/push/suscribir', requireAuth, async (req, res) => {
   const s = req.body || {};

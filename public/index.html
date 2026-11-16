@@ -112,7 +112,10 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 .notifs{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
 .notif{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 12px;cursor:pointer;font:inherit;color:inherit}
 .notif:hover{background:var(--surface-2)}
-.notif-w{display:flex;flex-direction:column;gap:4px}
+.notif-w{display:flex;flex-direction:column;gap:4px;position:relative}
+.notif-del{position:absolute;top:6px;right:6px;z-index:1;width:26px;height:26px;border-radius:50%;border:0;background:transparent;color:var(--ink-3);font-size:18px;line-height:1;cursor:pointer}
+.notif-del:hover{background:var(--no-bg);color:var(--no)}
+.notif{padding-right:36px}
 .notif-w .btn.wa{align-self:flex-end;text-decoration:none;color:#fff}
 .notif.nueva{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
 .notif .ico{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
@@ -873,6 +876,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   <div class="area">
     <div class="push-box" id="pushBox"></div>
     <div class="notifs" id="notifList"></div>
+    <button class="btn small" type="button" id="notifBorrarTodas" style="justify-self:end;width:auto" hidden>Borrar todas</button>
   </div>
 </dialog>
 
@@ -1011,11 +1015,17 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function renderNotif(){
     const it=state.notif.items;
     const dest=state.notif.destinatario, auto=state.notif.automatico;
-    $("notifList").innerHTML = it.length ? it.map(n=>`<div class="notif-w"><button type="button" class="notif${n.nueva?" nueva":""}" data-t="${esc(n.trabajo_id)}">
+    $("notifBorrarTodas").hidden = !it.length; $("notifBorrarTodas").textContent="Borrar todas"; $("notifBorrarTodas").dataset.armed="";
+    $("notifList").innerHTML = it.length ? it.map(n=>`<div class="notif-w"><button type="button" class="notif-del" data-del="${esc(n.id)}" aria-label="Borrar notificación" title="Borrar">×</button><button type="button" class="notif${n.nueva?" nueva":""}" data-t="${esc(n.trabajo_id)}">
         <span class="ico ${esc(n.tipo)}">${n.tipo==="aceptado"?"✓":"✕"}</span>
         <span><b>${esc(n.titulo.replace(/^[✅❌]\s*/,""))}</b><span class="msg">${esc(n.mensaje||"")}</span><time>${esc(haceCuanto(n.creada_en))}</time></span>
       </button>${n.tipo==="aceptado"&&n.whatsapp_url&&!auto?`<a class="btn small wa" href="${esc(n.whatsapp_url)}" target="_blank" rel="noopener">Enviar a ${esc(dest)} por WhatsApp</a>`:""}</div>`).join("")
       : `<p class="area-hint">Todavía no hay avisos. Cuando un cliente acepte o rechace un presupuesto desde el link, aparece acá.</p>`;
+    $("notifList").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.del, prev=state.notif.items;
+      state.notif.items=prev.filter(n=>String(n.id)!==id); renderNotif();
+      try{ await api('/notificaciones/'+id,{method:'DELETE'}); }catch(e){ state.notif.items=prev; renderNotif(); toast("No se pudo borrar la notificación"); }
+    });
     $("notifList").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ dlgNotif.close(); const r=porId(b.dataset.t); if(r){ setMod(2); openPres(r); } });
   }
   $("btnNotif").onclick=async()=>{
@@ -1024,6 +1034,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     if(state.notif.no_leidas){ try{ await api('/notificaciones/vistas',{method:'POST'}); }catch(e){} $("notifBadge").hidden=true; state.notif.no_leidas=0; }
   };
   $("notifClose").onclick=()=>dlgNotif.close();
+  $("notifBorrarTodas").onclick=async()=>{
+    const b=$("notifBorrarTodas");
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Borrar todas? Tocá de nuevo"; return; }
+    const prev=state.notif.items; state.notif.items=[]; renderNotif();
+    try{ await api('/notificaciones',{method:'DELETE'}); toast("Notificaciones borradas"); }catch(e){ state.notif.items=prev; renderNotif(); toast("No se pudieron borrar"); }
+  };
   dlgNotif.addEventListener("close",()=>{ state.notif.items.forEach(n=>n.nueva=false); });
 
   // Push: el aviso llega al celular o la computadora aunque la app esté cerrada
