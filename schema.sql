@@ -59,6 +59,7 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS origen             VARCHAR(30);   
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS cliente_telefono   VARCHAR(60);
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS cliente_email      VARCHAR(150);
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS referido_por       VARCHAR(200);  -- INTERNO: solo usuarios con ve_referido
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS es_visita          BOOLEAN NOT NULL DEFAULT FALSE; -- solo visita: no lleva presupuesto
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS urgencia           VARCHAR(10) NOT NULL DEFAULT 'media'; -- alta, media, baja
 
 -- ÁREA 2 · PRESUPUESTO Y TRABAJO

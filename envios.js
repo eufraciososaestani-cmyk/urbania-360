@@ -57,8 +57,9 @@ router.post('/api/trabajos/:id/enviar', requireAuth, async (req, res) => {
   const canal = req.body.canal;
   if (!['email', 'whatsapp', 'link'].includes(canal)) return res.status(400).json({ error: 'Canal de envío inválido' });
   try {
-    const { rows } = await pool.query('SELECT presupuesto_token, presupuesto_total, presupuesto_estado FROM trabajos WHERE id = $1', [req.params.id]);
+    const { rows } = await pool.query('SELECT presupuesto_token, presupuesto_total, presupuesto_estado, es_visita FROM trabajos WHERE id = $1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    if (rows[0].es_visita) return res.status(400).json({ error: 'Es una solicitud de solo visita: no lleva presupuesto' });
     if (rows[0].presupuesto_total == null) return res.status(400).json({ error: 'Cargá y guardá el importe del presupuesto antes de enviarlo' });
 
     // Token del link público (se crea una sola vez)

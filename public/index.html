@@ -188,6 +188,12 @@ h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:
 .pr-aceptado,.ta-finalizada{color:var(--done);background:var(--done-bg)}
 .pr-rechazado,.ta-cancelada{color:var(--no);background:var(--no-bg)}
 .ur-alta{color:var(--no);background:var(--no-bg)}
+.pill.visita{color:var(--prep);background:var(--prep-bg)}
+.pill.visita::before{content:"⌂";width:auto;height:auto;background:none;font-size:12px}
+.solo-pres-grupo{display:contents}
+#area2.visita .solo-pres{display:none}
+.solo-visita{display:none}
+#area2.visita .solo-visita{display:revert}
 .ur-media{color:var(--pend);background:var(--pend-bg)}
 .ur-baja{color:var(--ink-3);background:var(--surface-2)}
 .pill.ur{font-size:11px;padding:1px 7px;margin-left:6px;vertical-align:1px}
@@ -267,7 +273,7 @@ body[data-mod="2"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a2
 .ci-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start}
 .ci-head b{font-weight:600}
 .ci-pills{display:flex;gap:6px;flex-wrap:wrap}
-.crono{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
+.crono{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(var(--pasos,7),minmax(0,1fr));gap:0}
 .paso{position:relative;display:flex;flex-direction:column;gap:2px;padding:0 8px 0 0;min-width:0}
 .paso .pt{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);position:relative;z-index:1;margin-bottom:6px}
 .paso .lnk{position:absolute;top:6px;left:calc(-100% + 16px);width:calc(100% - 18px);height:2px;background:var(--line-strong);display:flex;justify-content:center}
@@ -394,6 +400,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 .seg label.o-enviado,.seg label.o-asignada,.seg label.o-en_proceso{--c:var(--exec);--b:var(--exec-bg)}
 .seg label.o-aceptado,.seg label.o-finalizada{--c:var(--done);--b:var(--done-bg)}
 .seg label.o-rechazado,.seg label.o-cancelada,.seg label.o-alta{--c:var(--no);--b:var(--no-bg)}
+.seg label.o-trabajo{--c:var(--exec);--b:var(--exec-bg)}
+.seg label.o-visita{--c:var(--prep);--b:var(--prep-bg)}
 .seg label.o-media{--c:var(--pend);--b:var(--pend-bg)}
 .seg label.o-baja{--c:var(--ink-2);--b:var(--surface-2)}
 .seg input:checked + label{color:var(--c);background:var(--b);border-color:var(--c)}
@@ -591,7 +599,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
           <input id="gQ" type="search" placeholder="Cliente…" aria-label="Filtrar por cliente">
         </div>
-        <select id="gResp" aria-label="Responsable"></select>
+        <select id="gnResp" aria-label="Responsable"></select>
         <select id="gEstado" aria-label="Estado"></select>
         <select id="gTipo" aria-label="Categoría o trabajo"></select>
         <input id="gDesde" type="date" aria-label="Desde">
@@ -688,6 +696,8 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="sec">Consulta</div>
     <div class="f"><label for="sFecha">Fecha de ingreso</label><input id="sFecha" type="date" required></div>
     <div class="f"><label for="sOrigen">De dónde entra la consulta</label><select id="sOrigen"></select></div>
+    <div class="f full"><span class="lbl" id="lblTipoSol">Tipo de solicitud</span><div class="seg" role="radiogroup" aria-labelledby="lblTipoSol" id="segTipoSol"></div>
+      <span class="area-hint" id="tipoSolHint"></span></div>
     <div class="f full"><span class="lbl" id="lblUrg">Urgencia</span><div class="seg" role="radiogroup" aria-labelledby="lblUrg" id="segUrg"></div>
       <span class="area-hint" id="urgHint"></span></div>
     <div class="f full"><label for="sTipo">Categoría o trabajo</label><input id="sTipo" type="text" list="dlTipo" placeholder="Elegí una categoría o escribí un trabajo específico" required autocomplete="off"></div>
@@ -731,11 +741,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     <div class="banner" id="presBanner"></div>
     <div class="presCrono" id="presCrono" aria-label="Cronología del trabajo"></div>
 
-    <div class="sec">Trabajo a presupuestar</div>
+    <div class="sec"><span class="solo-pres">Trabajo a presupuestar</span><span class="solo-visita">Solo visita · sin presupuesto</span></div>
     <div class="f full"><label for="pCat">Categoría o trabajo</label><input id="pCat" type="text" list="dlTipo" placeholder="Elegí una categoría o escribí un trabajo específico" autocomplete="off"></div>
     <div class="f full"><label for="pDesc">Descripción / detalle del trabajo</label><textarea id="pDesc" rows="5" placeholder="Qué tareas se van a realizar. Ej.: Reemplazo de luminarias en espacios comunes del edificio, revisión de conexiones existentes y comprobación del funcionamiento de las luces instaladas."></textarea><span class="area-hint" id="pDescHint"></span></div>
-    <div class="f full"><label for="pMatDet">Materiales incluidos</label><textarea id="pMatDet" rows="3" placeholder="Uno por línea. Ej.: 12 luminarias LED 18 W"></textarea></div>
+    <div class="f full solo-pres"><label for="pMatDet">Materiales incluidos</label><textarea id="pMatDet" rows="3" placeholder="Uno por línea. Ej.: 12 luminarias LED 18 W"></textarea></div>
 
+    <div class="solo-pres solo-pres-grupo">
     <div class="sec">Presupuesto</div>
     <div class="f full"><span class="lbl" id="lblPres">Estado del presupuesto</span><div class="seg" role="radiogroup" aria-labelledby="lblPres" id="segPres"></div></div>
     <div class="f" id="boxRechFecha" hidden><label for="gRechazado">Fecha de rechazo</label><input id="gRechazado" type="date"></div>
@@ -769,15 +780,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       Enviar al cliente</button>
       <span class="area-hint">Muestra y envía el último presupuesto guardado. El cliente lo recibe con un link donde puede aceptarlo o rechazarlo. No incluye datos internos.</span></div>
     <p class="respuesta-cli" id="respCli" hidden></p>
+    </div>
 
     <div class="sec">Gestión de la tarea</div>
-    <p class="aviso" id="avisoTarea" hidden>La tarea se puede asignar y ejecutar una vez que el presupuesto está <strong>aceptado</strong>.</p>
+    <p class="aviso solo-pres" id="avisoTarea" hidden>La tarea se puede asignar y ejecutar una vez que el presupuesto está <strong>aceptado</strong>.</p>
     <div class="f full"><span class="lbl" id="lblTarea">Estado de la tarea</span><div class="seg" role="radiogroup" aria-labelledby="lblTarea" id="segTarea"></div></div>
-    <div class="f full"><label for="gResp">Quién realizará el trabajo</label><input id="gResp" type="text" list="dlResp" autocomplete="off"></div>
-    <div class="f"><label for="gInicio">Fecha de ejecución de la tarea</label><input id="gInicio" type="date"></div>
-    <div class="f"><label for="gFinPrev">Fecha prevista de finalización</label><input id="gFinPrev" type="date"></div>
-    <div class="f"><label for="gFin">Fecha real de final de obra</label><input id="gFin" type="date"></div>
-    <div class="f"><span class="lbl">Previsto vs. real</span><p class="desvio" id="gDesvio">—</p></div>
+    <div class="f full"><label for="gResp" id="lblResp">Quién realizará el trabajo</label><input id="gResp" type="text" list="dlResp" autocomplete="off"></div>
+    <div class="f"><label for="gInicio" id="lblInicio">Fecha de ejecución de la tarea</label><input id="gInicio" type="date"></div>
+    <div class="f solo-pres"><label for="gFinPrev">Fecha prevista de finalización</label><input id="gFinPrev" type="date"></div>
+    <div class="f"><label for="gFin" id="lblFin">Fecha real de final de obra</label><input id="gFin" type="date"></div>
+    <div class="f solo-pres"><span class="lbl">Previsto vs. real</span><p class="desvio" id="gDesvio">—</p></div>
     <div class="interno">
       <div class="interno-head">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -788,7 +800,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 
     <p class="err" id="err2" hidden></p>
     <div class="dlg-foot">
-      <div><button class="btn danger" type="button" id="btnDelPres">Eliminar presupuesto</button></div>
+      <div class="solo-pres"><button class="btn danger" type="button" id="btnDelPres">Eliminar presupuesto</button></div>
       <div class="right"><button class="btn primary" type="submit" id="btnSave2">Guardar presupuesto y trabajo</button></div>
     </div>
 
@@ -946,6 +958,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   options($("sOrigen"), ORIGEN, "Sin especificar");
   seg($("segPres"), "pres", PRES);
   seg($("segUrg"), "urg", URG);
+  seg($("segTipoSol"), "tiposol", {trabajo:"Trabajo con presupuesto", visita:"Solo visita"});
   seg($("segTarea"), "tarea", TAREA);
 
   // ---- API ----
@@ -1103,17 +1116,19 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       {k:"Solicitudes", s:()=>"Historial completo", f:()=>true},
       {k:"Últimos 7 días", s:()=>"Consultas nuevas", f:x=>diasDesde(x.fecha)<=7, c:"var(--a1)"},
       {k:"Urgentes", s:r=>`${r.filter(x=>x.urgencia==="alta"&&["pendiente","en_preparacion"].includes(x.presupuesto_estado)).length} sin presupuestar`, f:x=>x.urgencia==="alta", c:"var(--no)"},
-      {k:"Sin presupuestar", s:()=>"Pendiente o en preparación", f:x=>["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
+      {k:"Sin presupuestar", s:()=>"Pendiente o en preparación", f:x=>!x.es_visita&&["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
+      {k:"Solo visitas", s:r=>`${r.filter(x=>x.es_visita&&!["finalizada","cancelada"].includes(x.estado)).length} por realizar`, f:x=>x.es_visita, c:"var(--prep)"},
       {k:"Por recomendación", s:()=>"Origen: recomendación", f:x=>x.origen==="recomendacion", c:"var(--ink-3)"},
     ],
     2: [
       {k:"Presupuestos", s:()=>"Todos", f:()=>true},
-      {k:"Por preparar", s:r=>`${r.filter(x=>x.presupuesto_estado==="en_preparacion").length} en preparación`, f:x=>["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
+      {k:"Por preparar", s:r=>`${r.filter(x=>x.presupuesto_estado==="en_preparacion").length} en preparación`, f:x=>!x.es_visita&&["pendiente","en_preparacion"].includes(x.presupuesto_estado), c:"var(--pend)"},
       {k:"Enviados", s:()=>"Esperando respuesta", f:x=>x.presupuesto_estado==="enviado", c:"var(--exec)"},
       {k:"Aceptados", s:r=>money.format(r.filter(x=>x.presupuesto_estado==="aceptado").reduce((a,x)=>a+(x.presupuesto_total||0),0)), f:x=>x.presupuesto_estado==="aceptado", c:"var(--done)"},
       {k:"Rechazados", s:()=>"No aceptados", f:x=>x.presupuesto_estado==="rechazado", c:"var(--no)"},
       {k:"En ejecución", s:r=>`${r.filter(x=>x.estado==="asignada").length} asignadas`, f:x=>["asignada","en_proceso"].includes(x.estado), c:"var(--exec)"},
       {k:"Finalizados", s:()=>"Trabajos terminados", f:x=>x.estado==="finalizada", c:"var(--done)"},
+      {k:"Visitas", s:r=>`${r.filter(x=>x.es_visita&&!["finalizada","cancelada"].includes(x.estado)).length} por realizar`, f:x=>x.es_visita, c:"var(--prep)"},
     ],
   };
 
@@ -1193,7 +1208,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
           <span class="c-num">${esc(x.id)}</span>
           <span class="c-date">${fmtDate(x.fecha)}</span>
-          <span class="c-who">${esc(x.solicitante)}${urgPill(x)}${x.cliente_telefono?`<span class="c-sub">${esc(x.cliente_telefono)}</span>`:""}</span>
+          <span class="c-who">${esc(x.solicitante)}${urgPill(x)}${x.es_visita?`<span class="pill ur visita">Visita</span>`:""}${x.cliente_telefono?`<span class="c-sub">${esc(x.cliente_telefono)}</span>`:""}</span>
           <span class="c-where">${esc(x.lugar)}${x.detalle?`<span class="c-sub">${esc(x.detalle)}</span>`:""}</span>
           <span class="c-origen">${esc(x.tipo)}</span>
           <span class="c-origen">${esc(ORIGEN[x.origen]||"—")}</span>
@@ -1205,7 +1220,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         + r.map(x=>`<button class="row" type="button" role="listitem" data-id="${esc(x.id)}">
           <span class="c-who"><span class="c-num">N° ${esc(x.id)}</span> ${esc(x.solicitante)}${urgPill(x)}<span class="c-sub">${esc(x.tipo)} · ${esc(x.lugar)}${nFotos(x)?`<span class="foto-count" title="Fotos cargadas">${CAM}${nFotos(x)}</span>`:""}</span></span>
           <span class="c-money">${x.presupuesto_total!=null?money.format(x.presupuesto_total):"—"}</span>
-          <span class="c-pres"><span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span></span>
+          <span class="c-pres">${x.es_visita?`<span class="pill visita">Solo visita</span>`:`<span class="pill pr-${esc(x.presupuesto_estado)}">${PRES[x.presupuesto_estado]||"—"}</span>`}</span>
           <span class="c-date">${x.presupuesto_enviado?fmtDate(x.presupuesto_enviado):"—"}</span>
           <span class="c-origen">${esc(x.responsable||"—")}</span>
           <span class="c-ta"><span class="pill ta-${esc(x.estado)}">${TAREA[x.estado]||"—"}</span></span>
@@ -1234,7 +1249,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("solTitle").textContent = rec ? rec.solicitante : "Nueva solicitud";
     $("solSub").textContent = rec ? `Solicitud N° ${rec.id} · ingresó el ${fmtDate(rec.fecha)}` : "Carga de una consulta nueva";
     $("solIrPres").disabled = !rec;
-    $("solIrPres").textContent = rec ? "Ir a presupuesto y trabajo →" : "El presupuesto se carga después de guardar";
+    $("solIrPres").textContent = rec ? (rec.es_visita ? "Ir a la visita →" : "Ir a presupuesto y trabajo →") : (getRadio("tiposol")==="visita" ? "La visita se programa después de guardar" : "El presupuesto se carga después de guardar");
     $("delWrap").hidden = !rec;
     $("btnSave1").textContent = rec ? "Guardar solicitud" : "Crear solicitud";
   }
@@ -1243,6 +1258,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("sFecha").value = rec?.fecha || today();
     $("sOrigen").value = rec?.origen || "";
     setRadio("urg", rec?.urgencia || "media"); syncUrg();
+    setRadio("tiposol", rec?.es_visita ? "visita" : "trabajo"); syncTipoSol();
     $("sTipo").value = rec?.tipo || "";
     $("sDetalle").value = rec?.detalle || "";
     $("sCliente").value = rec?.solicitante || "";
@@ -1269,6 +1285,12 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("urgHint").textContent = alta ? "Al guardar se avisa por WhatsApp al equipo de Urbania." : "";
   }
   $("segUrg").addEventListener("change",syncUrg);
+  function syncTipoSol(){
+    $("tipoSolHint").textContent = getRadio("tiposol")==="visita"
+      ? "Se programa y se sigue como una tarea (fecha, responsable, estado y fotos), sin presupuesto. Si después hace falta presupuestar, cambiala a “Trabajo con presupuesto”."
+      : "";
+  }
+  $("segTipoSol").addEventListener("change",()=>{ syncTipoSol(); setSolHeader(); });
   const dlgAviso=$("dlgAviso");
   function mostrarAviso(a, tag){
     $("avisoTag").textContent = tag || "Urgencia alta";
@@ -1295,7 +1317,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     const body={
       fecha:$("sFecha").value, origen:$("sOrigen").value, tipo:$("sTipo").value.trim(), detalle:$("sDetalle").value.trim(),
       solicitante:$("sCliente").value.trim(), cliente_telefono:$("sTel").value.trim(), cliente_email:$("sEmail").value.trim(),
-      lugar:$("sLugar").value.trim(), urgencia:getRadio("urg")||"media",
+      lugar:$("sLugar").value.trim(), urgencia:getRadio("urg")||"media", es_visita:getRadio("tiposol")==="visita",
     };
     if(state.yo.ve_referido) body.referido_por=$("sReferido").value.trim();
     const miss=[]; if(!body.fecha) miss.push("fecha de ingreso"); if(!body.tipo) miss.push("tipo de trabajo"); if(!body.solicitante) miss.push("cliente"); if(!body.lugar) miss.push("dirección del trabajo");
@@ -1326,7 +1348,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   // ---- ÁREA 2 · Ficha del presupuesto y trabajo ----
   function openPres(rec){
     state.pres = rec;
-    $("presTitle").textContent = `Presupuesto N° ${rec.id}`;
+    $("presTitle").textContent = rec.es_visita ? `Visita N° ${rec.id}` : `Presupuesto N° ${rec.id}`;
     $("presSub").textContent = `${rec.solicitante} · ${rec.tipo} · ${rec.lugar}`;
     fillPres(rec);
     dlgPres.showModal();
@@ -1345,6 +1367,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   };
   function fillPres(rec){
     resetDelPres();
+    const vis=!!rec.es_visita;
+    $("area2").classList.toggle("visita", vis);
+    $("lblResp").textContent = vis ? "Quién realiza la visita" : "Quién realizará el trabajo";
+    $("lblInicio").textContent = vis ? "Fecha de la visita" : "Fecha de ejecución de la tarea";
+    $("lblFin").textContent = vis ? "Fecha en que se realizó" : "Fecha real de final de obra";
+    $("btnSave2").textContent = vis ? "Guardar visita" : "Guardar presupuesto y trabajo";
+    document.querySelectorAll('#segTarea label').forEach(l=>{ const v=document.getElementById(l.htmlFor).value; l.textContent = vis && v==="finalizada" ? "Realizada" : TAREA[v]; });
     setRadio("pres", rec.presupuesto_estado || "pendiente");
     setRadio("tarea", rec.estado || "pendiente");
     $("gMano").value = fmtMontoInput(rec.mano_obra);
@@ -1456,13 +1485,13 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   $("segTarea").addEventListener("change",syncArea2);
 
   function syncArea2(){
-    const p=getRadio("pres")||"pendiente", aceptado=p==="aceptado";
+    const p=getRadio("pres")||"pendiente", vis=!!(state.pres&&state.pres.es_visita), aceptado=p==="aceptado"||vis;
     const icon = aceptado ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>'
       : p==="rechazado" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>'
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>';
     const total=totales().total;
     const b=$("presBanner");
-    b.className=`banner pr-${p}`;
+    b.className=`banner pr-${p} solo-pres`;
     b.innerHTML=`${icon}<span><span class="big">Presupuesto ${esc(PRES[p].toLowerCase())}</span>${p==="rechazado"&&$("pMotivo").value.trim()?`<br><span style="font-weight:500;font-size:14px">Motivo: ${esc($("pMotivo").value.trim())}</span>`:""}</span><span class="sub">${total!=null&&!Number.isNaN(total)?money.format(total):"Sin importe"}${$("gEnviado").value?`<br>Enviado el ${fmtDate($("gEnviado").value)}`:""}${p==="rechazado"&&$("gRechazado").value?`<br>Rechazado el ${fmtDate($("gRechazado").value)}`:""}</span>`;
     // Sin presupuesto aceptado solo se permite Pendiente o Cancelada
     document.querySelectorAll('input[name="tarea"]').forEach(i=>{ i.disabled = !aceptado && !TAREA_SIN_ACEPTAR.includes(i.value); });
@@ -1501,7 +1530,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       const rec = await api(`/trabajos/${state.pres.id}/gestion`,{method:'PUT',body:JSON.stringify(body)});
       state.pres = {...rec, id:String(rec.id)};
       fillPres(state.pres);
-      toast("Presupuesto y trabajo guardados");
+      toast(state.pres.es_visita ? "Visita guardada" : "Presupuesto y trabajo guardados");
       if(rec.aviso_aceptado) mostrarAviso(rec.aviso_aceptado, "Presupuesto aceptado");
     }catch(err){ mostrarErr("err2",err); }
     finally{ $("btnSave2").disabled=false; }
@@ -1859,6 +1888,11 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const duracion = x => x.inicio_previsto ? diasEntre(x.inicio_previsto, x.finalizado_en || x.fin_previsto || x.inicio_previsto)+1 : null;
 
   function cronoPasos(x){
+    if(x.es_visita) return [
+      {k:"Ingreso de solicitud", f:x.fecha},
+      {k:"Visita programada", f:x.inicio_previsto, cancel: x.estado==="cancelada"},
+      {k:"Visita realizada", f:x.finalizado_en},
+    ];
     const rech = x.presupuesto_estado==="rechazado";
     return [
       {k:"Ingreso de solicitud", f:x.fecha},
@@ -1873,7 +1907,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function cronoHTML(x){
     const pasos=cronoPasos(x), hoy=today();
     let corte=false;
-    return `<ol class="crono">${pasos.map((p,i)=>{
+    return `<ol class="crono" style="--pasos:${pasos.length}">${pasos.map((p,i)=>{
       if(p.rech) corte=true;
       const fut = p.f && p.f>hoy;
       const cls = p.rech ? "no" : (corte && !p.rech) ? "off" : p.f ? (fut?"prog":"ok") : "pend";
@@ -1919,10 +1953,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function llenarSelect(sel, vals, todos){ const v=sel.value; sel.innerHTML=`<option value="">${todos}</option>`+vals.map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join(""); sel.value=v; }
   function renderGantt(){
     const uniq=k=>[...new Set(state.rows.map(x=>x[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
-    llenarSelect($("gResp"), uniq("responsable").map(v=>[v,v]), "Todo responsable");
+    llenarSelect($("gnResp"), uniq("responsable").map(v=>[v,v]), "Todo responsable");
     llenarSelect($("gTipo"), uniq("tipo").map(v=>[v,v]), "Todo tipo");
     if(!$("gEstado").options.length) llenarSelect($("gEstado"), [...Object.entries(TAREA), ["atrasados","Atrasados"]], "Todo estado");
-    const q=$("gQ").value.trim().toLowerCase(), fr=$("gResp").value, fe=$("gEstado").value, ft=$("gTipo").value, d0=$("gDesde").value, d1=$("gHasta").value;
+    const q=$("gQ").value.trim().toLowerCase(), fr=$("gnResp").value, fe=$("gEstado").value, ft=$("gTipo").value, d0=$("gDesde").value, d1=$("gHasta").value;
     const hoy=today();
     const finDe = x => x.finalizado_en || ((["asignada","en_proceso"].includes(x.estado) && x.inicio_previsto<=hoy) ? (x.fin_previsto && x.fin_previsto>hoy ? x.fin_previsto : hoy) : (x.fin_previsto||x.inicio_previsto));
     const conFecha = state.rows.filter(x=>x.inicio_previsto);
@@ -1972,7 +2006,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       }).join("");
     $("ganttChart").querySelectorAll(".g-row[data-id]").forEach(b=>b.onclick=()=>openPres(porId(b.dataset.id)));
   }
-  ["gQ","gResp","gEstado","gTipo","gDesde","gHasta"].forEach(id=>$(id).addEventListener("input",renderGantt));
+  ["gQ","gnResp","gEstado","gTipo","gDesde","gHasta"].forEach(id=>$(id).addEventListener("input",renderGantt));
 
   // ---- 5 · EXPORTAR A EXCEL ----
   // Columnas disponibles. "Referido por" solo existe para usuarios con permiso (y el servidor no lo envía a los demás).
@@ -1983,7 +2017,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ["id","ID de solicitud",x=>Number(x.id)],["fecha","Fecha de ingreso de solicitud",x=>d(x.fecha)],["cliente","Cliente",x=>x.solicitante],
         ["tel","Teléfono",x=>x.cliente_telefono],["email","Email",x=>x.cliente_email],["lugar","Dirección",x=>x.lugar],
         ["tipo","Categoría o trabajo",x=>x.tipo],["detalle","Detalle de la solicitud",x=>x.detalle],["origen","Origen de la consulta",x=>ORIGEN[x.origen]||""],
-        ["urgencia","Urgencia",x=>URG[x.urgencia]||""],
+        ["urgencia","Urgencia",x=>URG[x.urgencia]||""],["tiposol","Tipo de solicitud",x=>x.es_visita?"Solo visita":"Trabajo con presupuesto"],
       ].concat(state.yo && state.yo.ve_referido ? [["referido","Referido por (interno)",x=>x.referido_por]] : [])],
       ["Presupuesto", [
         ["p_ing","Fecha de ingreso del presupuesto",x=>d(x.presupuesto_ingreso)],["p_prep","Fecha en preparación",x=>d(x.presupuesto_preparacion_en)],["p_env","Fecha de envío",x=>d(x.presupuesto_enviado)],["p_ac","Fecha de aceptación",x=>d(x.presupuesto_aceptado_en)],["p_rech","Fecha de rechazo",x=>d(x.presupuesto_rechazado_en)],
@@ -2000,7 +2034,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     ];
     return grupos;
   }
-  const colsElegidas = new Set(["id","fecha","cliente","tel","email","origen","urgencia","referido","p_ing","total","mano","mat","pago","p_est","ejec","resp","t_est","fprev","freal","obs"]);
+  const colsElegidas = new Set(["id","fecha","cliente","tel","email","origen","urgencia","tiposol","referido","p_ing","total","mano","mat","pago","p_est","ejec","resp","t_est","fprev","freal","obs"]);
   function renderExportCols(){
     $("eCols").innerHTML = columnasExport().map(([g,cols])=>`<fieldset class="exp-grupo"><legend>${g} <button type="button" class="link-mod m1" data-todas="${g}">todas</button> · <button type="button" class="link-mod m1" data-ninguna="${g}">ninguna</button></legend>
       ${cols.map(([k,l])=>`<label class="chk"><input type="checkbox" data-col="${k}"${colsElegidas.has(k)?" checked":""}> ${esc(l)}</label>`).join("")}</fieldset>`).join("");

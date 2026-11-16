@@ -60,6 +60,12 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   link). Al enviarlo queda como "Enviado" con la fecha; cuando el cliente
   responde, el estado, la fecha de aceptación o el motivo del rechazo se
   actualizan solos y la respuesta queda registrada en la ficha.
+- **Solo visita**: en la solicitud se elige "Trabajo con presupuesto" o
+  "Solo visita". Las visitas no llevan presupuesto: en el área 2 se cargan
+  fecha de la visita, quién la realiza, estado (pendiente, asignada, en
+  proceso, realizada, cancelada), observaciones y fotos. Tienen su tarjeta
+  "Visitas", su etiqueta en las listas y su columna en el Excel. Si después
+  hace falta presupuestar, se cambia el tipo a "Trabajo con presupuesto".
 - **Urgencia** de cada solicitud (alta, media, baja), con filtro, orden
   "más urgentes primero" y la columna en Excel. Al guardar una solicitud
   en **alta** (nueva o que pasa a alta) se avisa por WhatsApp: se abre el

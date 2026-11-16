@@ -23,7 +23,7 @@ const numCol = c => `t.${c}::float8 AS ${c}`;
 
 const COLUMNAS_SOLICITUD = [
   't.id', fechaCol('fecha'), 't.solicitante', 't.cliente_telefono', 't.cliente_email',
-  't.lugar', 't.tipo', 't.detalle', 't.origen', 't.urgencia',
+  't.lugar', 't.tipo', 't.detalle', 't.origen', 't.urgencia', 't.es_visita',
 ];
 const COLUMNAS_GESTION = [
   numCol('presupuesto_total'), numCol('mano_obra'), numCol('materiales'), numCol('otros_costos'),
@@ -66,6 +66,7 @@ function validarSolicitud(body) {
     detalle: texto(body.detalle),
     origen: texto(body.origen),
     urgencia: texto(body.urgencia) || 'media',
+    es_visita: body.es_visita === true || body.es_visita === 'true',
   };
   const faltan = [];
   if (!d.fecha) faltan.push('fecha de ingreso');
@@ -89,7 +90,7 @@ function hoyISO() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: process.env.TZ_APP || 'America/Argentina/Cordoba' }).format(new Date());
 }
 
-function validarGestion(body) {
+function validarGestion(body, visita = false) {
   const d = {
     mano_obra: numero(body.mano_obra),
     materiales: numero(body.materiales),
@@ -144,7 +145,11 @@ function validarGestion(body) {
   // Presupuesto rechazado: la tarea pasa sola a cancelada
   if (d.presupuesto_estado === 'rechazado') d.estado = 'cancelada';
   else d.presupuesto_rechazado_en = null;
-  if (d.presupuesto_estado !== 'aceptado' && !TAREA_SIN_ACEPTAR.includes(d.estado)) {
+  // Solo visita: no lleva presupuesto y la tarea se gestiona libremente
+  if (visita) {
+    Object.assign(d, { presupuesto_estado: 'pendiente', presupuesto_total: null, subtotal_trabajo: null, extras: '[]', extras_total: 0,
+      presupuesto_ingreso: null, presupuesto_preparacion_en: null, presupuesto_enviado: null, presupuesto_aceptado_en: null, presupuesto_rechazado_en: null });
+  } else if (d.presupuesto_estado !== 'aceptado' && !TAREA_SIN_ACEPTAR.includes(d.estado)) {
     return { error: 'La tarea solo se puede asignar o ejecutar con el presupuesto aceptado' };
   }
   if (d.inicio_previsto && d.fin_previsto && d.fin_previsto < d.inicio_previsto) {
@@ -155,7 +160,7 @@ function validarGestion(body) {
   }
   // Fechas de la cronología que se registran solas si no se cargaron a mano
   const hoy = hoyISO();
-  if (!d.presupuesto_ingreso && (partes.length || d.presupuesto_total !== null)) d.presupuesto_ingreso = hoy;
+  if (!visita && !d.presupuesto_ingreso && (partes.length || d.presupuesto_total !== null)) d.presupuesto_ingreso = hoy;
   if (d.presupuesto_estado === 'en_preparacion' && !d.presupuesto_preparacion_en) d.presupuesto_preparacion_en = hoy;
   if (d.presupuesto_estado === 'enviado' && !d.presupuesto_enviado) d.presupuesto_enviado = hoy;
   if (d.presupuesto_estado === 'aceptado' && !d.presupuesto_aceptado_en) d.presupuesto_aceptado_en = hoy;
@@ -229,12 +234,12 @@ async function actualizarSolicitud(req, res) {
 }
 
 async function actualizarGestion(req, res) {
-  const { error, datos } = validarGestion(req.body);
-  if (error) return res.status(400).json({ error });
-
   try {
-    const antes = await pool.query('SELECT presupuesto_estado FROM trabajos WHERE id = $1', [req.params.id]);
-    if (!antes.rows.length || !(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const antes = await pool.query('SELECT presupuesto_estado, es_visita FROM trabajos WHERE id = $1', [req.params.id]);
+    if (!antes.rows.length) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const { error, datos } = validarGestion(req.body, antes.rows[0].es_visita);
+    if (error) return res.status(400).json({ error });
+    if (!(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
     const trabajo = await obtenerTrabajo(req.usuario, req.params.id);
     // Presupuesto que pasa a aceptado desde la app: mismo aviso que cuando acepta el cliente,
     // y la app muestra el botón para mandarlo por WhatsApp
