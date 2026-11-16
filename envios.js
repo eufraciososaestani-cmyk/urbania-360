@@ -49,7 +49,7 @@ const router = express.Router();
 // ---- Configuración (para saber si el email está habilitado) ----
 router.get('/api/config', requireAuth, (req, res) => res.json({
   email_habilitado: emailConfigurado(),
-  aviso_urgente_nombre: process.env.AVISO_URGENTE_TELEFONO ? (process.env.AVISO_URGENTE_NOMBRE || 'el responsable') : '',
+  aviso_urgente_nombre: process.env.AVISO_URGENTE_TELEFONO ? (process.env.AVISO_URGENTE_NOMBRE || process.env.AVISO_URGENTE_TELEFONO) : '',
 }));
 
 // ---- Enviar al cliente (usuario logueado) ----

@@ -16,6 +16,12 @@ function telefonoWhatsApp(tel) {
   return '549' + d;
 }
 
+// "3518900090" -> "351 890-0090" para mostrarlo en la app
+function telefonoLegible(tel) {
+  const d = String(tel || '').replace(/\D/g, '');
+  return d.length === 10 ? `${d.slice(0, 3)} ${d.slice(3, 6)}-${d.slice(6)}` : String(tel || '').trim();
+}
+
 function mensajeUrgente(t, base) {
   const trabajo = [t.tipo, t.detalle].filter(Boolean).join(' – ');
   return [
@@ -86,7 +92,7 @@ async function avisarUrgente(t, base) {
   const tel = telefonoWhatsApp(process.env.AVISO_URGENTE_TELEFONO);
   const r = {
     mensaje,
-    destinatario: process.env.AVISO_URGENTE_NOMBRE || (tel ? 'el responsable' : ''),
+    destinatario: process.env.AVISO_URGENTE_NOMBRE || (tel ? telefonoLegible(process.env.AVISO_URGENTE_TELEFONO) : ''),
     whatsapp_url: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}` : null,
     automatico: false,
   };
