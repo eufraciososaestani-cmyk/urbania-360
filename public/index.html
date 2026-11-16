@@ -6,6 +6,9 @@
 <title>Urbania 360</title>
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2D0069">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script src="/presupuesto-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,6 +104,22 @@ button,input,select,textarea{font:inherit;color:inherit}
 h1{font:700 clamp(34px,6vw,50px)/1 var(--f-display);letter-spacing:.01em;margin:6px 0 0;text-transform:uppercase}
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .who{font-size:13px;color:var(--ink-2)}
+.bell{position:relative;padding-inline:10px}
+.bell svg{width:20px;height:20px}
+.bell .badge{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--no);color:#fff;font:700 11.5px/20px var(--f-body);text-align:center}
+#dlgNotif{max-width:520px}
+#dlgNotif .area{grid-template-columns:1fr}
+.notifs{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
+.notif{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 12px;cursor:pointer;font:inherit;color:inherit}
+.notif:hover{background:var(--surface-2)}
+.notif.nueva{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.notif .ico{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+.notif .ico.aceptado{color:var(--done);background:var(--done-bg)}
+.notif .ico.rechazado{color:var(--no);background:var(--no-bg)}
+.notif b{display:block;font-size:14px}
+.notif .msg{display:block;white-space:pre-line;font-size:13px;color:var(--ink-2)}
+.notif time{display:block;font:500 11px var(--f-mono);color:var(--ink-3);margin-top:2px}
+.push-box{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;font-size:13px;color:var(--ink-2)}
 .who button{border:0;background:none;color:var(--accent);cursor:pointer;font-weight:600;padding:0 0 0 6px}
 .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);background:var(--surface);padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600;text-decoration:none}
 .btn:hover{border-color:var(--ink-2)}
@@ -459,6 +478,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     </div>
     <div class="actions" id="actions" hidden>
       <span class="who" id="who"></span>
+      <button class="btn ghost bell" id="btnNotif" type="button" aria-label="Notificaciones" title="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="badge" id="notifBadge" hidden></span>
+      </button>
       <button class="btn ghost" id="btnUsers" type="button" hidden>Usuarios</button>
       <button class="btn primary" id="btnNew" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -838,6 +861,19 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   </div>
 </dialog>
 
+<dialog id="dlgNotif" aria-labelledby="notifTitle">
+  <div class="dlg-head m2" style="padding-bottom:14px">
+    <div class="dlg-title">
+      <div><span class="mod-tag m2">Avisos</span><h2 id="notifTitle">Notificaciones</h2></div>
+      <button class="x" type="button" id="notifClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
+  <div class="area">
+    <div class="push-box" id="pushBox"></div>
+    <div class="notifs" id="notifList"></div>
+  </div>
+</dialog>
+
 <dialog id="lightbox" aria-label="Foto ampliada">
   <div class="lb-body">
     <div class="lb-bar"><span id="lbCap"></span><div class="lb-nav"><button type="button" id="lbPrev">‹ Anterior</button><button type="button" id="lbNext">Siguiente ›</button><button type="button" id="lbClose">Cerrar</button></div></div>
@@ -923,7 +959,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function salir(){
     localStorage.removeItem('urbania_token'); state.token=null; state.yo=null;
     clearInterval(state.timer);
-    ["dlgSol","dlgPres","dlgUsers","lightbox"].forEach(id=>{ if($(id) && $(id).open) $(id).close(); });
+    ["dlgSol","dlgPres","dlgUsers","dlgNotif","lightbox"].forEach(id=>{ if($(id) && $(id).open) $(id).close(); });
     $("app").hidden=true; $("actions").hidden=true; $("login").hidden=false;
   }
   $("login").addEventListener("submit", async e=>{
@@ -946,9 +982,87 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("btnSalir").onclick=salir;
     $("btnUsers").hidden = state.yo.rol!=="admin";
     $("boxReferido").hidden = !state.yo.ve_referido;
-    setMod(state.mod); cargar();
+    setMod(state.mod); cargar().then(abrirDesdeLink);
+    cargarNotif(true); registrarSW();
     clearInterval(state.timer);
-    state.timer = setInterval(()=>{ if(!$("dlgSol").open && !$("dlgPres").open) cargar(); }, REFRESCO_MS);
+    state.timer = setInterval(()=>{ if(!$("dlgSol").open && !$("dlgPres").open) cargar(); cargarNotif(false); }, REFRESCO_MS);
+  }
+
+  // ---- Notificaciones (campanita + push en el dispositivo) ----
+  const dlgNotif=$("dlgNotif");
+  state.notif={items:[], no_leidas:0, ultimo:null, clave:null};
+  async function cargarNotif(primera){
+    try{
+      const r=await api('/notificaciones');
+      const nuevas = !primera && state.notif.ultimo ? r.items.filter(n=>n.nueva && n.id>state.notif.ultimo) : [];
+      state.notif={items:r.items, no_leidas:r.no_leidas, ultimo:r.items.length?r.items[0].id:state.notif.ultimo, clave:r.push_clave};
+      $("notifBadge").hidden=!r.no_leidas; $("notifBadge").textContent=r.no_leidas>9?"9+":r.no_leidas;
+      if(nuevas.length){ toast(nuevas[0].titulo); if(nuevas.some(n=>n.tipo==="aceptado")) cargar(); }
+      if(dlgNotif.open) renderNotif();
+    }catch(e){}
+  }
+  function haceCuanto(ts){
+    const m=Math.round((Date.now()-Date.parse(ts))/60000);
+    if(m<1) return "recién"; if(m<60) return `hace ${m} min`; const h=Math.round(m/60); if(h<24) return `hace ${h} h`;
+    return new Date(ts).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  }
+  function renderNotif(){
+    const it=state.notif.items;
+    $("notifList").innerHTML = it.length ? it.map(n=>`<button type="button" class="notif${n.nueva?" nueva":""}" data-t="${esc(n.trabajo_id)}">
+        <span class="ico ${esc(n.tipo)}">${n.tipo==="aceptado"?"✓":"✕"}</span>
+        <span><b>${esc(n.titulo.replace(/^[✅❌]\s*/,""))}</b><span class="msg">${esc(n.mensaje||"")}</span><time>${esc(haceCuanto(n.creada_en))}</time></span>
+      </button>`).join("")
+      : `<p class="area-hint">Todavía no hay avisos. Cuando un cliente acepte o rechace un presupuesto desde el link, aparece acá.</p>`;
+    $("notifList").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ dlgNotif.close(); const r=porId(b.dataset.t); if(r){ setMod(2); openPres(r); } });
+  }
+  $("btnNotif").onclick=async()=>{
+    renderNotif(); renderPushBox(); dlgNotif.showModal();
+    if(state.notif.no_leidas){ try{ await api('/notificaciones/vistas',{method:'POST'}); }catch(e){} $("notifBadge").hidden=true; state.notif.no_leidas=0; }
+  };
+  $("notifClose").onclick=()=>dlgNotif.close();
+  dlgNotif.addEventListener("close",()=>{ state.notif.items.forEach(n=>n.nueva=false); });
+
+  // Push: el aviso llega al celular o la computadora aunque la app esté cerrada
+  const pushSoportado = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  async function registrarSW(){ if("serviceWorker" in navigator){ try{ await navigator.serviceWorker.register("/sw.js"); }catch(e){} } }
+  async function suscripcionActual(){ try{ const reg=await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); }catch(e){ return null; } }
+  function claveBytes(b64){ const p="=".repeat((4-b64.length%4)%4); const raw=atob((b64+p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(raw,c=>c.charCodeAt(0)); }
+  async function renderPushBox(){
+    const box=$("pushBox");
+    const ios=/iphone|ipad|ipod/i.test(navigator.userAgent), standalone=matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+    if(!pushSoportado()){
+      box.innerHTML = ios && !standalone
+        ? `<span>Para recibir avisos en el iPhone: tocá <b>Compartir</b> → <b>Agregar a inicio</b>, abrí Urbania 360 desde ese ícono y activalos acá.</span>`
+        : `<span>Este navegador no permite notificaciones. Los avisos igual aparecen en esta campanita.</span>`;
+      return;
+    }
+    if(!state.notif.clave){ box.innerHTML=`<span>Las notificaciones del dispositivo no están disponibles en este momento.</span>`; return; }
+    if(Notification.permission==="denied"){ box.innerHTML=`<span>Las notificaciones están bloqueadas para esta página. Habilitalas desde los ajustes del navegador (ícono del candado).</span>`; return; }
+    const sub=await suscripcionActual();
+    box.innerHTML = sub
+      ? `<span>✓ Este dispositivo recibe avisos aunque la app esté cerrada.</span><button class="btn small" type="button" id="pushOff">Desactivar</button>`
+      : `<span>Recibí un aviso en este ${/android|iphone|ipad|mobile/i.test(navigator.userAgent)?"celular":"dispositivo"} cuando un cliente acepte un presupuesto.</span><button class="btn small primary" type="button" id="pushOn">Activar avisos</button>`;
+    if($("pushOn")) $("pushOn").onclick=activarPush;
+    if($("pushOff")) $("pushOff").onclick=async()=>{ const s=await suscripcionActual(); if(s){ try{ await api('/push/desuscribir',{method:'POST',body:JSON.stringify({endpoint:s.endpoint})}); }catch(e){} await s.unsubscribe(); } renderPushBox(); };
+  }
+  async function activarPush(){
+    try{
+      const perm=await Notification.requestPermission();
+      if(perm!=="granted"){ renderPushBox(); return; }
+      await registrarSW();
+      const reg=await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:claveBytes(state.notif.clave)});
+      await api('/push/suscribir',{method:'POST',body:JSON.stringify(sub)});
+      toast("Listo: este dispositivo va a recibir los avisos");
+    }catch(e){ toast("No se pudieron activar los avisos en este dispositivo"); }
+    renderPushBox();
+  }
+  // Al tocar una notificación se abre /?trabajo=N
+  function abrirDesdeLink(){
+    const id=new URLSearchParams(location.search).get("trabajo");
+    if(!id) return;
+    history.replaceState(null,"","/");
+    const r=porId(id); if(r){ setMod(2); openPres(r); }
   }
 
   async function cargar(){

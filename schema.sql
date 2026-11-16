@@ -127,3 +127,32 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_trabajos_upd ON trabajos;
 CREATE TRIGGER trg_trabajos_upd BEFORE UPDATE ON trabajos
     FOR EACH ROW EXECUTE FUNCTION set_actualizado_en();
+
+-- Notificaciones para el equipo (ej.: el cliente aceptó el presupuesto)
+CREATE TABLE IF NOT EXISTS notificaciones (
+    id          SERIAL PRIMARY KEY,
+    trabajo_id  INTEGER REFERENCES trabajos(id) ON DELETE CASCADE,
+    tipo        VARCHAR(30) NOT NULL,          -- aceptado, rechazado
+    titulo      VARCHAR(250) NOT NULL,
+    mensaje     TEXT,
+    creada_en   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_notificaciones_creada ON notificaciones(creada_en);
+-- Hasta cuándo vio las notificaciones cada usuario (lo posterior es "no leído")
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS notif_vistas_en TIMESTAMP NOT NULL DEFAULT NOW();
+
+-- Dispositivos (celular / computadora) que reciben las notificaciones push
+CREATE TABLE IF NOT EXISTS push_suscripciones (
+    id          SERIAL PRIMARY KEY,
+    usuario_id  INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    endpoint    TEXT NOT NULL UNIQUE,
+    p256dh      TEXT NOT NULL,
+    auth        TEXT NOT NULL,
+    creada_en   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Ajustes internos de la app (ej.: claves de las notificaciones push)
+CREATE TABLE IF NOT EXISTS config (
+    clave  VARCHAR(60) PRIMARY KEY,
+    valor  TEXT NOT NULL
+);

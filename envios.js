@@ -1,28 +1,17 @@
 const crypto = require('crypto');
 const express = require('express');
-const nodemailer = require('nodemailer');
 const pool = require('./db');
 const { requireAuth } = require('./auth');
 const { datosPresupuesto, obtenerTrabajo, hoyISO, baseUrl } = require('./trabajos-controller');
 const { telefonoWhatsApp } = require('./avisos');
+const { emailConfigurado, transporte } = require('./correo');
+const notificaciones = require('./notificaciones');
 
 // Envío del presupuesto al cliente:
 //  - cada presupuesto tiene un link público con un token imposible de adivinar
 //  - se envía por email (si hay SMTP configurado) o por WhatsApp (link wa.me)
 //  - al enviarlo queda marcado como "Enviado" con la fecha del día
 //  - desde el link, el cliente puede aceptarlo o rechazarlo y el estado se actualiza solo
-
-const emailConfigurado = () => !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-
-function transporte() {
-  const port = Number(process.env.SMTP_PORT || 587);
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  });
-}
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
@@ -164,6 +153,8 @@ router.post('/api/publico/presupuesto/:token/respuesta', async (req, res) => {
          WHERE presupuesto_token = $1`, [req.params.token, registro, motivo ? `${motivo} (indicado por el cliente)` : '', hoy]);
     }
     res.json({ ok: true, estado: accion === 'aceptar' ? 'aceptado' : 'rechazado' });
+    // Aviso al equipo (notificación en la app y en los dispositivos, WhatsApp y email si están configurados)
+    notificaciones.respuestaCliente(p, accion, nombre, motivo, baseUrl(req)).catch(err => console.error('Aviso de respuesta:', err.message));
   } catch (err) {
     res.status(500).json({ error: 'No se pudo registrar la respuesta' });
   }

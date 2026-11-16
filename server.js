@@ -8,6 +8,7 @@ const pool = require('./db');
 const auth = require('./auth');
 const apiRoutes = require('./api-routes');
 const envios = require('./envios');
+const notificaciones = require('./notificaciones');
 
 const app = express();
 // Render está detrás de un proxy: así req.protocol da https para armar los links
@@ -16,6 +17,7 @@ app.use(express.json());
 
 app.use('/api/auth', auth.router);
 app.use(envios.router); // envío al cliente y link público (antes que las rutas con login)
+app.use(notificaciones.router); // campanita y notificaciones push
 app.use('/api', apiRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
 // Link público del presupuesto para el cliente
@@ -37,6 +39,7 @@ const PORT = process.env.PORT || 3000;
       await auth.guardarAdmin(SEED_ADMIN_NOMBRE, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD);
       console.log(`Usuario listo: ${SEED_ADMIN_EMAIL}`);
     }
+    await notificaciones.iniciar();
   } catch (err) {
     // Diagnóstico sin mostrar la contraseña: a qué host intenta conectarse y por qué falla
     let destino = 'DATABASE_URL vacía';

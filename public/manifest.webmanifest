@@ -1,0 +1,16 @@
+{
+  "name": "Urbania 360",
+  "short_name": "Urbania 360",
+  "description": "Gestión y mantenimiento integral",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3F1F7",
+  "theme_color": "#2D0069",
+  "icons": [
+    {
+      "src": "/img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

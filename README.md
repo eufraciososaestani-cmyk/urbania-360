@@ -72,6 +72,12 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
 - **Facturas de materiales**: junto a las fotos (antes / durante /
   después) hay un apartado para cargar las facturas de compra de
   materiales, como foto o PDF, sin límite. Es de uso interno.
+- **Aviso de presupuesto aceptado / rechazado**: cuando el cliente responde
+  desde el link, aparece en la **campanita** de la app (con contador de no
+  leídas) y llega como **notificación al celular o la computadora** donde se
+  tocó "Activar avisos" (Web Push, aunque la app esté cerrada; en iPhone hay
+  que agregarla a la pantalla de inicio). Si están configurados, también
+  por email (`AVISO_EMAIL`) y por WhatsApp (CallMeBot).
 - Logo de Urbania 360 en la app, el ingreso, el ícono del navegador, el
   presupuesto y los emails (`public/img`).
 

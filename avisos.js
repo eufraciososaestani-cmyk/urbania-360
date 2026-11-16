@@ -31,6 +31,22 @@ function mensajeUrgente(t, base) {
   ].filter(v => v !== null).join('\n');
 }
 
+// Envío automático por CallMeBot al teléfono de avisos (si está configurado)
+const whatsappAutomatico = () => !!(process.env.AVISO_URGENTE_TELEFONO && process.env.AVISO_CALLMEBOT_APIKEY);
+async function enviarWhatsAppAuto(mensaje) {
+  if (!whatsappAutomatico()) return false;
+  try {
+    const tel = telefonoWhatsApp(process.env.AVISO_URGENTE_TELEFONO);
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${tel}&text=${encodeURIComponent(mensaje)}&apikey=${encodeURIComponent(process.env.AVISO_CALLMEBOT_APIKEY)}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return true;
+  } catch (err) {
+    console.error('No se pudo enviar el aviso por WhatsApp:', err.message);
+    return false;
+  }
+}
+
 async function avisarUrgente(t, base) {
   const mensaje = mensajeUrgente(t, base);
   const tel = telefonoWhatsApp(process.env.AVISO_URGENTE_TELEFONO);
@@ -40,19 +56,11 @@ async function avisarUrgente(t, base) {
     whatsapp_url: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}` : null,
     automatico: false,
   };
-  const apikey = process.env.AVISO_CALLMEBOT_APIKEY;
-  if (tel && apikey) {
-    try {
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${tel}&text=${encodeURIComponent(mensaje)}&apikey=${encodeURIComponent(apikey)}`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      r.automatico = true;
-    } catch (err) {
-      console.error('No se pudo enviar el aviso urgente por WhatsApp:', err.message);
-      r.error = 'No se pudo enviar el aviso automático';
-    }
+  if (whatsappAutomatico()) {
+    r.automatico = await enviarWhatsAppAuto(mensaje);
+    if (!r.automatico) r.error = 'No se pudo enviar el aviso automático';
   }
   return r;
 }
 
-module.exports = { avisarUrgente, telefonoWhatsApp };
+module.exports = { avisarUrgente, enviarWhatsAppAuto, telefonoWhatsApp };
