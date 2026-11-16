@@ -1,5 +1,6 @@
 const pool = require('./db');
 const avisos = require('./avisos');
+const notificaciones = require('./notificaciones');
 
 // Gestión de solicitudes y trabajos. Cada registro tiene dos áreas que se
 // guardan por separado:
@@ -231,8 +232,15 @@ async function actualizarGestion(req, res) {
   if (error) return res.status(400).json({ error });
 
   try {
-    if (!(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const antes = await pool.query('SELECT presupuesto_estado FROM trabajos WHERE id = $1', [req.params.id]);
+    if (!antes.rows.length || !(await actualizarColumnas(req.params.id, datos))) return res.status(404).json({ error: 'Solicitud no encontrada' });
     res.json(await obtenerTrabajo(req.usuario, req.params.id));
+    // Presupuesto que pasa a aceptado desde la app: mismo aviso que cuando acepta el cliente
+    if (datos.presupuesto_estado === 'aceptado' && antes.rows[0].presupuesto_estado !== 'aceptado') {
+      datosPresupuesto('id', req.params.id)
+        .then(p => notificaciones.respuestaCliente(p, 'aceptar', `${req.usuario.nombre} (en la app)`, '', baseUrl(req)))
+        .catch(err => console.error('Aviso de presupuesto aceptado:', err.message));
+    }
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar el presupuesto', detalle: err.message });
   }
