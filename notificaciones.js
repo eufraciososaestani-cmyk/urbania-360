@@ -1,8 +1,8 @@
 const express = require('express');
 const webpush = require('web-push');
 const pool = require('./db');
-const { requireAuth } = require('./auth');
-const { enviarWhatsAppAuto } = require('./avisos');
+const { requireAuth, requireAdmin } = require('./auth');
+const { enviarWhatsAppAuto, enviarAlGrupo, gruposDisponibles } = require('./avisos');
 const { emailConfigurado, transporte } = require('./correo');
 
 // Notificaciones para el equipo (por ahora: el cliente aceptó o rechazó el
@@ -10,7 +10,8 @@ const { emailConfigurado, transporte } = require('./correo');
 //  - queda en la campanita de la app (con no leídas por usuario)
 //  - llega como notificación al celular o la computadora donde se activaron
 //    (Web Push; las claves se generan solas y se guardan en la base)
-//  - va por WhatsApp (CallMeBot) y por email si están configurados
+//  - va al grupo de WhatsApp de Urbania (Green-API), a un teléfono (CallMeBot)
+//    y por email, si están configurados
 
 const money = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 let clavePublica = null;
@@ -68,6 +69,7 @@ async function notificar({ trabajoId, tipo, titulo, mensaje, whatsapp, base }) {
   await Promise.all([
     enviarPush({ titulo, mensaje, url: `/?trabajo=${trabajoId}`, tag: `trabajo-${trabajoId}` }).catch(err => console.error('Push:', err.message)),
     enviarWhatsAppAuto(whatsapp),
+    enviarAlGrupo(whatsapp),
     enviarEmail(titulo, whatsapp.replace(/\*/g, '')),
   ]);
 }
@@ -133,6 +135,12 @@ router.post('/api/push/suscribir', requireAuth, async (req, res) => {
 router.post('/api/push/desuscribir', requireAuth, async (req, res) => {
   await pool.query('DELETE FROM push_suscripciones WHERE endpoint = $1', [String((req.body || {}).endpoint || '')]).catch(() => {});
   res.json({ ok: true });
+});
+
+// Solo admin: lista los grupos del número vinculado para elegir el de Urbania
+router.get('/api/whatsapp/grupos', requireAuth, requireAdmin, async (req, res) => {
+  try { res.json(await gruposDisponibles()); }
+  catch (err) { res.status(400).json({ error: err.message }); }
 });
 
 module.exports = { router, iniciar, respuestaCliente };

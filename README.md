@@ -78,6 +78,9 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   tocó "Activar avisos" (Web Push, aunque la app esté cerrada; en iPhone hay
   que agregarla a la pantalla de inicio). Si están configurados, también
   por email (`AVISO_EMAIL`) y por WhatsApp (CallMeBot).
+- **Grupo de WhatsApp de Urbania**: con Green-API (`WHATSAPP_GRUPO_*`) los
+  avisos de solicitudes urgentes y de presupuestos aceptados o rechazados
+  se publican solos en el grupo.
 - Logo de Urbania 360 en la app, el ingreso, el ícono del navegador, el
   presupuesto y los emails (`public/img`).
 

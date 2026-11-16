@@ -144,4 +144,4 @@ async function guardarAdmin(nombre, email, password) {
   );
 }
 
-module.exports = { router, requireAuth, requireAuthOQuery, guardarAdmin };
+module.exports = { router, requireAuth, requireAuthOQuery, requireAdmin, guardarAdmin };

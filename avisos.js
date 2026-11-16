@@ -47,6 +47,40 @@ async function enviarWhatsAppAuto(mensaje) {
   }
 }
 
+// Envío automático a un GRUPO de WhatsApp con Green-API (green-api.com):
+// un número de WhatsApp vinculado por QR que escribe en el grupo de Urbania.
+//  WHATSAPP_GRUPO_INSTANCIA, WHATSAPP_GRUPO_TOKEN: datos de la instancia
+//  WHATSAPP_GRUPO_ID: id del grupo (termina en @g.us)
+//  WHATSAPP_API_URL (opcional): la URL de la API que muestra Green-API
+const grupoConfigurado = () => !!(process.env.WHATSAPP_GRUPO_INSTANCIA && process.env.WHATSAPP_GRUPO_TOKEN && process.env.WHATSAPP_GRUPO_ID);
+function greenApi(metodo) {
+  const base = (process.env.WHATSAPP_API_URL || 'https://api.green-api.com').replace(/\/+$/, '');
+  return `${base}/waInstance${process.env.WHATSAPP_GRUPO_INSTANCIA}/${metodo}/${process.env.WHATSAPP_GRUPO_TOKEN}`;
+}
+async function enviarAlGrupo(mensaje) {
+  if (!grupoConfigurado()) return false;
+  try {
+    const res = await fetch(greenApi('sendMessage'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId: process.env.WHATSAPP_GRUPO_ID, message: mensaje }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text()).slice(0, 200));
+    return true;
+  } catch (err) {
+    console.error('No se pudo enviar el aviso al grupo de WhatsApp:', err.message);
+    return false;
+  }
+}
+// Grupos del número vinculado (para encontrar el id del grupo de Urbania)
+async function gruposDisponibles() {
+  if (!process.env.WHATSAPP_GRUPO_INSTANCIA || !process.env.WHATSAPP_GRUPO_TOKEN) throw new Error('Falta configurar la instancia de Green-API');
+  const res = await fetch(greenApi('getContacts'), { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return (await res.json()).filter(c => c.type === 'group' || String(c.id).endsWith('@g.us')).map(c => ({ id: c.id, nombre: c.name || c.contactName || '' }));
+}
+
 async function avisarUrgente(t, base) {
   const mensaje = mensajeUrgente(t, base);
   const tel = telefonoWhatsApp(process.env.AVISO_URGENTE_TELEFONO);
@@ -56,11 +90,14 @@ async function avisarUrgente(t, base) {
     whatsapp_url: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}` : null,
     automatico: false,
   };
-  if (whatsappAutomatico()) {
-    r.automatico = await enviarWhatsAppAuto(mensaje);
-    if (!r.automatico) r.error = 'No se pudo enviar el aviso automático';
-  }
+  const [persona, grupo] = await Promise.all([
+    whatsappAutomatico() ? enviarWhatsAppAuto(mensaje) : null,
+    grupoConfigurado() ? enviarAlGrupo(mensaje) : null,
+  ]);
+  r.automatico = persona === true;
+  r.grupo_automatico = grupo === true;
+  if (persona === false || grupo === false) r.error = 'No se pudo enviar el aviso automático';
   return r;
 }
 
-module.exports = { avisarUrgente, enviarWhatsAppAuto, telefonoWhatsApp };
+module.exports = { avisarUrgente, enviarWhatsAppAuto, enviarAlGrupo, gruposDisponibles, grupoConfigurado, telefonoWhatsApp };

@@ -1252,13 +1252,14 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   const dlgAviso=$("dlgAviso");
   function mostrarAviso(a){
     const WA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>';
-    $("avisoEstado").innerHTML = a.automatico
-      ? `<strong>Listo: se avisó automáticamente por WhatsApp a ${esc(a.destinatario)}.</strong> Si querés, mandalo también al grupo de Urbania.`
+    const ok=[a.grupo_automatico?"al grupo de Urbania":null, a.automatico?esc(a.destinatario):null].filter(Boolean);
+    $("avisoEstado").innerHTML = ok.length
+      ? `<strong>Listo: se avisó automáticamente por WhatsApp ${ok.length>1?"a "+ok[1]+" y "+ok[0]:(a.grupo_automatico?ok[0]:"a "+ok[0])}.</strong>`
       : (a.error ? `${esc(a.error)}. ` : "") + "Mandá este aviso por WhatsApp: se abre con el mensaje listo, solo tocás enviar.";
     $("avisoMsg").textContent = a.mensaje.replace(/\*/g,""); // en WhatsApp los * son negrita
     const btns=[];
     if(a.whatsapp_url && !a.automatico) btns.push(`<a class="btn wa" href="${esc(a.whatsapp_url)}" target="_blank" rel="noopener">${WA} Enviar a ${esc(a.destinatario)}</a>`);
-    btns.push(`<a class="btn ${a.whatsapp_url && !a.automatico ? "" : "wa"}" href="https://wa.me/?text=${encodeURIComponent(a.mensaje)}" target="_blank" rel="noopener">${WA} Enviar al grupo de Urbania</a>`);
+    if(!a.grupo_automatico) btns.push(`<a class="btn ${a.whatsapp_url && !a.automatico ? "" : "wa"}" href="https://wa.me/?text=${encodeURIComponent(a.mensaje)}" target="_blank" rel="noopener">${WA} Enviar al grupo de Urbania</a>`);
     btns.push(`<button class="btn" type="button" id="avisoCopiar">Copiar mensaje</button>`);
     $("avisoBtns").innerHTML = btns.join("");
     $("avisoCopiar").onclick=async()=>{ try{ await navigator.clipboard.writeText(a.mensaje); toast("Mensaje copiado"); }catch(e){ toast("No se pudo copiar"); } };
