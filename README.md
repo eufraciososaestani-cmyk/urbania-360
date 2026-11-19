@@ -60,6 +60,10 @@ y ficha, vinculadas entre sí) y cuatro vistas de seguimiento y reportes.
   link). Al enviarlo queda como "Enviado" con la fecha; cuando el cliente
   responde, el estado, la fecha de aceptación o el motivo del rechazo se
   actualizan solos y la respuesta queda registrada en la ficha.
+- **Informe técnico**: sección del área 2 (también en las visitas) con
+  fecha, ubicación, realizado por y descripción. "Ver informe técnico" arma
+  el documento con el mismo formato y logo que el presupuesto (número
+  `INF-AAAA-NNNN`), listo para imprimir o guardar en PDF.
 - **Solo visita**: en la solicitud se elige "Trabajo con presupuesto" o
   "Solo visita". Las visitas no llevan presupuesto: en el área 2 se cargan
   fecha de la visita, quién la realiza, estado (pendiente, asignada, en

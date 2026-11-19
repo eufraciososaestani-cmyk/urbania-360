@@ -87,6 +87,11 @@ ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS materiales_detalle     TEXT;    --
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS condiciones            TEXT;    -- condiciones / notas para el cliente
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS validez_dias           INTEGER; -- validez del presupuesto
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS motivo_rechazo         TEXT;    -- INTERNO: por qué se rechazó el presupuesto
+-- Informe técnico (documento aparte del presupuesto, con la misma marca)
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS informe_fecha          DATE;
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS informe_ubicacion      VARCHAR(250);
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS informe_descripcion    TEXT;
+ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS informe_realizado_por  VARCHAR(200);
 -- Envío al cliente: link público y respuesta online
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS presupuesto_token      VARCHAR(64) UNIQUE; -- link público del presupuesto
 ALTER TABLE trabajos ADD COLUMN IF NOT EXISTS respuesta_cliente      TEXT;    -- registro de aceptación/rechazo online

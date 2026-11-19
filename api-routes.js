@@ -15,6 +15,7 @@ router.post('/trabajos', trabajos.crear);                       // alta de la so
 router.put('/trabajos/:id/solicitud', trabajos.actualizarSolicitud); // área 1
 router.put('/trabajos/:id/gestion', trabajos.actualizarGestion);     // área 2
 router.get('/trabajos/:id/presupuesto-cliente', trabajos.presupuestoCliente);
+router.get('/trabajos/:id/informe-tecnico', trabajos.informeTecnico);
 router.delete('/trabajos/:id', trabajos.eliminar);
 router.delete('/trabajos/:id/presupuesto', trabajos.eliminarPresupuesto); // solo área 2
 

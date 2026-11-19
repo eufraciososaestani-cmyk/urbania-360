@@ -798,6 +798,16 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       <div class="f"><label for="gObs">Observaciones internas</label><textarea id="gObs" placeholder="Accesos, materiales, coordinación, notas del equipo…"></textarea></div>
     </div>
 
+    <div class="sec">Informe técnico</div>
+    <p class="area-hint">Documento para el cliente con el mismo formato y logo que el presupuesto. Se guarda junto con el resto con el botón de abajo.</p>
+    <div class="f"><label for="iFecha">Fecha</label><input id="iFecha" type="date"></div>
+    <div class="f"><label for="iPor">Realizado por</label><input id="iPor" type="text" list="dlResp" autocomplete="off" placeholder="Técnico o responsable"></div>
+    <div class="f full"><label for="iUbic">Ubicación</label><input id="iUbic" type="text" autocomplete="off" placeholder="Dirección, unidad, sector o edificio"></div>
+    <div class="f full"><label for="iDesc">Descripción del informe técnico</label><textarea id="iDesc" rows="8" placeholder="Qué se revisó, qué se encontró, causas probables y recomendaciones. Ej.: Se detecta filtración en losa de cochera por deterioro de la membrana; se recomienda reemplazo total."></textarea></div>
+    <div class="f full"><button class="btn" type="button" id="btnInforme" style="align-self:flex-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>
+      Ver informe técnico</button>
+      <span class="area-hint">Muestra el último informe guardado, listo para imprimir o guardar en PDF.</span></div>
+
     <p class="err" id="err2" hidden></p>
     <div class="dlg-foot">
       <div class="solo-pres"><button class="btn danger" type="button" id="btnDelPres">Eliminar presupuesto</button></div>
@@ -1395,6 +1405,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("gInicio").value = rec.inicio_previsto || "";
     $("gFin").value = rec.finalizado_en || "";
     $("gObs").value = rec.observaciones_internas || "";
+    $("iFecha").value = rec.informe_fecha || "";
+    $("iUbic").value = rec.informe_ubicacion || ""; $("iUbic").placeholder = rec.lugar || "Dirección, unidad, sector o edificio";
+    $("iPor").value = rec.informe_realizado_por || ""; $("iPor").placeholder = rec.responsable || "Técnico o responsable";
+    $("iDesc").value = rec.informe_descripcion || "";
     $("pCat").value = rec.tipo || "";
     $("pDesc").value = rec.descripcion_trabajo || rec.detalle || "";
     $("pDescHint").textContent = !rec.descripcion_trabajo && rec.detalle ? "Se completó con lo que pidió el cliente: ajustalo con las tareas que se van a realizar." : "";
@@ -1521,6 +1535,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
+      informe_fecha:$("iFecha").value, informe_ubicacion:$("iUbic").value.trim(), informe_descripcion:$("iDesc").value.trim(), informe_realizado_por:$("iPor").value.trim(),
       tipo:$("pCat").value.trim(), descripcion_trabajo:$("pDesc").value.trim(), materiales_detalle:$("pMatDet").value.trim(),
       condiciones:$("pCond").value.trim(), validez_dias:$("pValidez").value,
       motivo_rechazo: getRadio("pres")==="rechazado" ? $("pMotivo").value.trim() : "",
@@ -1539,6 +1554,17 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   // ---- Presupuesto para el cliente: documento con la marca (plantilla compartida en /presupuesto-doc.js) ----
   const LOGO_URL = () => location.origin + "/img/logo-urbania-360.png";
   function presupuestoHTML(p){ return window.U360Presupuesto.documento(p, LOGO_URL()); }
+  $("iDesc").addEventListener("input",()=>{ if($("iDesc").value.trim() && !$("iFecha").value) $("iFecha").value=today(); });
+  $("btnInforme").onclick=async()=>{
+    if(state.dirty2 && !confirm("Hay cambios sin guardar. El informe va a mostrar lo último guardado. ¿Continuar?")) return;
+    const w = window.open("", "_blank");
+    if(!w){ toast("El navegador bloqueó la ventana. Permití ventanas emergentes."); return; }
+    try{
+      const p = await api(`/trabajos/${state.pres.id}/informe-tecnico`);
+      w.document.write(window.U360Presupuesto.documento(p, LOGO_URL(), "informe"));
+      w.document.close();
+    }catch(e){ w.close(); toast(e.message||"No se pudo armar el informe técnico"); }
+  };
   $("btnPresCliente").onclick=async()=>{
     if(state.dirty2 && !confirm("Hay cambios sin guardar en el presupuesto. El documento va a mostrar lo último guardado. ¿Continuar?")) return;
     const w = window.open("", "_blank");
@@ -2029,7 +2055,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ["ejec","Fecha de ejecución",x=>d(x.inicio_previsto)],["resp","Responsable del trabajo",x=>x.responsable],["t_est","Estado de la tarea",x=>TAREA[x.estado]||""],
         ["fprev","Fecha prevista de finalización",x=>d(x.fin_previsto)],["freal","Fecha real de final de obra",x=>d(x.finalizado_en)],
         ["desvio","Desvío (días)",x=>{ const v=desvio(x); return v ? {num: v.tipo==="antes"?-v.dias:v.dias} : null; }],
-        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>nFotos(x)],["facturas","Facturas de materiales cargadas",x=>x.fotos.length-nFotos(x)],
+        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["inf_fecha","Informe técnico (fecha)",x=>d(x.informe_fecha)],["inf_desc","Informe técnico (descripción)",x=>x.informe_descripcion],["fotos","Cantidad de fotos",x=>nFotos(x)],["facturas","Facturas de materiales cargadas",x=>x.fotos.length-nFotos(x)],
       ]],
     ];
     return grupos;

@@ -1,4 +1,5 @@
-// Documento del presupuesto para el cliente, con la identidad de Urbania 360.
+// Documentos para el cliente con la identidad de Urbania 360: presupuesto e
+// informe técnico.
 // Lo usan la app ("Ver presupuesto") y el link público que recibe el cliente,
 // así los dos muestran exactamente lo mismo. Solo usa datos para el cliente.
 (function(){
@@ -43,6 +44,7 @@
 .u360-doc .pago{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
 .u360-doc .firmas{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:44px}
 .u360-doc .firmas div{border-top:1px solid var(--tinta);padding-top:6px;text-align:center;font-size:12.5px;color:var(--gris)}
+.u360-doc .informe{white-space:pre-line;font-size:14.5px;line-height:1.65}
 .u360-doc .pie{background:var(--violeta);color:#fff;padding:14px 34px;font-size:12.5px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}
 .u360-doc .pie b{color:#FFC97A}
 @media (max-width:640px){.u360-doc .cuerpo{padding:20px}.u360-doc .cab{padding:18px 20px;flex-direction:column;align-items:flex-start}.u360-doc .cab img{height:76px}.u360-doc .num{text-align:left}
@@ -98,20 +100,48 @@
 </div></div>`;
   }
 
+  // Informe técnico: mismo formato y marca que el presupuesto
+  function informeCuerpo(p, logoUrl){
+    const e=p.empresa||{};
+    const contacto=[e.telefono&&`Tel. ${esc(e.telefono)}`, e.email&&esc(e.email), e.web&&esc(e.web)].filter(Boolean).join(" · ");
+    return `<div class="u360-doc"><div class="hoja">
+  <header class="cab">
+    <img src="${esc(logoUrl)}" alt="${esc(e.nombre||"Urbania 360")} · ${esc(e.lema||"")}">
+    <div class="num"><small>Informe técnico</small><b>N° ${esc(p.numero)}</b></div>
+  </header>
+  <div class="cuerpo">
+    <div class="fechas">
+      <div><span class="k">Fecha</span><b>${fmtDate(p.fecha)}</b></div>
+      <div><span class="k">Trabajo</span><b>${esc(p.categoria||"—")}</b></div>
+      <div><span class="k">Realizado por</span><b>${esc(p.realizado_por||e.nombre||"Urbania 360")}</b></div>
+    </div>
+    <div class="partes">
+      <div class="caja"><span class="k">Cliente · consorcio · administrador</span><b>${esc(p.cliente)}</b>${p.cliente_telefono||p.cliente_email?`<div>${[p.cliente_telefono,p.cliente_email].filter(Boolean).map(esc).join(" · ")}</div>`:""}</div>
+      <div class="caja"><span class="k">Ubicación</span><b>${esc(p.ubicacion)}</b></div>
+    </div>
+    <h2>Descripción del informe técnico</h2>
+    ${p.descripcion?`<div class="informe">${esc(p.descripcion)}</div>`:`<p style="color:#6B6478">Sin descripción cargada.</p>`}
+    <div class="firmas"><div>Por ${esc(e.nombre||"Urbania 360")}${p.realizado_por?` — ${esc(p.realizado_por)}`:""}</div><div>Recibido por el cliente — firma y aclaración</div></div>
+  </div>
+  <footer class="pie"><span><b>${esc(e.nombre||"Urbania 360")}</b> · ${esc(e.lema||"")}${e.direccion?` · ${esc(e.direccion)}`:""}${e.cuit?` · CUIT ${esc(e.cuit)}`:""}</span><span>${contacto}</span></footer>
+</div></div>`;
+  }
+
   // Página completa para imprimir / guardar en PDF (se abre en otra pestaña)
-  function documento(p, logoUrl){
+  function documento(p, logoUrl, tipo){
+    const inf = tipo==="informe";
     return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Presupuesto ${esc(p.numero)} · ${esc((p.empresa||{}).nombre||"Urbania 360")}</title>
+<title>${inf?"Informe técnico":"Presupuesto"} ${esc(p.numero)} · ${esc((p.empresa||{}).nombre||"Urbania 360")}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
 <style>body{margin:0;background:#EEEAF4;padding:24px 12px}${ESTILOS}
 .acciones{max-width:820px;margin:16px auto 10px;display:flex;justify-content:flex-end;gap:8px}
 .acciones button{font:600 14px system-ui,sans-serif;border:0;border-radius:6px;padding:10px 16px;cursor:pointer;background:#E48100;color:#fff}
 .acciones button.sec{background:#fff;color:#2D0069;border:1px solid #CFC6DD}
 @media print{body{background:#fff;padding:0}.acciones{display:none}}</style></head><body>
-${cuerpo(p, logoUrl)}
+${inf?informeCuerpo(p, logoUrl):cuerpo(p, logoUrl)}
 <div class="acciones"><button class="sec" onclick="window.close()">Cerrar</button><button class="print" onclick="print()">Imprimir / guardar PDF</button></div>
 </body></html>`;
   }
 
-  window.U360Presupuesto = { ESTILOS, cuerpo, documento, esc, money, fmtDate };
+  window.U360Presupuesto = { ESTILOS, cuerpo, informeCuerpo, documento, esc, money, fmtDate };
 })();

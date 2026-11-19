@@ -32,6 +32,7 @@ const COLUMNAS_GESTION = [
   fechaCol('inicio_previsto'), fechaCol('fin_previsto'), fechaCol('finalizado_en'),
   numCol('subtotal_trabajo'), numCol('extras_total'), `COALESCE(t.extras, '[]'::jsonb) AS extras`,
   't.descripcion_trabajo', 't.materiales_detalle', 't.condiciones', 't.validez_dias', 't.motivo_rechazo', 't.presupuesto_token', 't.respuesta_cliente',
+  fechaCol('informe_fecha'), 't.informe_ubicacion', 't.informe_descripcion', 't.informe_realizado_por',
   't.observaciones_internas', 't.creado_en', 't.actualizado_en',
 ];
 const COLUMNA_FOTOS = `COALESCE(
@@ -114,6 +115,10 @@ function validarGestion(body, visita = false) {
     validez_dias: numero(body.validez_dias),
     motivo_rechazo: texto(body.motivo_rechazo),
     presupuesto_rechazado_en: fecha(body.presupuesto_rechazado_en),
+    informe_fecha: fecha(body.informe_fecha),
+    informe_ubicacion: texto(body.informe_ubicacion),
+    informe_descripcion: texto(body.informe_descripcion),
+    informe_realizado_por: texto(body.informe_realizado_por),
   };
   // La categoría también se puede ajustar desde el presupuesto
   const tipo = texto(body.tipo);
@@ -166,6 +171,7 @@ function validarGestion(body, visita = false) {
   if (d.presupuesto_estado === 'aceptado' && !d.presupuesto_aceptado_en) d.presupuesto_aceptado_en = hoy;
   if (d.presupuesto_estado === 'rechazado' && !d.presupuesto_rechazado_en) d.presupuesto_rechazado_en = hoy;
   if (d.estado === 'finalizada' && !d.finalizado_en) d.finalizado_en = hoy;
+  if (d.informe_descripcion && !d.informe_fecha) d.informe_fecha = hoy;
   return { datos: d };
 }
 
@@ -278,8 +284,13 @@ async function datosPresupuesto(campo, valor) {
   emision.setUTCDate(emision.getUTCDate() + p.validez_dias);
   p.fecha_vencimiento = emision.toISOString().slice(0, 10);
   p.numero = `URB-${p.fecha_emision.slice(0, 4)}-${String(p.id).padStart(4, '0')}`;
-  // Datos de la empresa para el encabezado y el pie (variables de entorno opcionales)
-  p.empresa = {
+  p.empresa = datosEmpresa();
+  return p;
+}
+
+// Datos de la empresa para el encabezado y el pie (variables de entorno opcionales)
+function datosEmpresa() {
+  return {
     nombre: process.env.EMPRESA_NOMBRE || 'Urbania 360',
     lema: process.env.EMPRESA_LEMA || 'Gestión y mantenimiento integral',
     telefono: process.env.EMPRESA_TELEFONO || '',
@@ -288,7 +299,25 @@ async function datosPresupuesto(campo, valor) {
     cuit: process.env.EMPRESA_CUIT || '',
     web: process.env.EMPRESA_WEB || '',
   };
-  return p;
+}
+
+// Datos del informe técnico para el documento (sin datos internos)
+async function informeTecnico(req, res) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT t.id, t.solicitante AS cliente, t.cliente_telefono, t.cliente_email, t.lugar, t.tipo AS categoria, t.es_visita,
+              TO_CHAR(COALESCE(t.informe_fecha, CURRENT_DATE), 'YYYY-MM-DD') AS fecha,
+              COALESCE(NULLIF(t.informe_ubicacion, ''), t.lugar) AS ubicacion,
+              t.informe_descripcion AS descripcion, COALESCE(NULLIF(t.informe_realizado_por, ''), t.responsable) AS realizado_por
+         FROM trabajos t WHERE t.id = $1`, [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const p = rows[0];
+    p.numero = `INF-${p.fecha.slice(0, 4)}-${String(p.id).padStart(4, '0')}`;
+    p.empresa = datosEmpresa();
+    res.json(p);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al armar el informe técnico', detalle: err.message });
+  }
 }
 
 async function presupuestoCliente(req, res) {
@@ -379,6 +408,6 @@ async function eliminarFoto(req, res) {
 }
 
 module.exports = {
-  listar, crear, actualizarSolicitud, actualizarGestion, presupuestoCliente, eliminar, eliminarPresupuesto,
+  listar, crear, actualizarSolicitud, actualizarGestion, presupuestoCliente, informeTecnico, eliminar, eliminarPresupuesto,
   subirFoto, verFoto, eliminarFoto, datosPresupuesto, obtenerTrabajo, hoyISO, baseUrl,
 };
