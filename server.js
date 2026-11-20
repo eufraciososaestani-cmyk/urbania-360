@@ -9,6 +9,7 @@ const auth = require('./auth');
 const apiRoutes = require('./api-routes');
 const envios = require('./envios');
 const notificaciones = require('./notificaciones');
+const informes = require('./informes');
 
 const app = express();
 // Render está detrás de un proxy: así req.protocol da https para armar los links
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/auth', auth.router);
 app.use(envios.router); // envío al cliente y link público (antes que las rutas con login)
 app.use(notificaciones.router); // campanita y notificaciones push
+app.use(informes.router); // área 3 · informes técnicos
 app.use('/api', apiRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
 // Link público del presupuesto para el cliente

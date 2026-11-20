@@ -163,3 +163,28 @@ CREATE TABLE IF NOT EXISTS config (
     clave  VARCHAR(60) PRIMARY KEY,
     valor  TEXT NOT NULL
 );
+
+-- Informes técnicos: área aparte, no dependen de una solicitud ni de un presupuesto
+CREATE TABLE IF NOT EXISTS informes (
+    id              SERIAL PRIMARY KEY,
+    fecha           DATE NOT NULL DEFAULT CURRENT_DATE,
+    cliente         VARCHAR(200) NOT NULL,
+    cliente_telefono VARCHAR(60),
+    cliente_email   VARCHAR(150),
+    ubicacion       VARCHAR(250) NOT NULL,
+    asunto          VARCHAR(200),                    -- trabajo / tema del informe
+    descripcion     TEXT,
+    realizado_por   VARCHAR(200),
+    trabajo_id      INTEGER UNIQUE REFERENCES trabajos(id) ON DELETE SET NULL, -- solo informes pasados desde un trabajo
+    creado_en       TIMESTAMP NOT NULL DEFAULT NOW(),
+    actualizado_en  TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_informes_fecha ON informes(fecha);
+-- Los informes que se cargaron dentro de un trabajo pasan al área de informes (una sola vez)
+INSERT INTO informes (fecha, cliente, cliente_telefono, cliente_email, ubicacion, asunto, descripcion, realizado_por, trabajo_id)
+SELECT COALESCE(t.informe_fecha, CURRENT_DATE), t.solicitante, t.cliente_telefono, t.cliente_email,
+       COALESCE(NULLIF(t.informe_ubicacion, ''), t.lugar), t.tipo, t.informe_descripcion,
+       COALESCE(NULLIF(t.informe_realizado_por, ''), t.responsable), t.id
+  FROM trabajos t
+ WHERE COALESCE(t.informe_descripcion, '') <> ''
+   AND NOT EXISTS (SELECT 1 FROM informes i WHERE i.trabajo_id = t.id);

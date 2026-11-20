@@ -28,6 +28,7 @@
   --stripe:#F5C542;
   --a1:#1E5A73; --a1-soft:#DCE9EE;   /* Área 1 · Solicitudes */
   --a2:#9A5B13; --a2-soft:#F6E7D2;   /* Área 2 · Presupuestos y trabajos */
+  --a3:#4B2A86; --a3-soft:#ECE6F6;   /* Área 3 · Informes técnicos */
   --a3:#5A45A8; --a3-soft:#E9E4F7;   /* Área 3 · Análisis */
   --chart-ok:#1E8A4E; --chart-rest:#C9CEC6;
   --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
@@ -50,6 +51,7 @@
     --int:#F0C868; --int-bg:#2E2712; --int-line:#6B5A26;
     --a1:#6FB3CF; --a1-soft:#1F3842;
     --a2:#E3A45A; --a2-soft:#3A2A17;
+    --a3:#B9A3E6; --a3-soft:#2C2540;
     --a3:#8B72E0; --a3-soft:#2A2440;
     --chart-ok:#3AA868; --chart-rest:#3C4845;
   }
@@ -224,6 +226,8 @@ dialog::backdrop{background:rgba(16,24,27,.5)}
 .x{border:0;background:transparent;cursor:pointer;padding:6px;border-radius:6px;color:var(--ink-2)}
 .x svg{width:20px;height:20px}
 .dlg-head.m1::before{background:var(--a1)}
+.dlg-head.m3::before{background:var(--a3)}
+.mod-tag.m3{color:var(--a3);background:var(--a3-soft)}
 .dlg-head.m2::before{background:repeating-linear-gradient(-45deg,var(--stripe) 0 10px,var(--ink) 10px 20px)}
 .mod-tag{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:4px}
 .mod-tag.m1{color:var(--a1);background:var(--a1-soft)}
@@ -243,7 +247,13 @@ dialog::backdrop{background:rgba(16,24,27,.5)}
 .modulo .t{display:flex;flex-direction:column;gap:2px;min-width:0}
 .modulo .t b{font:700 20px/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
 .modulo .t span{font-size:13px}
-.modulo.m1 .num{color:var(--a1)} .modulo.m2 .num{color:var(--a2)}
+.modulo.m1 .num{color:var(--a1)} .modulo.m2 .num{color:var(--a2)} .modulo.m3 .num{color:var(--a3)}
+.modulo.m3[aria-current="page"]{border-color:var(--a3);box-shadow:inset 0 -4px 0 var(--a3);background:var(--a3-soft)}
+.inf-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+.inf-bar .search{flex:1;min-width:220px}
+.list.inf{--cols:150px 96px minmax(150px,1.2fr) minmax(170px,1.5fr) minmax(120px,.8fr)}
+#dlgInf .area{grid-template-columns:1fr 1fr}
+
 .modulo.m1[aria-current="page"]{border-color:var(--a1);box-shadow:inset 0 -4px 0 var(--a1);background:var(--a1-soft)}
 .modulo.m2[aria-current="page"]{border-color:var(--a2);box-shadow:inset 0 -4px 0 var(--a2);background:var(--a2-soft)}
 .modulo:hover{border-color:var(--ink-3)}
@@ -253,7 +263,7 @@ body[data-mod="2"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a2
 .nav{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin-top:20px}
 .nav-grupo{display:flex;flex-direction:column;gap:6px;min-width:0}
 .nav-lbl{font:500 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
-.nav .modulos{margin-top:0;grid-template-columns:1fr 1fr;height:100%}
+.nav .modulos{margin-top:0;grid-template-columns:repeat(3,1fr);height:100%}
 .vistas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .vista{display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--ink-2);min-width:0}
 .vista svg{width:20px;height:20px;flex:none;color:var(--a3)}
@@ -336,6 +346,7 @@ body[data-mod="2"] .tile[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--a2
 .exp-top .sub{margin:4px 0 0}
 #ePrev td{white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:900px){ .nav{grid-template-columns:1fr} .exp-grid{grid-template-columns:1fr} .exp-cols{grid-template-columns:1fr 1fr} }
+@media (max-width:620px){ .nav .modulos{grid-template-columns:1fr 1fr} .nav .modulo.m3{grid-column:1/-1} }
 @media (max-width:620px){ .crono{grid-template-columns:1fr 1fr;row-gap:12px} .paso .lnk{display:none} .exp-cols,.exp-filtros{grid-template-columns:1fr} }
 
 /* Área 3 · Análisis */
@@ -527,6 +538,10 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
             <span class="num">2</span>
             <span class="t"><b>Presupuesto y trabajo</b><span id="navM2s">Presupuesto, ejecución y fotos</span></span>
           </button>
+          <button class="modulo m3" type="button" id="navM7">
+            <span class="num">3</span>
+            <span class="t"><b>Informe técnico</b><span id="navM7s">Informes para el cliente</span></span>
+          </button>
         </div>
       </div>
       <div class="nav-grupo">
@@ -566,6 +581,24 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     </div>
 
     <!-- 3 · CRONOLOGÍA -->
+    <section id="informes" aria-label="Informes técnicos" hidden>
+      <div class="sec-head">
+        <h2>Informes técnicos</h2>
+        <p>Informes para el cliente con el mismo formato y logo que el presupuesto. No dependen de ninguna solicitud ni presupuesto.</p>
+      </div>
+      <div class="inf-bar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="infQ" type="search" placeholder="Buscar por cliente, ubicación, trabajo o técnico…" aria-label="Buscar informes">
+        </div>
+        <span class="count" id="infCount"></span>
+        <button class="btn primary" type="button" id="btnNuevoInf">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo informe técnico</button>
+      </div>
+      <div class="list inf" id="infList" role="list"></div>
+    </section>
+
     <section id="cronologia" aria-label="Cronología" hidden>
       <div class="sec-head">
         <h2>Cronología de los trabajos</h2>
@@ -684,6 +717,34 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
 </div>
 
 <!-- ÁREA 1 · SOLICITUD DE PEDIDO -->
+<dialog id="dlgInf" aria-labelledby="infTitle">
+  <div class="dlg-head m3">
+    <div class="dlg-title">
+      <div><span class="mod-tag m3">Área 3 · Informe técnico</span><h2 id="infTitle">Nuevo informe técnico</h2></div>
+      <button class="x" type="button" id="infClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="dlg-sub"><span id="infSub">Se carga directo, sin solicitud ni presupuesto</span></div>
+  </div>
+  <form class="area" id="formInf" novalidate>
+    <div class="f"><label for="nFecha">Fecha</label><input id="nFecha" type="date" required></div>
+    <div class="f"><label for="nPor">Realizado por</label><input id="nPor" type="text" list="dlResp" autocomplete="off" placeholder="Técnico o responsable"></div>
+    <div class="f full"><label for="nCliente">Cliente · consorcio · administrador</label><input id="nCliente" type="text" list="dlCliente" autocomplete="off" required placeholder="Nombre, consorcio o empresa"></div>
+    <div class="f"><label for="nTel">Teléfono</label><input id="nTel" type="tel" autocomplete="off"></div>
+    <div class="f"><label for="nEmail">Email</label><input id="nEmail" type="email" autocomplete="off"></div>
+    <div class="f full"><label for="nUbic">Ubicación</label><input id="nUbic" type="text" list="dlLugar" autocomplete="off" required placeholder="Dirección, unidad, sector o edificio"></div>
+    <div class="f full"><label for="nAsunto">Trabajo / tema del informe</label><input id="nAsunto" type="text" list="dlTipo" autocomplete="off" placeholder="Ej.: Relevamiento de humedad, instalación eléctrica…"></div>
+    <div class="f full"><label for="nDesc">Descripción del informe técnico</label><textarea id="nDesc" rows="10" required placeholder="Qué se revisó, qué se encontró, causas probables y recomendaciones."></textarea></div>
+    <p class="err" id="errInf" hidden></p>
+    <div class="dlg-foot">
+      <div id="infDelWrap"><button class="btn danger" type="button" id="btnDelInf">Eliminar informe</button></div>
+      <div class="right">
+        <button class="btn" type="button" id="btnVerInf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg> Ver informe técnico</button>
+        <button class="btn primary" type="submit" id="btnSaveInf">Guardar informe</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="dlgSol" aria-labelledby="solTitle">
   <div class="dlg-head m1">
     <div class="dlg-title">
@@ -797,16 +858,6 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       </div>
       <div class="f"><label for="gObs">Observaciones internas</label><textarea id="gObs" placeholder="Accesos, materiales, coordinación, notas del equipo…"></textarea></div>
     </div>
-
-    <div class="sec">Informe técnico</div>
-    <p class="area-hint">Documento para el cliente con el mismo formato y logo que el presupuesto. Se guarda junto con el resto con el botón de abajo.</p>
-    <div class="f"><label for="iFecha">Fecha</label><input id="iFecha" type="date"></div>
-    <div class="f"><label for="iPor">Realizado por</label><input id="iPor" type="text" list="dlResp" autocomplete="off" placeholder="Técnico o responsable"></div>
-    <div class="f full"><label for="iUbic">Ubicación</label><input id="iUbic" type="text" autocomplete="off" placeholder="Dirección, unidad, sector o edificio"></div>
-    <div class="f full"><label for="iDesc">Descripción del informe técnico</label><textarea id="iDesc" rows="8" placeholder="Qué se revisó, qué se encontró, causas probables y recomendaciones. Ej.: Se detecta filtración en losa de cochera por deterioro de la membrana; se recomienda reemplazo total."></textarea></div>
-    <div class="f full"><button class="btn" type="button" id="btnInforme" style="align-self:flex-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>
-      Ver informe técnico</button>
-      <span class="area-hint">Muestra el último informe guardado, listo para imprimir o guardar en PDF.</span></div>
 
     <p class="err" id="err2" hidden></p>
     <div class="dlg-foot">
@@ -988,7 +1039,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   function salir(){
     localStorage.removeItem('urbania_token'); state.token=null; state.yo=null;
     clearInterval(state.timer);
-    ["dlgSol","dlgPres","dlgUsers","dlgNotif","lightbox"].forEach(id=>{ if($(id) && $(id).open) $(id).close(); });
+    ["dlgSol","dlgPres","dlgInf","dlgUsers","dlgNotif","lightbox"].forEach(id=>{ if($(id) && $(id).open) $(id).close(); });
     $("app").hidden=true; $("actions").hidden=true; $("login").hidden=false;
   }
   $("login").addEventListener("submit", async e=>{
@@ -1012,7 +1063,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("btnUsers").hidden = state.yo.rol!=="admin";
     $("boxReferido").hidden = !state.yo.ve_referido;
     setMod(state.mod); cargar().then(abrirDesdeLink);
-    cargarNotif(true); registrarSW();
+    cargarNotif(true); registrarSW(); cargarInformes();
     clearInterval(state.timer);
     state.timer = setInterval(()=>{ if(!$("dlgSol").open && !$("dlgPres").open) cargar(); cargarNotif(false); }, REFRESCO_MS);
   }
@@ -1149,6 +1200,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("navM2").setAttribute("aria-current", m===2?"page":"false");
     [3,4,5,6].forEach(n=>$("navM"+n).setAttribute("aria-current", m===n?"page":"false"));
     $("listaUI").hidden = m>2;
+    $("informes").hidden = m!==7; $("navM7").setAttribute("aria-current", m===7?"page":"false");
     $("cronologia").hidden = m!==3; $("gantt").hidden = m!==4; $("exportar").hidden = m!==5; $("analisis").hidden = m!==6;
     $("fOrigen").hidden = m!==1;
     $("fPres").hidden = $("fTarea").hidden = m!==2;
@@ -1160,7 +1212,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   }
   $("navM1").onclick=()=>setMod(1);
   $("navM2").onclick=()=>setMod(2);
-  [3,4,5,6].forEach(n=>$("navM"+n).onclick=()=>setMod(n));
+  [3,4,5,6,7].forEach(n=>$("navM"+n).onclick=()=>setMod(n));
 
   function filtered(){
     const m=state.mod, q=$("q").value.trim().toLowerCase(), ord=$("fOrden").value, tile=TILES[m][state.quick[m]];
@@ -1250,7 +1302,105 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     fill("dlReferido", state.yo && state.yo.ve_referido ? uniq("referido_por") : []);
   }
 
-  function render(){ renderNav(); const m=state.mod; if(m===3) return renderCrono(); if(m===4) return renderGantt(); if(m===5) return renderExportCols(); if(m===6) return renderAnalisis(); renderSummary(); renderList(); }
+  function render(){ renderNav(); const m=state.mod; if(m===7) return renderInformes(); if(m===3) return renderCrono(); if(m===4) return renderGantt(); if(m===5) return renderExportCols(); if(m===6) return renderAnalisis(); renderSummary(); renderList(); }
+
+  // ---- ÁREA 3 · Informes técnicos (independientes de solicitudes y presupuestos) ----
+  const dlgInf=$("dlgInf");
+  state.informes=null; state.inf=null; state.dirtyInf=false;
+  async function cargarInformes(){
+    try{ state.informes=await api('/informes'); }catch(e){ if(!state.informes) state.informes=[]; }
+    if(state.mod===7) renderInformes();
+    $("navM7s").textContent = `${state.informes.length} informe${state.informes.length===1?"":"s"}`;
+  }
+  function renderInformes(){
+    if(state.informes===null){ $("infList").innerHTML=`<div class="empty">Cargando…</div>`; cargarInformes(); return; }
+    const q=$("infQ").value.trim().toLowerCase();
+    const r=state.informes.filter(x=>!q || [x.numero,x.cliente,x.ubicacion,x.asunto,x.realizado_por,x.descripcion].join(" ").toLowerCase().includes(q));
+    $("infCount").textContent=`${r.length} de ${state.informes.length}`;
+    $("infList").innerHTML = !state.informes.length
+      ? `<div class="empty"><strong>Todavía no hay informes técnicos</strong>Creá el primero con “Nuevo informe técnico”.</div>`
+      : !r.length ? `<div class="empty"><strong>Sin resultados</strong>Probá con otra búsqueda.</div>`
+      : `<div class="row head" role="presentation"><span>N°</span><span>Fecha</span><span>Cliente</span><span>Ubicación / trabajo</span><span>Realizado por</span></div>`
+        + r.map(x=>`<button class="row" type="button" role="listitem" data-inf="${esc(x.id)}">
+          <span class="c-num">${esc(x.numero)}</span>
+          <span class="c-date">${fmtDate(x.fecha)}</span>
+          <span class="c-who">${esc(x.cliente)}</span>
+          <span class="c-where">${esc(x.ubicacion)}${x.asunto?`<span class="c-sub">${esc(x.asunto)}</span>`:""}</span>
+          <span class="c-origen">${esc(x.realizado_por||"—")}</span>
+        </button>`).join("");
+    $("infList").querySelectorAll("[data-inf]").forEach(b=>b.onclick=()=>openInf(state.informes.find(x=>String(x.id)===b.dataset.inf)));
+  }
+  $("infQ").addEventListener("input",renderInformes);
+  function setInfHeader(){
+    const x=state.inf;
+    $("infTitle").textContent = x ? `Informe técnico N° ${x.numero}` : "Nuevo informe técnico";
+    $("infSub").textContent = x ? `${x.cliente} · ${fmtDate(x.fecha)}` : "Se carga directo, sin solicitud ni presupuesto";
+    $("infDelWrap").hidden = !x; $("btnVerInf").disabled = !x;
+    $("btnSaveInf").textContent = x ? "Guardar informe" : "Crear informe";
+    const b=$("btnDelInf"); b.textContent="Eliminar informe"; b.dataset.armed="";
+  }
+  function openInf(x){
+    state.inf=x||null;
+    $("nFecha").value=x?.fecha||today(); $("nPor").value=x?.realizado_por||""; $("nCliente").value=x?.cliente||"";
+    $("nTel").value=x?.cliente_telefono||""; $("nEmail").value=x?.cliente_email||""; $("nUbic").value=x?.ubicacion||"";
+    $("nAsunto").value=x?.asunto||""; $("nDesc").value=x?.descripcion||"";
+    state.dirtyInf=false; $("errInf").hidden=true; setInfHeader();
+    dlgInf.showModal(); if(!x) setTimeout(()=>$("nCliente").focus(),30);
+  }
+  function closeInf(){
+    if(state.dirtyInf && !confirm("Hay cambios sin guardar en el informe. ¿Cerrar igual?")) return false;
+    state.dirtyInf=false; dlgInf.close(); return true;
+  }
+  $("btnNuevoInf").onclick=()=>openInf(null);
+  $("infClose").onclick=closeInf;
+  dlgInf.addEventListener("cancel",e=>{ e.preventDefault(); closeInf(); });
+  $("formInf").addEventListener("input",()=>state.dirtyInf=true);
+  // Al elegir un cliente que ya existe, completa teléfono y email
+  $("nCliente").addEventListener("change",()=>{
+    const c=$("nCliente").value.trim().toLowerCase(); if(!c) return;
+    const t=state.rows.find(x=>String(x.solicitante).toLowerCase()===c) || (state.informes||[]).find(x=>String(x.cliente).toLowerCase()===c);
+    if(!t) return;
+    if(!$("nTel").value) $("nTel").value=t.cliente_telefono||"";
+    if(!$("nEmail").value) $("nEmail").value=t.cliente_email||"";
+    if(!$("nUbic").value) $("nUbic").value=t.lugar||t.ubicacion||"";
+  });
+  $("formInf").addEventListener("submit",async e=>{
+    e.preventDefault(); $("errInf").hidden=true;
+    const body={fecha:$("nFecha").value, realizado_por:$("nPor").value.trim(), cliente:$("nCliente").value.trim(), cliente_telefono:$("nTel").value.trim(),
+      cliente_email:$("nEmail").value.trim(), ubicacion:$("nUbic").value.trim(), asunto:$("nAsunto").value.trim(), descripcion:$("nDesc").value.trim()};
+    const miss=[]; if(!body.cliente) miss.push("cliente"); if(!body.ubicacion) miss.push("ubicación"); if(!body.descripcion) miss.push("descripción del informe técnico");
+    if(miss.length){ mostrarErr("errInf",{message:"Falta completar: "+miss.join(", ")+"."}); return; }
+    $("btnSaveInf").disabled=true;
+    try{
+      const nuevo=!state.inf;
+      const x = nuevo ? await api('/informes',{method:'POST',body:JSON.stringify(body)}) : await api('/informes/'+state.inf.id,{method:'PUT',body:JSON.stringify(body)});
+      state.inf=x; state.dirtyInf=false; setInfHeader();
+      state.informes = nuevo ? [x, ...(state.informes||[])] : (state.informes||[]).map(y=>y.id===x.id?x:y);
+      renderInformes(); $("navM7s").textContent=`${state.informes.length} informe${state.informes.length===1?"":"s"}`;
+      toast(nuevo ? "Informe técnico creado. Ya lo podés ver e imprimir." : "Informe técnico guardado");
+    }catch(err){ mostrarErr("errInf",err); }
+    finally{ $("btnSaveInf").disabled=false; }
+  });
+  $("btnVerInf").onclick=async()=>{
+    if(!state.inf) return;
+    if(state.dirtyInf && !confirm("Hay cambios sin guardar. El informe va a mostrar lo último guardado. ¿Continuar?")) return;
+    const w = window.open("", "_blank");
+    if(!w){ toast("El navegador bloqueó la ventana. Permití ventanas emergentes."); return; }
+    try{
+      const p = await api(`/informes/${state.inf.id}/documento`);
+      w.document.write(window.U360Presupuesto.documento(p, location.origin + "/img/logo-urbania-360.png", "informe"));
+      w.document.close();
+    }catch(e){ w.close(); toast(e.message||"No se pudo armar el informe técnico"); }
+  };
+  $("btnDelInf").onclick=async()=>{
+    const b=$("btnDelInf");
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="¿Seguro? Tocá de nuevo para eliminar"; return; }
+    try{
+      await api('/informes/'+state.inf.id,{method:'DELETE'});
+      state.informes=(state.informes||[]).filter(y=>y.id!==state.inf.id);
+      state.dirtyInf=false; dlgInf.close(); renderInformes(); toast("Informe técnico eliminado");
+    }catch(e){ mostrarErr("errInf",e); }
+  };
 
   // ---- ÁREA 1 · Ficha de la solicitud ----
   const dlgSol=$("dlgSol"), dlgPres=$("dlgPres");
@@ -1405,10 +1555,6 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
     $("gInicio").value = rec.inicio_previsto || "";
     $("gFin").value = rec.finalizado_en || "";
     $("gObs").value = rec.observaciones_internas || "";
-    $("iFecha").value = rec.informe_fecha || "";
-    $("iUbic").value = rec.informe_ubicacion || ""; $("iUbic").placeholder = rec.lugar || "Dirección, unidad, sector o edificio";
-    $("iPor").value = rec.informe_realizado_por || ""; $("iPor").placeholder = rec.responsable || "Técnico o responsable";
-    $("iDesc").value = rec.informe_descripcion || "";
     $("pCat").value = rec.tipo || "";
     $("pDesc").value = rec.descripcion_trabajo || rec.detalle || "";
     $("pDescHint").textContent = !rec.descripcion_trabajo && rec.detalle ? "Se completó con lo que pidió el cliente: ajustalo con las tareas que se van a realizar." : "";
@@ -1535,7 +1681,6 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
       presupuesto_ingreso:$("gIngreso").value, presupuesto_aceptado_en:$("gAceptado").value, fin_previsto:$("gFinPrev").value,
       presupuesto_estado:getRadio("pres"), estado:getRadio("tarea"), responsable:$("gResp").value.trim(),
       inicio_previsto:$("gInicio").value, finalizado_en:$("gFin").value, observaciones_internas:$("gObs").value.trim(),
-      informe_fecha:$("iFecha").value, informe_ubicacion:$("iUbic").value.trim(), informe_descripcion:$("iDesc").value.trim(), informe_realizado_por:$("iPor").value.trim(),
       tipo:$("pCat").value.trim(), descripcion_trabajo:$("pDesc").value.trim(), materiales_detalle:$("pMatDet").value.trim(),
       condiciones:$("pCond").value.trim(), validez_dias:$("pValidez").value,
       motivo_rechazo: getRadio("pres")==="rechazado" ? $("pMotivo").value.trim() : "",
@@ -1554,17 +1699,6 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
   // ---- Presupuesto para el cliente: documento con la marca (plantilla compartida en /presupuesto-doc.js) ----
   const LOGO_URL = () => location.origin + "/img/logo-urbania-360.png";
   function presupuestoHTML(p){ return window.U360Presupuesto.documento(p, LOGO_URL()); }
-  $("iDesc").addEventListener("input",()=>{ if($("iDesc").value.trim() && !$("iFecha").value) $("iFecha").value=today(); });
-  $("btnInforme").onclick=async()=>{
-    if(state.dirty2 && !confirm("Hay cambios sin guardar. El informe va a mostrar lo último guardado. ¿Continuar?")) return;
-    const w = window.open("", "_blank");
-    if(!w){ toast("El navegador bloqueó la ventana. Permití ventanas emergentes."); return; }
-    try{
-      const p = await api(`/trabajos/${state.pres.id}/informe-tecnico`);
-      w.document.write(window.U360Presupuesto.documento(p, LOGO_URL(), "informe"));
-      w.document.close();
-    }catch(e){ w.close(); toast(e.message||"No se pudo armar el informe técnico"); }
-  };
   $("btnPresCliente").onclick=async()=>{
     if(state.dirty2 && !confirm("Hay cambios sin guardar en el presupuesto. El documento va a mostrar lo último guardado. ¿Continuar?")) return;
     const w = window.open("", "_blank");
@@ -2055,7 +2189,7 @@ label,.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform
         ["ejec","Fecha de ejecución",x=>d(x.inicio_previsto)],["resp","Responsable del trabajo",x=>x.responsable],["t_est","Estado de la tarea",x=>TAREA[x.estado]||""],
         ["fprev","Fecha prevista de finalización",x=>d(x.fin_previsto)],["freal","Fecha real de final de obra",x=>d(x.finalizado_en)],
         ["desvio","Desvío (días)",x=>{ const v=desvio(x); return v ? {num: v.tipo==="antes"?-v.dias:v.dias} : null; }],
-        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["inf_fecha","Informe técnico (fecha)",x=>d(x.informe_fecha)],["inf_desc","Informe técnico (descripción)",x=>x.informe_descripcion],["fotos","Cantidad de fotos",x=>nFotos(x)],["facturas","Facturas de materiales cargadas",x=>x.fotos.length-nFotos(x)],
+        ["dur","Duración (días)",x=>n(duracion(x))],["desc","Descripción del trabajo",x=>x.descripcion_trabajo||x.detalle],["matdet","Materiales incluidos",x=>x.materiales_detalle],["obs","Observaciones internas",x=>x.observaciones_internas],["fotos","Cantidad de fotos",x=>nFotos(x)],["facturas","Facturas de materiales cargadas",x=>x.fotos.length-nFotos(x)],
       ]],
     ];
     return grupos;
